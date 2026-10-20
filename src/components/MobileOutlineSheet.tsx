@@ -154,9 +154,9 @@ export const MobileOutlineSheet: React.FC<MobileOutlineSheetProps> = ({
                   onAddCard('concept_analogy');
                   onClose();
                 }}
-                className="min-h-[44px] p-2.5 rounded-full bg-neutral-900 hover:bg-neutral-800 border border-white/10 text-neutral-200 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                className="min-h-[44px] p-2.5 rounded-full bg-amber-950/40 hover:bg-amber-900/60 border border-amber-500/30 text-amber-200 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-3.5 h-3.5 text-amber-300" />
                 <span>+ Analogy</span>
               </button>
               <button
@@ -165,9 +165,9 @@ export const MobileOutlineSheet: React.FC<MobileOutlineSheetProps> = ({
                   onAddCard('critical_rules');
                   onClose();
                 }}
-                className="min-h-[44px] p-2.5 rounded-full bg-neutral-900 hover:bg-neutral-800 border border-white/10 text-neutral-200 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                className="min-h-[44px] p-2.5 rounded-full bg-rose-950/40 hover:bg-rose-900/60 border border-rose-500/30 text-rose-200 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-3.5 h-3.5 text-rose-400" />
                 <span>+ Red Lines</span>
               </button>
               <button
@@ -176,9 +176,9 @@ export const MobileOutlineSheet: React.FC<MobileOutlineSheetProps> = ({
                   onAddCard('process_steps');
                   onClose();
                 }}
-                className="min-h-[44px] p-2.5 rounded-full bg-neutral-900 hover:bg-neutral-800 border border-white/10 text-neutral-200 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                className="min-h-[44px] p-2.5 rounded-full bg-sky-950/40 hover:bg-sky-900/60 border border-sky-500/30 text-sky-200 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-3.5 h-3.5 text-sky-400" />
                 <span>+ Steps</span>
               </button>
               <button
@@ -187,9 +187,9 @@ export const MobileOutlineSheet: React.FC<MobileOutlineSheetProps> = ({
                   onAddCard('scenario_quiz');
                   onClose();
                 }}
-                className="min-h-[44px] p-2.5 rounded-full bg-neutral-900 hover:bg-neutral-800 border border-white/10 text-neutral-200 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                className="min-h-[44px] p-2.5 rounded-full bg-purple-950/40 hover:bg-purple-900/60 border border-purple-500/30 text-purple-200 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-3.5 h-3.5 text-purple-400" />
                 <span>+ Quiz</span>
               </button>
             </div>

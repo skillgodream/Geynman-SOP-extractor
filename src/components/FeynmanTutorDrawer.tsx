@@ -93,15 +93,15 @@ export const FeynmanTutorDrawer: React.FC<FeynmanTutorDrawerProps> = ({
         {/* Drawer Header */}
         <div className="p-4 sm:p-5 border-b border-white/[0.08] flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center font-bold text-xs">
+            <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-md">
               <Sparkles className="w-4 h-4" />
             </div>
             <div>
               <div className="text-sm font-bold text-white">
-                Feynman Mentor
+                KOYA Mentor
               </div>
               <div className="text-xs text-neutral-400">
-                Clear intuitions · Zero jargon
+                Frontline SOP Assistant
               </div>
             </div>
           </div>
@@ -119,9 +119,9 @@ export const FeynmanTutorDrawer: React.FC<FeynmanTutorDrawerProps> = ({
         {/* Card Context Banner */}
         {activeCard && (
           <div className="px-4 py-2 bg-neutral-900 border-b border-white/[0.08] text-xs text-neutral-300 flex items-center gap-2">
-            <Lightbulb className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+            <Lightbulb className="w-3.5 h-3.5 text-blue-400 shrink-0" />
             <span className="truncate">
-              Focus: <strong>{activeCard.title}</strong>
+              Focus: <strong className="text-white">{activeCard.title}</strong>
             </span>
           </div>
         )}
@@ -130,14 +130,14 @@ export const FeynmanTutorDrawer: React.FC<FeynmanTutorDrawerProps> = ({
         <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
           {messages.length === 0 ? (
             <div className="text-center py-6 sm:py-8">
-              <div className="w-12 h-12 rounded-full bg-neutral-900 border border-white/10 text-neutral-400 flex items-center justify-center mx-auto mb-3">
+              <div className="w-12 h-12 rounded-full bg-neutral-900 border border-white/10 text-blue-400 flex items-center justify-center mx-auto mb-3">
                 <MessageSquare className="w-6 h-6" />
               </div>
               <h4 className="text-sm font-semibold text-white mb-1">
-                Have a doubt about this step?
+                Have a doubt about this procedure?
               </h4>
               <p className="text-xs text-neutral-400 max-w-xs mx-auto mb-4 font-normal">
-                Ask in plain language. The Feynman Tutor explains the underlying logic without confusing jargon.
+                Ask anything about the SOP steps, rules, or analogies. KOYA explains the logic instantly.
               </p>
 
               <div className="space-y-2 text-left max-w-sm mx-auto">
@@ -165,7 +165,7 @@ export const FeynmanTutorDrawer: React.FC<FeynmanTutorDrawerProps> = ({
                 <div
                   className={`max-w-[85%] rounded-2xl p-3.5 text-xs sm:text-sm leading-relaxed ${
                     msg.sender === 'user'
-                      ? 'bg-white text-black font-medium'
+                      ? 'bg-blue-600 text-white font-medium shadow-md'
                       : 'bg-neutral-900 text-neutral-200 border border-white/10'
                   }`}
                 >
@@ -177,8 +177,8 @@ export const FeynmanTutorDrawer: React.FC<FeynmanTutorDrawerProps> = ({
 
           {isLoading && (
             <div className="flex items-center gap-2 text-xs text-neutral-400 p-2">
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
-              <span>Thinking with the Feynman technique...</span>
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-400" />
+              <span>Checking SOP rules and generating explanation...</span>
             </div>
           )}
         </div>
@@ -198,15 +198,15 @@ export const FeynmanTutorDrawer: React.FC<FeynmanTutorDrawerProps> = ({
               onChange={(e) => setInputQuestion(e.target.value)}
               placeholder="Ask anything about this SOP..."
               disabled={isLoading}
-              className="flex-1 min-h-[44px] bg-neutral-900 border border-white/10 rounded-full px-4 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-white/30"
+              className="flex-1 min-h-[44px] bg-neutral-900 border border-white/10 rounded-full px-4 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-blue-500/50"
             />
             <button
               type="submit"
               disabled={!inputQuestion.trim() || isLoading}
-              className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full bg-white text-black hover:bg-neutral-200 disabled:opacity-30 transition-all cursor-pointer"
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-30 shadow-md transition-all cursor-pointer"
               aria-label="Send"
             >
-              <Send className="w-4 h-4" />
+              <Send className="w-4 h-4 text-white" />
             </button>
           </form>
         </div>

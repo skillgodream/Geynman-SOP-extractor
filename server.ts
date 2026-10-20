@@ -495,23 +495,55 @@ app.post('/api/deck/ask-feynman', async (req: Request, res: Response) => {
   try {
     const { question, cardContext, deckContext } = req.body;
 
-    const prompt = `A learner is studying a training deck based on an SOP.
-Deck: ${deckContext?.title || 'Operational Procedure'}
-Card being studied: ${cardContext?.title || ''} (${cardContext?.feynmanExplanation || ''})
+    const cardsDetail = deckContext?.cards
+      ?.map((c: any, idx: number) => {
+        let text = `Card ${idx + 1} [${c.title}]: ${c.feynmanExplanation || ''}`;
+        if (c.criticalRules) {
+          text += ` | Red Lines: ` + c.criticalRules.map((r: any) => `${r.type}: ${r.rule} (risk: ${r.consequenceOfFailure})`).join('; ');
+        }
+        if (c.steps) {
+          text += ` | Steps: ` + c.steps.map((s: any) => `Step ${s.stepNumber} ${s.title}: ${s.action} (why: ${s.whyItMatters})`).join('; ');
+        }
+        if (c.pitfalls) {
+          text += ` | Pitfalls: ` + c.pitfalls.map((p: any) => `${p.symptomOrMistake} -> ${p.immediateFix}`).join('; ');
+        }
+        if (c.analogy) {
+          text += ` | Analogy: ${c.analogy.metaphor} (${c.analogy.takeaway})`;
+        }
+        return text;
+      })
+      .join('\n') || '';
+
+    const fullContext = `
+DECK TITLE: ${deckContext?.title || 'Training Deck'}
+DECK SUMMARY: ${deckContext?.summary || ''}
+CENTRAL ANALOGY: ${deckContext?.feynmanCoreConcept?.centralAnalogy?.title || ''} - ${deckContext?.feynmanCoreConcept?.centralAnalogy?.analogyText || ''}
+
+FULL DECK CONTENT & CARDS:
+${cardsDetail}
+
+CURRENT ACTIVE CARD STUDYING:
+Title: ${cardContext?.title || 'Deck Overview'}
+Explanation: ${cardContext?.feynmanExplanation || ''}
+`;
+
+    const prompt = `You are KOYA, the expert Frontline Trainer & Mentor for this specific training deck.
+
+Here is the EXACT content, rules, and steps of the training deck you are teaching:
+${fullContext}
 
 Learner Question: "${question}"
 
-Explain using the Feynman Technique:
-1. Direct, clear answer in 1-2 sentences using everyday English (no buzzwords).
-2. A vivid physical or everyday analogy.
-3. Why this matters in the real job (the "so what?").
-Keep it under 150 words, friendly and crystal clear.`;
+Provide a friendly, highly accurate response strictly grounded in the training deck's content above:
+1. Direct, clear answer directly answering their question based on the deck's specific rules, steps, and analogies.
+2. If applicable, reference the specific card or rule from this deck.
+3. Keep it crystal clear, concise (100-150 words), and encouraging without corporate jargon.`;
 
     const response = await generateContentWithResilience({
       contents: prompt,
       config: {
-        systemInstruction: 'You are a warm, intuitive teacher applying the Feynman Technique.',
-        temperature: 0.4,
+        systemInstruction: 'You are KOYA, an expert Frontline Trainer and intuitive Mentor. Always answer using the specific content, rules, and steps of the provided deck.',
+        temperature: 0.3,
       },
     });
 

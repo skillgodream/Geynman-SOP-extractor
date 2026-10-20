@@ -184,36 +184,36 @@ export const CardOutlineScreen: React.FC<CardOutlineScreenProps> = ({
             <button
               type="button"
               onClick={() => onAddCardChunk('critical_rules')}
-              className="min-h-[44px] px-3 py-2 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-200 hover:text-white border border-white/10 flex items-center justify-center gap-2 text-xs font-semibold transition-all active:scale-95 cursor-pointer"
+              className="min-h-[44px] px-3 py-2.5 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 text-rose-200 hover:text-white border border-rose-500/30 hover:border-rose-400/50 flex items-center justify-center gap-2 text-xs font-semibold transition-all active:scale-95 cursor-pointer shadow-sm"
             >
-              <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
+              <ShieldAlert className="w-4 h-4 text-rose-400" />
               <span>+ Red Lines</span>
             </button>
 
             <button
               type="button"
               onClick={() => onAddCardChunk('process_steps')}
-              className="min-h-[44px] px-3 py-2 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-200 hover:text-white border border-white/10 flex items-center justify-center gap-2 text-xs font-semibold transition-all active:scale-95 cursor-pointer"
+              className="min-h-[44px] px-3 py-2.5 rounded-xl bg-sky-950/40 hover:bg-sky-900/60 text-sky-200 hover:text-white border border-sky-500/30 hover:border-sky-400/50 flex items-center justify-center gap-2 text-xs font-semibold transition-all active:scale-95 cursor-pointer shadow-sm"
             >
-              <Layers className="w-3.5 h-3.5 text-sky-400" />
+              <Layers className="w-4 h-4 text-sky-400" />
               <span>+ Step Sequence</span>
             </button>
 
             <button
               type="button"
               onClick={() => onAddCardChunk('scenario_quiz')}
-              className="min-h-[44px] px-3 py-2 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-200 hover:text-white border border-white/10 flex items-center justify-center gap-2 text-xs font-semibold transition-all active:scale-95 cursor-pointer"
+              className="min-h-[44px] px-3 py-2.5 rounded-xl bg-purple-950/40 hover:bg-purple-900/60 text-purple-200 hover:text-white border border-purple-500/30 hover:border-purple-400/50 flex items-center justify-center gap-2 text-xs font-semibold transition-all active:scale-95 cursor-pointer shadow-sm"
             >
-              <HelpCircle className="w-3.5 h-3.5 text-purple-400" />
+              <HelpCircle className="w-4 h-4 text-purple-400" />
               <span>+ Dilemma Quiz</span>
             </button>
 
             <button
               type="button"
               onClick={() => onAddCardChunk('concept_analogy')}
-              className="min-h-[44px] px-3 py-2 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-200 hover:text-white border border-white/10 flex items-center justify-center gap-2 text-xs font-semibold transition-all active:scale-95 cursor-pointer"
+              className="min-h-[44px] px-3 py-2.5 rounded-xl bg-amber-950/40 hover:bg-amber-900/60 text-amber-200 hover:text-white border border-amber-500/30 hover:border-amber-400/50 flex items-center justify-center gap-2 text-xs font-semibold transition-all active:scale-95 cursor-pointer shadow-sm"
             >
-              <Lightbulb className="w-3.5 h-3.5 text-amber-300" />
+              <Lightbulb className="w-4 h-4 text-amber-300" />
               <span>+ Analogy</span>
             </button>
           </div>

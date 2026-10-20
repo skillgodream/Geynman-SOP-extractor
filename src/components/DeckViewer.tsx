@@ -331,28 +331,28 @@ export const DeckViewer: React.FC<DeckViewerProps> = ({
                   <button
                     type="button"
                     onClick={() => handleAddCard('concept_analogy')}
-                    className="p-2 text-left rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white border border-white/5 truncate cursor-pointer"
+                    className="p-2 text-left rounded-xl bg-amber-950/40 hover:bg-amber-900/60 text-amber-200 hover:text-white border border-amber-500/30 truncate cursor-pointer"
                   >
                     + Analogy
                   </button>
                   <button
                     type="button"
                     onClick={() => handleAddCard('critical_rules')}
-                    className="p-2 text-left rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white border border-white/5 truncate cursor-pointer"
+                    className="p-2 text-left rounded-xl bg-rose-950/40 hover:bg-rose-900/60 text-rose-200 hover:text-white border border-rose-500/30 truncate cursor-pointer"
                   >
                     + Red Lines
                   </button>
                   <button
                     type="button"
                     onClick={() => handleAddCard('process_steps')}
-                    className="p-2 text-left rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white border border-white/5 truncate cursor-pointer"
+                    className="p-2 text-left rounded-xl bg-sky-950/40 hover:bg-sky-900/60 text-sky-200 hover:text-white border border-sky-500/30 truncate cursor-pointer"
                   >
                     + Steps
                   </button>
                   <button
                     type="button"
                     onClick={() => handleAddCard('scenario_quiz')}
-                    className="p-2 text-left rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white border border-white/5 truncate cursor-pointer"
+                    className="p-2 text-left rounded-xl bg-purple-950/40 hover:bg-purple-900/60 text-purple-200 hover:text-white border border-purple-500/30 truncate cursor-pointer"
                   >
                     + Quiz
                   </button>
