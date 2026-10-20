@@ -1,0 +1,6 @@
+{
+  "name": "FeynmanDeck — SOP to Interactive Training Deck",
+  "description": "Transform dense SOPs and technical manuals into intuitive, high-impact training decks using the Feynman Technique and dynamic Gamma-style instructional card templates.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
