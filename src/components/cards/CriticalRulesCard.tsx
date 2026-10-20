@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldAlert, CheckSquare, XCircle, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { ShieldAlert, CheckSquare, XCircle, CheckCircle2 } from 'lucide-react';
 import { DeckCard, CriticalRule, CardImage } from '../../types/deck';
 import { CardToolbar } from '../CardToolbar';
 import { CardVisual } from '../visuals/CardVisual';
@@ -50,9 +50,9 @@ export const CriticalRulesCard: React.FC<CriticalRulesCardProps> = ({
   };
 
   return (
-    <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-6 sm:p-10 transition-colors">
-      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-red-600 dark:text-red-400 mb-3">
-        <ShieldAlert className="w-4 h-4" />
+    <div className="rounded-3xl border border-white/[0.08] bg-neutral-950 shadow-2xl p-6 sm:p-10 transition-colors">
+      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">
+        <ShieldAlert className="w-3.5 h-3.5 text-neutral-300" />
         <span>{card.badgeText || 'Critical Red Lines & Invariants'}</span>
       </div>
 
@@ -62,45 +62,46 @@ export const CriticalRulesCard: React.FC<CriticalRulesCardProps> = ({
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full text-xl font-bold bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-slate-900 dark:text-white"
+            className="w-full text-xl font-bold bg-neutral-900 border border-white/10 rounded-xl p-2.5 text-white"
           />
           <input
             type="text"
             value={subtitle}
             onChange={(e) => setSubtitle(e.target.value)}
-            className="w-full text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-slate-600 dark:text-slate-400"
+            className="w-full text-xs bg-neutral-900 border border-white/10 rounded-xl p-2 text-neutral-400"
           />
           <textarea
             value={explanation}
             onChange={(e) => setExplanation(e.target.value)}
             rows={2}
-            className="w-full text-sm bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-slate-700 dark:text-slate-300"
+            className="w-full text-sm bg-neutral-900 border border-white/10 rounded-xl p-2 text-neutral-200"
           />
           <button
+            type="button"
             onClick={handleSave}
-            className="px-3.5 py-1.5 text-xs font-semibold bg-amber-400 text-slate-950 rounded-lg shadow-sm"
+            className="px-4 py-2 text-xs font-semibold bg-white text-black rounded-full shadow-sm hover:bg-neutral-200 cursor-pointer"
           >
             Save Card Changes
           </button>
         </div>
       ) : (
         <div className="mb-6">
-          <h2 className="text-xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-1.5">
+          <h2 className="text-xl sm:text-3xl font-bold tracking-tight text-white mb-1.5">
             {card.title}
           </h2>
           {card.subtitle && (
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-2">
+            <p className="text-xs sm:text-sm text-neutral-400 mb-2">
               {card.subtitle}
             </p>
           )}
-          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-3xl">
+          <p className="text-sm sm:text-base text-neutral-300 leading-relaxed max-w-3xl font-normal">
             {card.feynmanExplanation}
           </p>
         </div>
       )}
 
       {/* Ultra-Premium Open Tabular List (NO nested bordered boxes) */}
-      <div className="divide-y divide-slate-100 dark:divide-slate-800/80 mb-6">
+      <div className="divide-y divide-white/[0.08] mb-6">
         {rules.map((rule, idx) => {
           const isNever = rule.type === 'never_do';
           const isMust = rule.type === 'must_do';
@@ -113,7 +114,7 @@ export const CriticalRulesCard: React.FC<CriticalRulesCardProps> = ({
                     <select
                       value={rule.type}
                       onChange={(e) => handleRuleChange(idx, 'type', e.target.value as any)}
-                      className="bg-white dark:bg-slate-800 border p-1 rounded font-semibold"
+                      className="bg-neutral-900 border border-white/10 p-1.5 rounded-lg text-white font-semibold"
                     >
                       <option value="never_do">NEVER DO</option>
                       <option value="must_do">MUST DO</option>
@@ -123,7 +124,7 @@ export const CriticalRulesCard: React.FC<CriticalRulesCardProps> = ({
                       type="text"
                       value={rule.rule}
                       onChange={(e) => handleRuleChange(idx, 'rule', e.target.value)}
-                      className="flex-1 bg-white dark:bg-slate-800 border p-1 rounded font-medium"
+                      className="flex-1 bg-neutral-900 border border-white/10 p-1.5 rounded-lg text-white font-medium"
                     />
                   </div>
                   <input
@@ -131,14 +132,14 @@ export const CriticalRulesCard: React.FC<CriticalRulesCardProps> = ({
                     value={rule.consequenceOfFailure}
                     placeholder="Consequence of Failure"
                     onChange={(e) => handleRuleChange(idx, 'consequenceOfFailure', e.target.value)}
-                    className="w-full bg-white dark:bg-slate-800 border p-1 rounded text-red-600"
+                    className="w-full bg-neutral-900 border border-white/10 p-1.5 rounded-lg text-red-400"
                   />
                   <input
                     type="text"
                     value={rule.verificationCheck}
                     placeholder="Verification Check"
                     onChange={(e) => handleRuleChange(idx, 'verificationCheck', e.target.value)}
-                    className="w-full bg-white dark:bg-slate-800 border p-1 rounded text-slate-600"
+                    className="w-full bg-neutral-900 border border-white/10 p-1.5 rounded-lg text-neutral-400"
                   />
                 </div>
               ) : (
@@ -146,15 +147,15 @@ export const CriticalRulesCard: React.FC<CriticalRulesCardProps> = ({
                   {/* Left: Unboxed Type Label (Strict Zero-Pill Discipline) */}
                   <div className="shrink-0 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
                     {isNever ? (
-                      <span className="text-red-600 dark:text-red-400 flex items-center gap-1">
+                      <span className="text-red-400 flex items-center gap-1">
                         <span aria-hidden="true">●</span> NEVER DO
                       </span>
                     ) : isMust ? (
-                      <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                      <span className="text-emerald-400 flex items-center gap-1">
                         <span aria-hidden="true">●</span> MUST DO
                       </span>
                     ) : (
-                      <span className="text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                      <span className="text-neutral-400 flex items-center gap-1">
                         <span aria-hidden="true">▲</span> CRITICAL
                       </span>
                     )}
@@ -162,18 +163,18 @@ export const CriticalRulesCard: React.FC<CriticalRulesCardProps> = ({
 
                   {/* Middle: The Rule Text & Details */}
                   <div className="flex-1 space-y-1.5">
-                    <div className="text-sm sm:text-base font-bold text-slate-900 dark:text-white leading-snug">
+                    <div className="text-sm sm:text-base font-bold text-white leading-snug">
                       {rule.rule}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-                      <div className="text-red-700 dark:text-red-300/90 leading-relaxed">
-                        <strong className="font-semibold">Catastrophic Risk:</strong> {rule.consequenceOfFailure}
+                      <div className="text-red-300 leading-relaxed font-normal">
+                        <strong className="font-semibold text-red-200">Failure Risk:</strong> {rule.consequenceOfFailure}
                       </div>
-                      <div className="text-slate-600 dark:text-slate-400 leading-relaxed flex items-baseline gap-1">
-                        <CheckSquare className="w-3.5 h-3.5 text-slate-400 shrink-0 translate-y-0.5" />
+                      <div className="text-neutral-400 leading-relaxed flex items-baseline gap-1 font-normal">
+                        <CheckSquare className="w-3.5 h-3.5 text-neutral-500 shrink-0 translate-y-0.5" />
                         <span>
-                          <strong className="text-slate-800 dark:text-slate-200 font-semibold">Verification Check:</strong>{' '}
+                          <strong className="text-neutral-200 font-semibold">Verification Check:</strong>{' '}
                           {rule.verificationCheck}
                         </span>
                       </div>

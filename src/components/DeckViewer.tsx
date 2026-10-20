@@ -4,19 +4,20 @@ import {
   Copy,
   Download,
   Plus,
-  Palette,
   Check,
-  ChevronRight,
   BookOpen,
   HelpCircle,
   Lightbulb,
   ShieldAlert,
   Layers,
-  Wrench,
   Bookmark,
-  List
+  Film,
+  Award,
+  Wrench,
+  Presentation
 } from 'lucide-react';
-import { FeynmanDeck, DeckCard, DeckTheme } from '../types/deck';
+import { FeynmanDeck, DeckCard } from '../types/deck';
+import { CardOutlineCard } from './cards/CardOutlineCard';
 import { HeroCard } from './cards/HeroCard';
 import { ConceptAnalogyCard } from './cards/ConceptAnalogyCard';
 import { CriticalRulesCard } from './cards/CriticalRulesCard';
@@ -31,6 +32,8 @@ interface DeckViewerProps {
   deck: FeynmanDeck;
   onUpdateDeck: (updated: FeynmanDeck) => void;
   onSwitchToPresentation: () => void;
+  onSwitchToOutline?: () => void;
+  onSwitchToView?: (view: 'flow' | 'presentation' | 'show_me' | 'guide_me' | 'test_me') => void;
   isMobileOutlineOpen?: boolean;
   onCloseMobileOutline?: () => void;
   isMobileTutorOpen?: boolean;
@@ -41,17 +44,17 @@ export const DeckViewer: React.FC<DeckViewerProps> = ({
   deck,
   onUpdateDeck,
   onSwitchToPresentation,
+  onSwitchToOutline = () => {},
+  onSwitchToView = () => {},
   isMobileOutlineOpen = false,
   onCloseMobileOutline = () => {},
   isMobileTutorOpen = false,
   onCloseMobileTutor = () => {},
 }) => {
-  const [theme, setTheme] = useState<DeckTheme>('obsidian');
   const [activeTutorCard, setActiveTutorCard] = useState<DeckCard | null>(null);
   const [isTutorOpen, setIsTutorOpen] = useState(false);
   const [copiedNotification, setCopiedNotification] = useState(false);
 
-  // Sync internal tutor with external mobile tutor trigger
   const effectiveTutorOpen = isTutorOpen || isMobileTutorOpen;
   const handleCloseTutor = () => {
     setIsTutorOpen(false);
@@ -104,7 +107,7 @@ export const DeckViewer: React.FC<DeckViewerProps> = ({
         : type === 'scenario_quiz'
         ? {
             quiz: {
-              scenario: 'Describe a realistic 3 AM shift dilemma...',
+              scenario: 'Describe a realistic shift dilemma...',
               question: 'What is the correct protocol response?',
               options: ['Option A (Correct)', 'Option B (Flawed)', 'Option C (Dangerous)'],
               correctAnswerIndex: 0,
@@ -116,8 +119,8 @@ export const DeckViewer: React.FC<DeckViewerProps> = ({
         ? {
             referenceItems: [
               {
-                label: 'Core Threshold',
-                value: 'Target Metric',
+                label: 'Core Metric',
+                value: 'Target Threshold',
                 detail: 'Emergency escalation criteria',
               },
             ],
@@ -148,7 +151,6 @@ export const DeckViewer: React.FC<DeckViewerProps> = ({
   const handleCopyMarkdown = () => {
     let md = `# ${deck.title}\n\n`;
     md += `> ${deck.summary}\n\n`;
-    md += `**Target Audience:** ${deck.targetAudience} · **Est. Time:** ${deck.estimatedMinutes} mins\n\n`;
     md += `## Central Mental Model: ${deck.feynmanCoreConcept.centralAnalogy.title}\n`;
     md += `*${deck.feynmanCoreConcept.centralAnalogy.analogyText}*\n\n`;
 
@@ -190,88 +192,51 @@ export const DeckViewer: React.FC<DeckViewerProps> = ({
     }
   };
 
-  const themeContainerClass =
-    theme === 'obsidian'
-      ? 'dark bg-slate-950 text-slate-100'
-      : theme === 'nordic'
-      ? 'dark bg-[#0a1120] text-slate-100'
-      : theme === 'sage'
-      ? 'bg-[#f4f7f4] text-slate-900'
-      : 'bg-[#fafaf9] text-slate-900';
-
   const cardIcon = (type: DeckCard['cardType']) => {
     switch (type) {
       case 'concept_analogy':
-        return <Lightbulb className="w-3.5 h-3.5 text-amber-500" />;
+        return <Lightbulb className="w-3.5 h-3.5 text-neutral-300" />;
       case 'critical_rules':
-        return <ShieldAlert className="w-3.5 h-3.5 text-red-500" />;
+        return <ShieldAlert className="w-3.5 h-3.5 text-neutral-300" />;
       case 'process_steps':
-        return <Layers className="w-3.5 h-3.5 text-blue-500" />;
+        return <Layers className="w-3.5 h-3.5 text-neutral-300" />;
       case 'pitfalls_troubleshooting':
-        return <Wrench className="w-3.5 h-3.5 text-amber-500" />;
+        return <Wrench className="w-3.5 h-3.5 text-neutral-300" />;
       case 'scenario_quiz':
-        return <HelpCircle className="w-3.5 h-3.5 text-purple-500" />;
+        return <HelpCircle className="w-3.5 h-3.5 text-neutral-300" />;
       case 'quick_reference':
-        return <Bookmark className="w-3.5 h-3.5 text-emerald-500" />;
+        return <Bookmark className="w-3.5 h-3.5 text-neutral-300" />;
     }
   };
 
   return (
-    <div className={`min-h-screen transition-colors duration-200 pb-28 md:pb-20 ${themeContainerClass}`}>
-      {/* Sub-header Controls Bar */}
-      <div className="sticky top-14 sm:top-16 z-30 border-b border-slate-200 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-3 sm:px-6 lg:px-8 py-2 transition-colors">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 overflow-x-auto scrollbar-none">
-          {/* Deck Title Breadcrumb */}
-          <div className="flex items-center gap-1.5 text-xs truncate shrink-0 max-w-[200px] sm:max-w-md">
-            <span className="font-semibold text-amber-600 dark:text-amber-400">
-              Training
-            </span>
-            <span className="text-slate-400">/</span>
-            <span className="truncate font-medium text-slate-800 dark:text-slate-200">
+    <div className="min-h-screen bg-black text-white font-sans antialiased pb-28 md:pb-20">
+      {/* Sub-header Controls Bar in Apple style Black */}
+      <div className="border-b border-white/[0.08] bg-black/85 backdrop-blur-xl px-4 sm:px-6 lg:px-8 py-2.5 transition-colors">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 overflow-x-auto scrollbar-none">
+          {/* Deck Outline Button & Title */}
+          <div className="flex items-center gap-2.5 text-xs truncate shrink-0 max-w-[280px] sm:max-w-md">
+            <button
+              type="button"
+              onClick={onSwitchToOutline}
+              className="min-h-[34px] flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white border border-white/10 text-xs font-medium transition-colors cursor-pointer shrink-0"
+              title="Return to Card Outline"
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span>Outline</span>
+            </button>
+            <span className="truncate font-semibold text-white">
               {deck.title}
             </span>
           </div>
 
-          {/* Right Tools: Theme & Export Actions with touch friendly targets */}
+          {/* Right Tools: Export & Present */}
           <div className="flex items-center gap-1.5 shrink-0">
-            {/* Theme selector pills */}
-            <div className="flex items-center gap-1 p-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs">
-              <button
-                onClick={() => setTheme('obsidian')}
-                className={`min-h-[36px] px-2.5 rounded transition-colors text-[11px] ${
-                  theme === 'obsidian'
-                    ? 'bg-slate-900 text-white shadow-sm font-semibold'
-                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                }`}
-              >
-                Dark
-              </button>
-              <button
-                onClick={() => setTheme('clean')}
-                className={`min-h-[36px] px-2.5 rounded transition-colors text-[11px] ${
-                  theme === 'clean'
-                    ? 'bg-white text-slate-950 shadow-sm font-semibold'
-                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                }`}
-              >
-                Light
-              </button>
-              <button
-                onClick={() => setTheme('nordic')}
-                className={`hidden sm:block min-h-[36px] px-2.5 rounded transition-colors text-[11px] ${
-                  theme === 'nordic'
-                    ? 'bg-blue-950 text-blue-200 shadow-sm font-semibold'
-                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                }`}
-              >
-                Nordic
-              </button>
-            </div>
-
             {/* Print button */}
             <button
+              type="button"
               onClick={handlePrint}
-              className="min-h-[38px] min-w-[38px] flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="min-h-[38px] min-w-[38px] flex items-center justify-center text-neutral-400 hover:text-white rounded-full hover:bg-neutral-900 border border-transparent hover:border-white/10 transition-colors cursor-pointer"
               title="Print Deck or Save to PDF"
               aria-label="Print Deck"
             >
@@ -280,46 +245,68 @@ export const DeckViewer: React.FC<DeckViewerProps> = ({
 
             {/* Copy Markdown */}
             <button
+              type="button"
               onClick={handleCopyMarkdown}
-              className="min-h-[38px] min-w-[38px] flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors relative"
+              className="min-h-[38px] min-w-[38px] flex items-center justify-center text-neutral-400 hover:text-white rounded-full hover:bg-neutral-900 border border-transparent hover:border-white/10 transition-colors relative cursor-pointer"
               title="Copy Deck as Markdown"
               aria-label="Copy Markdown"
             >
               {copiedNotification ? (
-                <Check className="w-4 h-4 text-emerald-500" />
+                <Check className="w-4 h-4 text-emerald-400" />
               ) : (
                 <Copy className="w-4 h-4" />
               )}
             </button>
 
-            {/* Slide Mode (Desktop) */}
+            {/* Download JSON */}
             <button
-              onClick={onSwitchToPresentation}
-              className="hidden md:flex min-h-[38px] items-center px-3 py-1 text-xs font-semibold text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+              type="button"
+              onClick={handleDownloadJSON}
+              className="min-h-[38px] min-w-[38px] flex items-center justify-center text-neutral-400 hover:text-white rounded-full hover:bg-neutral-900 border border-transparent hover:border-white/10 transition-colors cursor-pointer"
+              title="Download Deck JSON"
+              aria-label="Download JSON"
             >
-              Slide Mode
+              <Download className="w-4 h-4" />
+            </button>
+
+            {/* Slide Mode */}
+            <button
+              type="button"
+              onClick={onSwitchToPresentation}
+              className="hidden md:flex min-h-[38px] items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-black bg-white hover:bg-neutral-200 rounded-full transition-all cursor-pointer"
+            >
+              <Presentation className="w-3.5 h-3.5" />
+              <span>Slide Mode</span>
             </button>
           </div>
         </div>
       </div>
 
       {/* Main Content: Split layout with Sticky Card TOC & Main Cards Flow */}
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-5 sm:pt-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Sticky Left Sidebar (Desktop only) */}
           <aside className="hidden lg:block lg:col-span-3 sticky top-32 space-y-4">
-            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm">
-              <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center justify-between">
+            <div className="p-5 rounded-3xl border border-white/[0.08] bg-neutral-950/80 backdrop-blur-md">
+              <div className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-3 flex items-center justify-between">
                 <span>Card Outline</span>
-                <span className="text-[11px] font-mono">{deck.cards.length} cards</span>
+                <span className="text-[11px] font-mono text-neutral-500">{deck.cards.length} cards</span>
               </div>
 
               <div className="space-y-1 text-xs">
                 <a
-                  href="#hero-card"
-                  className="flex items-center gap-2 p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  href="#card-outline"
+                  className="flex items-center gap-2 p-2 rounded-xl text-neutral-400 hover:bg-neutral-900 hover:text-white transition-colors"
                 >
-                  <BookOpen className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                  <Layers className="w-3.5 h-3.5 text-neutral-300 shrink-0" />
+                  <span className="truncate">Card Outline</span>
+                </a>
+
+                <a
+                  href="#hero-card"
+                  className="flex items-center gap-2 p-2 rounded-xl text-neutral-400 hover:bg-neutral-900 hover:text-white transition-colors"
+                >
+                  <BookOpen className="w-3.5 h-3.5 text-neutral-300 shrink-0" />
                   <span className="truncate">Overview & Mental Model</span>
                 </a>
 
@@ -327,7 +314,7 @@ export const DeckViewer: React.FC<DeckViewerProps> = ({
                   <a
                     key={card.id}
                     href={`#${card.id}`}
-                    className="flex items-center gap-2 p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors"
+                    className="flex items-center gap-2 p-2 rounded-xl text-neutral-400 hover:bg-neutral-900 hover:text-white transition-colors"
                   >
                     <span className="shrink-0">{cardIcon(card.cardType)}</span>
                     <span className="truncate">{card.title}</span>
@@ -336,32 +323,36 @@ export const DeckViewer: React.FC<DeckViewerProps> = ({
               </div>
 
               {/* Add card */}
-              <div className="pt-3 mt-3 border-t border-slate-200 dark:border-slate-800">
-                <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                  Add Card Chunk:
+              <div className="pt-3 mt-3 border-t border-white/[0.08]">
+                <div className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider mb-2">
+                  Add Section:
                 </div>
                 <div className="grid grid-cols-2 gap-1.5 text-[11px]">
                   <button
+                    type="button"
                     onClick={() => handleAddCard('concept_analogy')}
-                    className="p-1.5 text-left rounded bg-slate-100 dark:bg-slate-800 hover:bg-amber-100 dark:hover:bg-amber-950/40 text-slate-700 dark:text-slate-300 truncate"
+                    className="p-2 text-left rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white border border-white/5 truncate cursor-pointer"
                   >
                     + Analogy
                   </button>
                   <button
+                    type="button"
                     onClick={() => handleAddCard('critical_rules')}
-                    className="p-1.5 text-left rounded bg-slate-100 dark:bg-slate-800 hover:bg-red-100 dark:hover:bg-red-950/40 text-slate-700 dark:text-slate-300 truncate"
+                    className="p-2 text-left rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white border border-white/5 truncate cursor-pointer"
                   >
                     + Red Lines
                   </button>
                   <button
+                    type="button"
                     onClick={() => handleAddCard('process_steps')}
-                    className="p-1.5 text-left rounded bg-slate-100 dark:bg-slate-800 hover:bg-blue-100 dark:hover:bg-blue-950/40 text-slate-700 dark:text-slate-300 truncate"
+                    className="p-2 text-left rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white border border-white/5 truncate cursor-pointer"
                   >
                     + Steps
                   </button>
                   <button
+                    type="button"
                     onClick={() => handleAddCard('scenario_quiz')}
-                    className="p-1.5 text-left rounded bg-slate-100 dark:bg-slate-800 hover:bg-purple-100 dark:hover:bg-purple-950/40 text-slate-700 dark:text-slate-300 truncate"
+                    className="p-2 text-left rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white border border-white/5 truncate cursor-pointer"
                   >
                     + Quiz
                   </button>
@@ -371,8 +362,18 @@ export const DeckViewer: React.FC<DeckViewerProps> = ({
           </aside>
 
           {/* Main Deck Flow Column */}
-          <main className="col-span-1 lg:col-span-9 space-y-5 sm:space-y-8">
-            {/* 1. Hero Card */}
+          <main className="col-span-1 lg:col-span-9 space-y-6 sm:space-y-8">
+            {/* 1. Card Outline — First Page of Any Training Deck */}
+            <div id="card-outline" className="scroll-mt-32">
+              <CardOutlineCard
+                deck={deck}
+                onJumpToCard={scrollToCard}
+                onAddCardChunk={handleAddCard}
+                onStartSlideMode={onSwitchToPresentation}
+              />
+            </div>
+
+            {/* 2. Overview & Mental Model (Hero Card) */}
             <div id="hero-card" className="scroll-mt-32">
               <HeroCard deck={deck} onUpdateDeck={onUpdateDeck} />
             </div>
@@ -437,29 +438,48 @@ export const DeckViewer: React.FC<DeckViewerProps> = ({
               </div>
             ))}
 
-            {/* Completion Card */}
-            <div className="p-6 sm:p-8 rounded-2xl border border-dashed border-amber-300 dark:border-amber-800/80 bg-amber-50/30 dark:bg-amber-950/10 text-center">
-              <div className="w-11 h-11 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center mx-auto mb-2 font-bold">
+            {/* Completion Card in Apple Black Style */}
+            <div className="p-8 sm:p-12 rounded-3xl border border-white/[0.08] bg-neutral-950 text-center space-y-4">
+              <div className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center mx-auto font-bold text-lg">
                 ✓
               </div>
-              <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-1">
+              <h3 className="text-xl sm:text-2xl font-bold text-white">
                 Instructional Mastery Complete
               </h3>
-              <p className="text-xs text-slate-600 dark:text-slate-400 max-w-md mx-auto mb-4">
+              <p className="text-xs sm:text-sm text-neutral-400 max-w-md mx-auto leading-relaxed">
                 You have reviewed the core Feynman mental models, non-negotiable red lines, execution steps, and active recall checks for this SOP.
               </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5">
+              <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
                 <button
-                  onClick={onSwitchToPresentation}
-                  className="w-full sm:w-auto min-h-[44px] px-4 py-2 text-xs font-semibold text-slate-950 bg-amber-400 hover:bg-amber-300 rounded-xl shadow-sm transition-colors flex items-center justify-center"
+                  type="button"
+                  onClick={() => onSwitchToView('show_me')}
+                  className="min-h-[44px] px-5 py-2.5 text-xs font-semibold text-black bg-white hover:bg-neutral-200 rounded-full shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  Review in Slide Presenter Mode
+                  <Film className="w-4 h-4" />
+                  <span>Show Me (Video)</span>
                 </button>
                 <button
-                  onClick={handlePrint}
-                  className="w-full sm:w-auto min-h-[44px] px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 transition-colors flex items-center justify-center"
+                  type="button"
+                  onClick={() => onSwitchToView('guide_me')}
+                  className="min-h-[44px] px-5 py-2.5 text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 border border-white/10 rounded-full transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  Print Pocket Study Card
+                  <HelpCircle className="w-4 h-4" />
+                  <span>Guide Me (Practice)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onSwitchToView('test_me')}
+                  className="min-h-[44px] px-5 py-2.5 text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 border border-white/10 rounded-full transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Award className="w-4 h-4" />
+                  <span>Test Me (Assessment)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handlePrint}
+                  className="min-h-[44px] px-5 py-2.5 text-xs font-semibold text-neutral-300 hover:text-white bg-neutral-900 hover:bg-neutral-800 border border-white/10 rounded-full transition-colors flex items-center justify-center cursor-pointer"
+                >
+                  Print Study Guide
                 </button>
               </div>
             </div>

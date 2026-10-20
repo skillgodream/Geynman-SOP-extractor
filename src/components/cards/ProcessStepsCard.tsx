@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Layers, ArrowRight, AlertTriangle, CheckCircle, HelpCircle } from 'lucide-react';
+import { Layers, HelpCircle, AlertTriangle } from 'lucide-react';
 import { DeckCard, ProcessStep, CardImage } from '../../types/deck';
 import { CardToolbar } from '../CardToolbar';
 import { CardVisual } from '../visuals/CardVisual';
@@ -47,9 +47,9 @@ export const ProcessStepsCard: React.FC<ProcessStepsCardProps> = ({
   const activeStep = steps[activeStepIndex] || steps[0];
 
   return (
-    <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-6 sm:p-10 transition-colors">
-      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-3">
-        <Layers className="w-4 h-4" />
+    <div className="rounded-3xl border border-white/[0.08] bg-neutral-950 shadow-2xl p-6 sm:p-10 transition-colors">
+      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">
+        <Layers className="w-3.5 h-3.5 text-neutral-300" />
         <span>{card.badgeText || 'Chunked Workflow Steps'}</span>
       </div>
 
@@ -59,61 +59,62 @@ export const ProcessStepsCard: React.FC<ProcessStepsCardProps> = ({
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full text-xl font-bold bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-slate-900 dark:text-white"
+            className="w-full text-xl font-bold bg-neutral-900 border border-white/10 rounded-xl p-2.5 text-white"
           />
           <input
             type="text"
             value={subtitle}
             onChange={(e) => setSubtitle(e.target.value)}
-            className="w-full text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-slate-600 dark:text-slate-400"
+            className="w-full text-xs bg-neutral-900 border border-white/10 rounded-xl p-2 text-neutral-400"
           />
           <textarea
             value={explanation}
             onChange={(e) => setExplanation(e.target.value)}
             rows={2}
-            className="w-full text-sm bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-slate-700 dark:text-slate-300"
+            className="w-full text-sm bg-neutral-900 border border-white/10 rounded-xl p-2 text-neutral-200"
           />
           <button
+            type="button"
             onClick={handleSave}
-            className="px-3.5 py-1.5 text-xs font-semibold bg-amber-400 text-slate-950 rounded-lg shadow-sm"
+            className="px-4 py-2 text-xs font-semibold bg-white text-black rounded-full shadow-sm hover:bg-neutral-200 cursor-pointer"
           >
             Save Card Changes
           </button>
         </div>
       ) : (
         <div className="mb-6">
-          <h2 className="text-xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-1.5">
+          <h2 className="text-xl sm:text-3xl font-bold tracking-tight text-white mb-1.5">
             {card.title}
           </h2>
           {card.subtitle && (
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-2">
+            <p className="text-xs sm:text-sm text-neutral-400 mb-2">
               {card.subtitle}
             </p>
           )}
-          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-3xl">
+          <p className="text-sm sm:text-base text-neutral-300 leading-relaxed max-w-3xl font-normal">
             {card.feynmanExplanation}
           </p>
         </div>
       )}
 
-      {/* Step Navigator Bar (Interactive Segmented Timeline) */}
-      <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl mb-6 overflow-x-auto scrollbar-none">
+      {/* Step Selector Pills in Apple Segmented Style */}
+      <div className="flex items-center gap-1.5 p-1 bg-neutral-900/90 border border-white/[0.08] rounded-full mb-6 overflow-x-auto scrollbar-none">
         {steps.map((st, idx) => (
           <button
             key={idx}
             type="button"
             onClick={() => setActiveStepIndex(idx)}
-            className={`min-h-[44px] flex-1 min-w-[120px] py-2 px-3 text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-2 whitespace-nowrap ${
+            className={`min-h-[40px] flex-1 min-w-[120px] py-1.5 px-3 text-xs font-medium rounded-full transition-all flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer ${
               activeStepIndex === idx
-                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm font-semibold'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-white text-black font-semibold shadow-sm'
+                : 'text-neutral-400 hover:text-white'
             }`}
           >
             <span
               className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
                 activeStepIndex === idx
-                  ? 'bg-amber-400 text-slate-950'
-                  : 'bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-300'
+                  ? 'bg-neutral-200 text-black'
+                  : 'bg-neutral-800 text-neutral-400'
               }`}
             >
               {st.stepNumber || idx + 1}
@@ -128,34 +129,34 @@ export const ProcessStepsCard: React.FC<ProcessStepsCardProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center mb-6">
           {/* Left Column: Step Instruction & Underlying Feynman Physics (7 cols) */}
           <div className="lg:col-span-7 space-y-4">
-            <div className="flex items-center gap-2 text-xs font-bold text-amber-600 dark:text-amber-400">
-              <span>STEP {activeStep.stepNumber || activeStepIndex + 1} OF {steps.length}</span>
-              <span aria-hidden="true">·</span>
-              <span className="text-slate-700 dark:text-slate-300">{activeStep.title}</span>
+            <div className="flex items-center gap-2 text-xs font-bold text-neutral-400">
+              <span className="text-white">STEP {activeStep.stepNumber || activeStepIndex + 1} OF {steps.length}</span>
+              <span aria-hidden="true" className="text-neutral-600">·</span>
+              <span className="text-neutral-300">{activeStep.title}</span>
             </div>
 
-            <div className="font-bold text-slate-900 dark:text-white text-base sm:text-xl leading-snug">
+            <div className="font-bold text-white text-base sm:text-xl leading-snug">
               {activeStep.action}
             </div>
 
-            <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 space-y-3">
+            <div className="pt-3 border-t border-white/[0.08] space-y-3">
               <div className="space-y-1">
-                <div className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <HelpCircle className="w-3.5 h-3.5" />
-                  <span>Why This Step Matters (The Logic)</span>
+                <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <HelpCircle className="w-3.5 h-3.5 text-neutral-400" />
+                  <span>Operational Rationale</span>
                 </div>
-                <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed pl-2 border-l-2 border-blue-400">
+                <p className="text-xs sm:text-sm text-neutral-200 leading-relaxed pl-3 border-l-2 border-white/30 font-normal">
                   {activeStep.whyItMatters}
                 </p>
               </div>
 
               {activeStep.criticalWatchout && (
                 <div className="space-y-1">
-                  <div className="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <AlertTriangle className="w-3.5 h-3.5" />
-                    <span>Critical Watchout</span>
+                  <div className="text-[11px] font-bold text-red-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
+                    <span>Watchout</span>
                   </div>
-                  <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed pl-2 border-l-2 border-amber-400">
+                  <p className="text-xs sm:text-sm text-red-300 leading-relaxed pl-3 border-l-2 border-red-500/50 font-normal">
                     {activeStep.criticalWatchout}
                   </p>
                 </div>
@@ -163,21 +164,23 @@ export const ProcessStepsCard: React.FC<ProcessStepsCardProps> = ({
             </div>
 
             {/* Pagination Controls */}
-            <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800/80 text-xs">
+            <div className="flex items-center justify-between pt-4 border-t border-white/[0.08] text-xs">
               <button
+                type="button"
                 onClick={() => setActiveStepIndex((prev) => Math.max(0, prev - 1))}
                 disabled={activeStepIndex === 0}
-                className="min-h-[44px] px-3 py-2 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 disabled:opacity-30 disabled:hover:text-slate-500 font-medium transition-colors flex items-center"
+                className="min-h-[40px] px-3 py-1.5 text-neutral-400 hover:text-white disabled:opacity-30 font-medium transition-colors cursor-pointer"
               >
                 ← Previous Step
               </button>
-              <div className="text-slate-400 font-mono text-[11px]">
+              <div className="text-neutral-500 font-mono text-[11px]">
                 {activeStepIndex + 1} / {steps.length}
               </div>
               <button
+                type="button"
                 onClick={() => setActiveStepIndex((prev) => Math.min(steps.length - 1, prev + 1))}
                 disabled={activeStepIndex === steps.length - 1}
-                className="min-h-[44px] px-3 py-2 text-amber-600 dark:text-amber-400 font-semibold hover:underline disabled:opacity-30 disabled:no-underline transition-colors flex items-center"
+                className="min-h-[40px] px-3 py-1.5 text-white font-medium hover:underline disabled:opacity-30 disabled:no-underline transition-colors cursor-pointer"
               >
                 Next Step →
               </button>

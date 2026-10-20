@@ -50,7 +50,7 @@ export const ScenarioQuizCard: React.FC<ScenarioQuizCardProps> = ({
           origin: { y: 0.7 },
         });
       } catch (e) {
-        // Fallback safely if canvas not available
+        // Fallback safely
       }
     }
   };
@@ -80,10 +80,10 @@ export const ScenarioQuizCard: React.FC<ScenarioQuizCardProps> = ({
   const isCorrect = selectedOption === quiz.correctAnswerIndex;
 
   return (
-    <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-6 sm:p-10 transition-colors">
-      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400 mb-3">
-        <HelpCircle className="w-4 h-4" />
-        <span>{card.badgeText || 'Active Recall: Shift Dilemma'}</span>
+    <div className="rounded-3xl border border-white/[0.08] bg-neutral-950 shadow-2xl p-6 sm:p-10 transition-colors">
+      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">
+        <HelpCircle className="w-3.5 h-3.5 text-neutral-300" />
+        <span>{card.badgeText || 'Active Recall Dilemma'}</span>
       </div>
 
       {isEditing ? (
@@ -92,63 +92,37 @@ export const ScenarioQuizCard: React.FC<ScenarioQuizCardProps> = ({
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full text-xl font-bold bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-slate-900 dark:text-white"
+            className="w-full text-xl font-bold bg-neutral-900 border border-white/10 rounded-xl p-2.5 text-white"
           />
           <textarea
             value={quiz.scenario}
             onChange={(e) => setQuiz({ ...quiz, scenario: e.target.value })}
-            placeholder="Scenario description"
-            rows={3}
-            className="w-full text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2"
+            placeholder="Dilemma Scenario"
+            rows={2}
+            className="w-full text-xs bg-neutral-900 border border-white/10 rounded-xl p-2 text-neutral-200"
           />
           <input
             type="text"
             value={quiz.question}
             onChange={(e) => setQuiz({ ...quiz, question: e.target.value })}
             placeholder="Question"
-            className="w-full text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2"
-          />
-          {quiz.options.map((opt, i) => (
-            <div key={i} className="flex gap-2 items-center text-xs">
-              <input
-                type="radio"
-                name="correctOpt"
-                checked={quiz.correctAnswerIndex === i}
-                onChange={() => setQuiz({ ...quiz, correctAnswerIndex: i })}
-              />
-              <input
-                type="text"
-                value={opt}
-                onChange={(e) => {
-                  const opts = [...quiz.options];
-                  opts[i] = e.target.value;
-                  setQuiz({ ...quiz, options: opts });
-                }}
-                className="flex-1 bg-white dark:bg-slate-800 border p-1 rounded"
-              />
-            </div>
-          ))}
-          <textarea
-            value={quiz.feynmanFeedback}
-            onChange={(e) => setQuiz({ ...quiz, feynmanFeedback: e.target.value })}
-            placeholder="Feedback explanation"
-            rows={2}
-            className="w-full text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2"
+            className="w-full text-xs bg-neutral-900 border border-white/10 rounded-xl p-2 text-neutral-200"
           />
           <button
+            type="button"
             onClick={handleSave}
-            className="px-3.5 py-1.5 text-xs font-semibold bg-amber-400 text-slate-950 rounded-lg shadow-sm"
+            className="px-4 py-2 text-xs font-semibold bg-white text-black rounded-full shadow-sm hover:bg-neutral-200 cursor-pointer"
           >
             Save Card Changes
           </button>
         </div>
       ) : (
         <div className="mb-6">
-          <h2 className="text-xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-1.5">
+          <h2 className="text-xl sm:text-3xl font-bold tracking-tight text-white mb-1.5">
             {card.title}
           </h2>
           {card.subtitle && (
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-4">
+            <p className="text-xs sm:text-sm text-neutral-400 mb-4">
               {card.subtitle}
             </p>
           )}
@@ -157,18 +131,18 @@ export const ScenarioQuizCard: React.FC<ScenarioQuizCardProps> = ({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-4">
             {/* Left Column: The Scenario & Options (7 cols) - Clean Editorial, NO cards in cards */}
             <div className="lg:col-span-7 space-y-4">
-              {/* Scenario setup (clean left accent rule, no nested boxed card) */}
-              <div className="border-l-2 border-purple-500 pl-4 space-y-1">
-                <div className="text-[11px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider">
-                  The Workplace Dilemma:
+              {/* Scenario setup */}
+              <div className="border-l-2 border-white/30 pl-3.5 space-y-1">
+                <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">
+                  The Field Scenario:
                 </div>
-                <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-normal">
+                <p className="text-xs sm:text-sm text-neutral-200 leading-relaxed font-normal">
                   {quiz.scenario}
                 </p>
               </div>
 
               {/* The Question */}
-              <div className="font-bold text-slate-900 dark:text-white text-sm sm:text-base pt-1">
+              <div className="font-bold text-white text-sm sm:text-base pt-1">
                 {quiz.question}
               </div>
 
@@ -179,17 +153,17 @@ export const ScenarioQuizCard: React.FC<ScenarioQuizCardProps> = ({
                   const isTargetCorrect = quiz.correctAnswerIndex === idx;
 
                   let btnStyle =
-                    'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/80 hover:border-slate-400 dark:hover:border-slate-600 text-slate-800 dark:text-slate-200';
+                    'border-white/[0.08] bg-neutral-900/60 hover:border-white/20 text-neutral-200';
 
                   if (hasAnswered) {
                     if (isTargetCorrect) {
                       btnStyle =
-                        'border-emerald-500 bg-emerald-50/80 dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-100 font-semibold ring-1 ring-emerald-500';
+                        'border-emerald-500 bg-emerald-950/40 text-emerald-100 font-semibold ring-1 ring-emerald-500';
                     } else if (isSelected && !isTargetCorrect) {
                       btnStyle =
-                        'border-red-400 bg-red-50/80 dark:bg-red-950/40 text-red-950 dark:text-red-100 line-through opacity-80';
+                        'border-red-500/80 bg-red-950/40 text-red-200 line-through opacity-80';
                     } else {
-                      btnStyle = 'border-slate-200 dark:border-slate-800 opacity-50';
+                      btnStyle = 'border-white/5 opacity-40';
                     }
                   }
 
@@ -199,7 +173,7 @@ export const ScenarioQuizCard: React.FC<ScenarioQuizCardProps> = ({
                       type="button"
                       onClick={() => handleSelectOption(idx)}
                       disabled={hasAnswered}
-                      className={`w-full min-h-[48px] text-left p-3.5 rounded-xl border text-xs sm:text-sm transition-all flex items-start gap-3 active:scale-[0.99] ${btnStyle}`}
+                      className={`w-full min-h-[48px] text-left p-3.5 rounded-xl border text-xs sm:text-sm transition-all flex items-start gap-3 active:scale-[0.99] cursor-pointer ${btnStyle}`}
                     >
                       <div
                         className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold ${
@@ -207,7 +181,7 @@ export const ScenarioQuizCard: React.FC<ScenarioQuizCardProps> = ({
                             ? 'border-emerald-500 bg-emerald-500 text-white'
                             : hasAnswered && isSelected && !isTargetCorrect
                             ? 'border-red-500 bg-red-500 text-white'
-                            : 'border-slate-300 dark:border-slate-600 text-slate-500'
+                            : 'border-neutral-700 text-neutral-400'
                         }`}
                       >
                         {hasAnswered && isTargetCorrect ? (
@@ -226,40 +200,37 @@ export const ScenarioQuizCard: React.FC<ScenarioQuizCardProps> = ({
 
               {/* Feedback Section once answered */}
               {hasAnswered && (
-                <div
-                  className={`pt-3 border-t border-slate-100 dark:border-slate-800/80 animate-fadeIn`}
-                >
-                  <div className="flex items-center justify-between mb-1.5">
+                <div className="pt-3 border-t border-white/[0.08] animate-fadeIn space-y-2">
+                  <div className="flex items-center justify-between">
                     <div
                       className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wider ${
-                        isCorrect
-                          ? 'text-emerald-700 dark:text-emerald-400'
-                          : 'text-amber-700 dark:text-amber-400'
+                        isCorrect ? 'text-emerald-400' : 'text-neutral-300'
                       }`}
                     >
                       {isCorrect ? (
                         <>
-                          <Sparkles className="w-4 h-4 text-emerald-500" />
-                          <span>Feynman Principle Verified!</span>
+                          <Sparkles className="w-4 h-4 text-emerald-400" />
+                          <span>Feynman Principle Verified</span>
                         </>
                       ) : (
                         <>
-                          <HelpCircle className="w-4 h-4 text-amber-500" />
-                          <span>Field Misconception Detected</span>
+                          <HelpCircle className="w-4 h-4 text-neutral-400" />
+                          <span>SOP Standard Clarification</span>
                         </>
                       )}
                     </div>
 
                     <button
+                      type="button"
                       onClick={handleReset}
-                      className="min-h-[36px] flex items-center gap-1 text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 underline font-medium"
+                      className="min-h-[36px] flex items-center gap-1 text-xs text-neutral-400 hover:text-white underline font-medium cursor-pointer"
                     >
                       <RotateCcw className="w-3 h-3" />
                       <span>Try Again</span>
                     </button>
                   </div>
 
-                  <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-normal">
+                  <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed font-normal">
                     {quiz.feynmanFeedback}
                   </p>
                 </div>

@@ -19,6 +19,7 @@ import { CardVisual } from './visuals/CardVisual';
 
 interface PresentationModeProps {
   deck: FeynmanDeck;
+  initialSlideIndex?: number;
   onExit: () => void;
   onUpdateCard: (card: DeckCard) => void;
   onDeleteCard: (cardId: string) => void;
@@ -27,15 +28,16 @@ interface PresentationModeProps {
 
 export const PresentationMode: React.FC<PresentationModeProps> = ({
   deck,
+  initialSlideIndex = 0,
   onExit,
   onUpdateCard,
   onDeleteCard,
   onOpenTutor,
 }) => {
-  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(initialSlideIndex);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const totalSlides = deck.cards.length + 1; // Slide 0 is Hero/Cover
+  const totalSlides = deck.cards.length + 1; // Slide 0 is Overview/Hero, Slides 1..N are Deck Cards
 
   // Keyboard navigation
   useEffect(() => {
@@ -67,75 +69,65 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({
     }
   };
 
-  const currentCard = currentSlideIndex > 0 ? deck.cards[currentSlideIndex - 1] : null;
+  const currentCard = currentSlideIndex >= 1 ? deck.cards[currentSlideIndex - 1] : null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950 text-white flex flex-col select-none overflow-hidden">
-      {/* Top control bar (Compact 52px) */}
-      <div className="h-13 sm:h-14 px-4 sm:px-6 flex items-center justify-between border-b border-slate-800 bg-slate-900/90 backdrop-blur-md">
+    <div className="fixed inset-0 z-50 bg-black text-white flex flex-col select-none overflow-hidden font-sans">
+      {/* Top control bar */}
+      <div className="h-14 px-4 sm:px-6 flex items-center justify-between border-b border-white/[0.08] bg-black/80 backdrop-blur-xl">
         <div className="flex items-center gap-2 truncate">
-          <span className="font-bold text-xs sm:text-sm tracking-tight text-amber-400 truncate max-w-[150px] sm:max-w-xs">
+          <span className="font-semibold text-xs sm:text-sm tracking-tight text-white truncate max-w-[150px] sm:max-w-xs">
             {deck.title}
           </span>
-          <span className="text-slate-500">·</span>
-          <span className="text-[11px] sm:text-xs text-slate-400 font-mono">
+          <span className="text-neutral-600">·</span>
+          <span className="text-[11px] sm:text-xs text-neutral-400 font-mono">
             {currentSlideIndex + 1}/{totalSlides}
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           <button
+            type="button"
             onClick={toggleFullscreen}
-            className="min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-400 hover:text-white rounded-lg transition-colors"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center text-neutral-400 hover:text-white rounded-full transition-colors cursor-pointer"
             title="Toggle fullscreen"
             aria-label="Fullscreen"
           >
             {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
           </button>
           <button
+            type="button"
             onClick={onExit}
-            className="min-h-[44px] flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
+            className="min-h-[44px] flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 border border-white/10 rounded-full transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
-            <span className="hidden sm:inline">Exit</span>
+            <span className="hidden sm:inline">Exit Slides</span>
           </button>
         </div>
       </div>
 
-      {/* Main Slide Stage (Responsive touch scroll) */}
-      <div className="flex-1 flex items-center justify-center p-3 sm:p-8 md:p-12 overflow-y-auto">
+      {/* Main Slide Stage */}
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-8 md:p-12 overflow-y-auto">
         <div className="w-full max-w-4xl max-h-[82vh] transition-all">
           {currentSlideIndex === 0 ? (
-            /* Cover Slide: Ultra-Premium 2-Column Split (No cards-in-cards) */
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-orange-400 to-amber-300" />
+            /* Slide 0: Cover / Overview Slide in Apple Black Theme */
+            <div className="bg-neutral-950 border border-white/[0.08] rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden">
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                 <div className="lg:col-span-7 space-y-4">
-                  <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-amber-400 uppercase tracking-wider">
-                    <span>{deck.originalDocType}</span>
-                    <span>·</span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5" />
-                      {deck.estimatedMinutes} min
-                    </span>
-                    <span>·</span>
-                    <span>{deck.targetAudience}</span>
-                  </div>
-
-                  <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white leading-tight">
+                  <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white leading-tight">
                     {deck.title}
                   </h1>
 
-                  <p className="text-xs sm:text-base text-slate-300 leading-relaxed max-w-2xl">
+                  <p className="text-xs sm:text-base text-neutral-300 leading-relaxed max-w-2xl font-normal">
                     {deck.summary}
                   </p>
 
-                  <div className="pt-3 border-t border-slate-800 space-y-1.5">
-                    <div className="text-[11px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-                      <Lightbulb className="w-4 h-4 text-amber-400" />
+                  <div className="pt-3 border-t border-white/[0.08] space-y-1.5">
+                    <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <Lightbulb className="w-4 h-4 text-neutral-300" />
                       <span>{deck.feynmanCoreConcept.centralAnalogy.title}</span>
                     </div>
-                    <blockquote className="text-xs sm:text-sm text-slate-300 leading-relaxed italic border-l-2 border-amber-400 pl-3">
+                    <blockquote className="text-xs sm:text-sm text-neutral-200 leading-relaxed italic border-l-2 border-white/30 pl-3">
                       "{deck.feynmanCoreConcept.centralAnalogy.analogyText}"
                     </blockquote>
                   </div>
@@ -223,28 +215,30 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({
         </div>
       </div>
 
-      {/* Bottom control bar with 48px touch targets */}
-      <div className="h-16 px-4 sm:px-6 flex items-center justify-between border-t border-slate-800 bg-slate-900/90 backdrop-blur-md pb-safe">
+      {/* Bottom control bar */}
+      <div className="h-16 px-4 sm:px-6 flex items-center justify-between border-t border-white/[0.08] bg-black/80 backdrop-blur-xl pb-safe">
         <button
+          type="button"
           onClick={() => setCurrentSlideIndex((prev) => Math.max(0, prev - 1))}
           disabled={currentSlideIndex === 0}
-          className="min-h-[44px] min-w-[44px] flex items-center justify-center gap-1.5 px-3 sm:px-4 text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 disabled:opacity-30 rounded-xl transition-colors active:scale-95"
+          className="min-h-[44px] min-w-[44px] flex items-center justify-center gap-1.5 px-4 text-xs font-semibold text-neutral-300 hover:text-white bg-neutral-900 hover:bg-neutral-800 disabled:opacity-30 rounded-full border border-white/10 transition-colors active:scale-95 cursor-pointer"
           aria-label="Previous Slide"
         >
-          <ChevronLeft className="w-5 h-5" />
+          <ChevronLeft className="w-4 h-4" />
           <span className="hidden sm:inline">Previous</span>
         </button>
 
-        {/* Slide Dots / Thumbnails */}
-        <div className="flex items-center gap-1 overflow-x-auto max-w-[180px] sm:max-w-md px-2 scrollbar-none">
+        {/* Slide Dots */}
+        <div className="flex items-center gap-1.5 overflow-x-auto max-w-[180px] sm:max-w-md px-2 scrollbar-none">
           {Array.from({ length: totalSlides }).map((_, idx) => (
             <button
               key={idx}
+              type="button"
               onClick={() => setCurrentSlideIndex(idx)}
-              className={`h-2.5 rounded-full transition-all ${
+              className={`h-2 rounded-full transition-all cursor-pointer ${
                 currentSlideIndex === idx
-                  ? 'w-6 sm:w-7 bg-amber-400'
-                  : 'w-2.5 bg-slate-700 hover:bg-slate-500'
+                  ? 'w-6 bg-white'
+                  : 'w-2 bg-neutral-800 hover:bg-neutral-600'
               }`}
               title={`Jump to slide ${idx + 1}`}
               aria-label={`Slide ${idx + 1}`}
@@ -253,13 +247,14 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({
         </div>
 
         <button
+          type="button"
           onClick={() => setCurrentSlideIndex((prev) => Math.min(totalSlides - 1, prev + 1))}
           disabled={currentSlideIndex === totalSlides - 1}
-          className="min-h-[44px] min-w-[44px] flex items-center justify-center gap-1.5 px-3 sm:px-4 text-xs font-semibold text-slate-950 bg-amber-400 hover:bg-amber-300 disabled:opacity-30 rounded-xl transition-colors active:scale-95"
+          className="min-h-[44px] min-w-[44px] flex items-center justify-center gap-1.5 px-5 text-xs font-semibold text-black bg-white hover:bg-neutral-200 disabled:opacity-30 rounded-full transition-colors active:scale-95 cursor-pointer shadow-md"
           aria-label="Next Slide"
         >
           <span className="hidden sm:inline">Next</span>
-          <ChevronRight className="w-5 h-5 font-bold" />
+          <ChevronRight className="w-4 h-4 font-bold" />
         </button>
       </div>
     </div>

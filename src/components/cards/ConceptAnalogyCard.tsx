@@ -55,10 +55,10 @@ export const ConceptAnalogyCard: React.FC<ConceptAnalogyCardProps> = ({
       : 'flowchart';
 
   return (
-    <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-6 sm:p-10 transition-colors">
+    <div className="rounded-3xl border border-white/[0.08] bg-neutral-950 shadow-2xl p-6 sm:p-10 transition-colors">
       {/* Category header */}
-      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400 mb-3">
-        <Lightbulb className="w-4 h-4" />
+      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">
+        <Lightbulb className="w-3.5 h-3.5 text-neutral-300" />
         <span>{card.badgeText || 'Intuition & Mental Model'}</span>
       </div>
 
@@ -68,19 +68,19 @@ export const ConceptAnalogyCard: React.FC<ConceptAnalogyCardProps> = ({
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full text-xl font-bold bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-slate-900 dark:text-white"
+            className="w-full text-xl font-bold bg-neutral-900 border border-white/10 rounded-xl p-2.5 text-white"
           />
           <input
             type="text"
             value={subtitle}
             onChange={(e) => setSubtitle(e.target.value)}
-            className="w-full text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-slate-600 dark:text-slate-400"
+            className="w-full text-xs bg-neutral-900 border border-white/10 rounded-xl p-2 text-neutral-400"
           />
           <textarea
             value={explanation}
             onChange={(e) => setExplanation(e.target.value)}
             rows={3}
-            className="w-full text-sm bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-slate-700 dark:text-slate-300"
+            className="w-full text-sm bg-neutral-900 border border-white/10 rounded-xl p-2 text-neutral-200"
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <input
@@ -88,19 +88,20 @@ export const ConceptAnalogyCard: React.FC<ConceptAnalogyCardProps> = ({
               value={metaphor}
               placeholder="Metaphor"
               onChange={(e) => setMetaphor(e.target.value)}
-              className="w-full text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2"
+              className="w-full text-xs bg-neutral-900 border border-white/10 rounded-xl p-2 text-neutral-200"
             />
             <input
               type="text"
               value={takeaway}
               placeholder="Takeaway"
               onChange={(e) => setTakeaway(e.target.value)}
-              className="w-full text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2"
+              className="w-full text-xs bg-neutral-900 border border-white/10 rounded-xl p-2 text-neutral-200"
             />
           </div>
           <button
+            type="button"
             onClick={handleSave}
-            className="px-3.5 py-1.5 text-xs font-semibold bg-amber-400 text-slate-950 rounded-lg shadow-sm"
+            className="px-4 py-2 text-xs font-semibold bg-white text-black rounded-full shadow-sm hover:bg-neutral-200 cursor-pointer"
           >
             Save Card Changes
           </button>
@@ -121,39 +122,39 @@ export const ConceptAnalogyCard: React.FC<ConceptAnalogyCardProps> = ({
           {/* Text Content Column (7 cols) - Clean Editorial, NO cards in cards */}
           <div className="lg:col-span-7 space-y-4 order-1 lg:order-2">
             <div>
-              <h2 className="text-xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-1.5">
+              <h2 className="text-xl sm:text-3xl font-bold tracking-tight text-white mb-1.5">
                 {card.title}
               </h2>
               {card.subtitle && (
-                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+                <p className="text-xs sm:text-sm text-neutral-400">
                   {card.subtitle}
                 </p>
               )}
             </div>
 
-            <p className="text-sm sm:text-base text-slate-700 dark:text-slate-300 leading-relaxed">
+            <p className="text-sm sm:text-base text-neutral-300 leading-relaxed font-normal">
               {card.feynmanExplanation}
             </p>
 
             {/* Metaphor & Takeaway (Pure Typography & Hairlines, NO nested boxes) */}
             {card.analogy && (
-              <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 space-y-3">
+              <div className="pt-3 border-t border-white/[0.08] space-y-3">
                 <div className="space-y-1">
-                  <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <BookOpen className="w-3.5 h-3.5 text-blue-500" />
+                  <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <BookOpen className="w-3.5 h-3.5 text-neutral-400" />
                     <span>Everyday Metaphor</span>
                   </div>
-                  <blockquote className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 italic border-l-2 border-blue-400 pl-3 leading-relaxed">
+                  <blockquote className="text-xs sm:text-sm text-neutral-200 italic border-l-2 border-white/30 pl-3 leading-relaxed">
                     "{card.analogy.metaphor}"
                   </blockquote>
                 </div>
 
                 <div className="space-y-1">
-                  <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <ArrowRight className="w-3.5 h-3.5 text-amber-500" />
+                  <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <ArrowRight className="w-3.5 h-3.5 text-neutral-400" />
                     <span>Operational Takeaway</span>
                   </div>
-                  <p className="text-xs sm:text-sm text-slate-900 dark:text-slate-100 font-medium pl-3">
+                  <p className="text-xs sm:text-sm text-white font-medium pl-3">
                     {card.analogy.takeaway}
                   </p>
                 </div>

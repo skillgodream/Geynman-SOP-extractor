@@ -1,10 +1,11 @@
 import React from 'react';
-import { Layers, List, Presentation, Sparkles, Plus } from 'lucide-react';
+import { Layers, Film, HelpCircle, Award, Compass } from 'lucide-react';
+import { AppViewMode } from '../types/deck';
 
 interface MobileBottomNavProps {
-  activeView: 'flow' | 'presentation';
-  onViewChange: (view: 'flow' | 'presentation') => void;
-  onOpenOutline: () => void;
+  activeView: AppViewMode;
+  onViewChange: (view: AppViewMode) => void;
+  onOpenExplore: () => void;
   onOpenTutor: () => void;
   onOpenNewModal: () => void;
 }
@@ -12,75 +13,80 @@ interface MobileBottomNavProps {
 export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   activeView,
   onViewChange,
-  onOpenOutline,
-  onOpenTutor,
-  onOpenNewModal,
+  onOpenExplore,
 }) => {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 md:hidden px-2 pb-safe">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-black/95 backdrop-blur-xl border-t border-white/[0.08] lg:hidden px-2 pb-safe">
       <div className="grid grid-cols-5 items-center h-16">
-        {/* Tab 1: Cards Flow */}
+        {/* Tab 1: Flow */}
         <button
           type="button"
           onClick={() => onViewChange('flow')}
-          className={`min-h-[48px] flex flex-col items-center justify-center transition-colors ${
+          className={`min-h-[48px] flex flex-col items-center justify-center transition-colors cursor-pointer ${
             activeView === 'flow'
-              ? 'text-amber-600 dark:text-amber-400 font-semibold'
-              : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              ? 'text-white font-semibold'
+              : 'text-neutral-500 hover:text-white'
           }`}
           aria-label="Deck Flow"
         >
           <Layers className="w-5 h-5" />
-          <span className="text-[10px] font-medium tracking-tight mt-1">Flow</span>
+          <span className="text-[10px] tracking-tight mt-0.5">Flow</span>
         </button>
 
-        {/* Tab 2: Outline Jump Sheet */}
+        {/* Tab 2: Show Me */}
         <button
           type="button"
-          onClick={onOpenOutline}
-          className="min-h-[48px] flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
-          aria-label="Card Outline"
-        >
-          <List className="w-5 h-5" />
-          <span className="text-[10px] font-medium tracking-tight mt-1">Outline</span>
-        </button>
-
-        {/* Tab 3: Center Primary Action (+ Convert) */}
-        <div className="flex items-center justify-center">
-          <button
-            type="button"
-            onClick={onOpenNewModal}
-            className="w-11 h-11 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 flex items-center justify-center shadow-md active:scale-95 transition-transform"
-            aria-label="Convert New SOP"
-          >
-            <Plus className="w-5 h-5 font-bold" />
-          </button>
-        </div>
-
-        {/* Tab 4: Slide Present Mode */}
-        <button
-          type="button"
-          onClick={() => onViewChange('presentation')}
-          className={`min-h-[48px] flex flex-col items-center justify-center transition-colors ${
-            activeView === 'presentation'
-              ? 'text-amber-600 dark:text-amber-400 font-semibold'
-              : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+          onClick={() => onViewChange('show_me')}
+          className={`min-h-[48px] flex flex-col items-center justify-center transition-colors cursor-pointer ${
+            activeView === 'show_me'
+              ? 'text-white font-semibold'
+              : 'text-neutral-500 hover:text-white'
           }`}
-          aria-label="Slide Presenter"
+          aria-label="Show Me Video"
         >
-          <Presentation className="w-5 h-5" />
-          <span className="text-[10px] font-medium tracking-tight mt-1">Present</span>
+          <Film className={`w-5 h-5 ${activeView === 'show_me' ? 'text-sky-300' : 'text-sky-300/70'}`} />
+          <span className="text-[10px] tracking-tight mt-0.5">Show Me</span>
         </button>
 
-        {/* Tab 5: Feynman Tutor Drawer */}
+        {/* Tab 3: Guide Me */}
         <button
           type="button"
-          onClick={onOpenTutor}
-          className="min-h-[48px] flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
-          aria-label="Feynman Tutor"
+          onClick={() => onViewChange('guide_me')}
+          className={`min-h-[48px] flex flex-col items-center justify-center transition-colors cursor-pointer ${
+            activeView === 'guide_me'
+              ? 'text-white font-semibold'
+              : 'text-neutral-500 hover:text-white'
+          }`}
+          aria-label="Guide Me Practice"
         >
-          <Sparkles className="w-5 h-5 text-amber-500" />
-          <span className="text-[10px] font-medium tracking-tight mt-1">Tutor</span>
+          <HelpCircle className={`w-5 h-5 ${activeView === 'guide_me' ? 'text-amber-300' : 'text-amber-300/70'}`} />
+          <span className="text-[10px] tracking-tight mt-0.5">Guide Me</span>
+        </button>
+
+        {/* Tab 4: Test Me */}
+        <button
+          type="button"
+          onClick={() => onViewChange('test_me')}
+          className={`min-h-[48px] flex flex-col items-center justify-center transition-colors cursor-pointer ${
+            activeView === 'test_me'
+              ? 'text-white font-semibold'
+              : 'text-neutral-500 hover:text-white'
+          }`}
+          aria-label="Test Me Assessment"
+        >
+          <Award className={`w-5 h-5 ${activeView === 'test_me' ? 'text-emerald-300' : 'text-emerald-300/70'}`} />
+          <span className="text-[10px] tracking-tight mt-0.5">Test Me</span>
+        </button>
+
+        {/* Tab 5: Outline / Switch Deck */}
+        <button
+          type="button"
+          onClick={onOpenExplore}
+          className="min-h-[48px] flex flex-col items-center justify-center text-neutral-500 hover:text-white transition-colors cursor-pointer"
+          aria-label="Return to Card Outline"
+        >
+          <Compass className="w-5 h-5" />
+          <span className="text-[10px] tracking-tight mt-0.5">Outline</span>
         </button>
       </div>
     </nav>

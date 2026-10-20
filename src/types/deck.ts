@@ -69,6 +69,48 @@ export interface DeckCard {
   referenceItems?: ReferenceItem[];
 }
 
+export interface VideoScene {
+  id: string;
+  sceneNumber: number;
+  title: string;
+  phaseLabel: string;
+  durationSeconds: number;
+  narrationScript: string;
+  visualPrompt: string;
+  diagramType?: CardImage['diagramType'];
+  imageUrl?: string;
+  keyAction: string;
+  criticalWatchout?: string;
+}
+
+export interface GuideScenarioOption {
+  id: string;
+  text: string;
+  isCorrect: boolean;
+  explanation: string;
+  consequenceIfChosen: string;
+}
+
+export interface GuideScenario {
+  id: string;
+  title: string;
+  context: string;
+  situation: string;
+  question: string;
+  options: GuideScenarioOption[];
+  feynmanRuleLearned: string;
+  diagramType?: CardImage['diagramType'];
+}
+
+export interface AssessmentQuestion {
+  id: string;
+  category: 'mental_model' | 'red_line' | 'procedure_step' | 'troubleshooting';
+  question: string;
+  options: string[];
+  correctAnswerIndex: number;
+  feynmanFeedback: string;
+}
+
 export interface FeynmanDeck {
   id: string;
   title: string;
@@ -86,6 +128,11 @@ export interface FeynmanDeck {
     };
   };
   cards: DeckCard[];
+  tags?: string[];
+  videoScenes?: VideoScene[];
+  guideScenarios?: GuideScenario[];
+  assessmentQuestions?: AssessmentQuestion[];
 }
 
 export type DeckTheme = 'obsidian' | 'clean' | 'nordic' | 'sage';
+export type AppViewMode = 'outline' | 'flow' | 'presentation' | 'show_me' | 'guide_me' | 'test_me';

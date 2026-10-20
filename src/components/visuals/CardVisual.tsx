@@ -22,6 +22,7 @@ interface CardVisualProps {
   onUpdateImage: (newImage: CardImage) => void;
   defaultDiagram?: CardImage['diagramType'];
   titleContext?: string;
+  cleanVideoMode?: boolean;
 }
 
 export const CardVisual: React.FC<CardVisualProps> = ({
@@ -29,6 +30,7 @@ export const CardVisual: React.FC<CardVisualProps> = ({
   onUpdateImage,
   defaultDiagram = 'flowchart',
   titleContext = '',
+  cleanVideoMode = false,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [urlInput, setUrlInput] = useState(image?.url || '');
@@ -65,10 +67,10 @@ export const CardVisual: React.FC<CardVisualProps> = ({
   };
 
   return (
-    <div className="relative group w-full overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-800 transition-all flex flex-col justify-between">
+    <div className="relative group w-full overflow-hidden rounded-2xl bg-neutral-950 border border-white/[0.08] transition-all flex flex-col justify-between">
       {/* Visual Content: Custom Image OR High-Fidelity Vector Schematic */}
       {image?.url ? (
-        <div className="relative w-full aspect-video sm:aspect-4/3 overflow-hidden bg-slate-950">
+        <div className="relative w-full aspect-video sm:aspect-4/3 overflow-hidden bg-black">
           <img
             src={image.url}
             alt={image.alt || 'SOP visual diagram'}
@@ -78,11 +80,10 @@ export const CardVisual: React.FC<CardVisualProps> = ({
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent pointer-events-none" />
         </div>
       ) : activeDiagram === 'cold_chain' ? (
-        /* Cold Chain Gauge & Temperature Range Schematic */
-        <div className="w-full p-6 sm:p-7 bg-gradient-to-br from-slate-900 to-slate-950 text-white flex flex-col justify-between min-h-[260px]">
-          <div className="flex items-center justify-between text-xs font-mono text-slate-400 border-b border-slate-800 pb-2">
-            <span className="flex items-center gap-1.5 text-cyan-400 font-semibold">
-              <Thermometer className="w-4 h-4" />
+        <div className="w-full p-6 sm:p-7 bg-neutral-950 text-white flex flex-col justify-between min-h-[260px]">
+          <div className="flex items-center justify-between text-xs font-mono text-neutral-400 border-b border-white/[0.08] pb-2">
+            <span className="flex items-center gap-1.5 text-neutral-200 font-semibold">
+              <Thermometer className="w-4 h-4 text-neutral-400" />
               <span>COLD-CHAIN SENSOR GAUGING</span>
             </span>
             <span className="text-emerald-400">● 5.0°C NOMINAL</span>
@@ -298,23 +299,25 @@ export const CardVisual: React.FC<CardVisualProps> = ({
       )}
 
       {/* Caption strip (if present) */}
-      {image?.caption && (
+      {!cleanVideoMode && image?.caption && (
         <div className="px-4 py-2 bg-slate-900/90 border-t border-slate-800 text-[11px] text-slate-400 text-center">
           {image.caption}
         </div>
       )}
 
       {/* Change Image Button overlay */}
-      <div className="absolute top-3 right-3 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
-        <button
-          type="button"
-          onClick={() => setIsModalOpen(true)}
-          className="min-h-[36px] flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900/90 text-white border border-slate-700 hover:border-amber-400 text-xs font-semibold shadow-md active:scale-95 transition-all"
-        >
-          <Edit3 className="w-3.5 h-3.5 text-amber-400" />
-          <span>Change Picture / Diagram</span>
-        </button>
-      </div>
+      {!cleanVideoMode && (
+        <div className="absolute top-3 right-3 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            type="button"
+            onClick={() => setIsModalOpen(true)}
+            className="min-h-[36px] flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900/90 text-white border border-slate-700 hover:border-amber-400 text-xs font-semibold shadow-md active:scale-95 transition-all"
+          >
+            <Edit3 className="w-3.5 h-3.5 text-amber-400" />
+            <span>Change Picture / Diagram</span>
+          </button>
+        </div>
+      )}
 
       {/* Image / Diagram Configuration Modal */}
       {isModalOpen && (

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Wrench, AlertCircle, RefreshCw, CheckCircle } from 'lucide-react';
-import { DeckCard, Pitfall, CardImage } from '../../types/deck';
+import { Wrench, CheckCircle } from 'lucide-react';
+import { DeckCard, Pitfall } from '../../types/deck';
 import { CardToolbar } from '../CardToolbar';
 
 interface TroubleshootingCardProps {
@@ -42,9 +42,9 @@ export const TroubleshootingCard: React.FC<TroubleshootingCardProps> = ({
   };
 
   return (
-    <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-6 sm:p-10 transition-colors">
-      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400 mb-3">
-        <Wrench className="w-4 h-4" />
+    <div className="rounded-3xl border border-white/[0.08] bg-neutral-950 shadow-2xl p-6 sm:p-10 transition-colors">
+      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">
+        <Wrench className="w-3.5 h-3.5 text-neutral-300" />
         <span>{card.badgeText || 'Field Traps & Troubleshooting'}</span>
       </div>
 
@@ -54,96 +54,103 @@ export const TroubleshootingCard: React.FC<TroubleshootingCardProps> = ({
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full text-xl font-bold bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-slate-900 dark:text-white"
+            className="w-full text-xl font-bold bg-neutral-900 border border-white/10 rounded-xl p-2.5 text-white"
           />
           <input
             type="text"
             value={subtitle}
             onChange={(e) => setSubtitle(e.target.value)}
-            className="w-full text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-slate-600 dark:text-slate-400"
+            className="w-full text-xs bg-neutral-900 border border-white/10 rounded-xl p-2 text-neutral-400"
           />
           <textarea
             value={explanation}
             onChange={(e) => setExplanation(e.target.value)}
             rows={2}
-            className="w-full text-sm bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-slate-700 dark:text-slate-300"
+            className="w-full text-sm bg-neutral-900 border border-white/10 rounded-xl p-2 text-neutral-200"
           />
           <button
+            type="button"
             onClick={handleSave}
-            className="px-3.5 py-1.5 text-xs font-semibold bg-amber-400 text-slate-950 rounded-lg shadow-sm"
+            className="px-4 py-2 text-xs font-semibold bg-white text-black rounded-full shadow-sm hover:bg-neutral-200 cursor-pointer"
           >
             Save Card Changes
           </button>
         </div>
       ) : (
         <div className="mb-6">
-          <h2 className="text-xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-1.5">
+          <h2 className="text-xl sm:text-3xl font-bold tracking-tight text-white mb-1.5">
             {card.title}
           </h2>
           {card.subtitle && (
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-2">
+            <p className="text-xs sm:text-sm text-neutral-400 mb-2">
               {card.subtitle}
             </p>
           )}
-          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-3xl">
+          <p className="text-sm sm:text-base text-neutral-300 leading-relaxed max-w-3xl font-normal">
             {card.feynmanExplanation}
           </p>
         </div>
       )}
 
-      {/* Ultra-Premium Open Table Layout (NO nested bordered boxes) */}
-      <div className="divide-y divide-slate-100 dark:divide-slate-800/80 mb-6">
-        {pitfalls.map((item, idx) => (
-          <div key={idx} className="py-5 first:pt-0 last:pb-0">
+      {/* Ultra-Premium Tabular Pitfall Grid (NO nested cards) */}
+      <div className="divide-y divide-white/[0.08] mb-6">
+        {pitfalls.map((pf, idx) => (
+          <div key={idx} className="py-4 sm:py-5 first:pt-0 last:pb-0">
             {isEditing ? (
               <div className="space-y-2 text-xs">
                 <input
                   type="text"
-                  value={item.symptomOrMistake}
-                  placeholder="Symptom or Mistake"
+                  value={pf.symptomOrMistake}
+                  placeholder="Symptom or Common Mistake"
                   onChange={(e) => handlePitfallChange(idx, 'symptomOrMistake', e.target.value)}
-                  className="w-full font-bold bg-white dark:bg-slate-800 border p-1 rounded"
+                  className="w-full bg-neutral-900 border border-white/10 p-2 rounded-lg text-white"
                 />
                 <input
                   type="text"
-                  value={item.rootCause}
-                  placeholder="Root Cause"
+                  value={pf.rootCause}
+                  placeholder="Root Cause (Why it occurs)"
                   onChange={(e) => handlePitfallChange(idx, 'rootCause', e.target.value)}
-                  className="w-full bg-white dark:bg-slate-800 border p-1 rounded"
+                  className="w-full bg-neutral-900 border border-white/10 p-2 rounded-lg text-neutral-300"
                 />
                 <input
                   type="text"
-                  value={item.immediateFix}
-                  placeholder="Immediate Fix"
+                  value={pf.immediateFix}
+                  placeholder="Immediate Field Fix"
                   onChange={(e) => handlePitfallChange(idx, 'immediateFix', e.target.value)}
-                  className="w-full bg-white dark:bg-slate-800 border p-1 rounded font-semibold text-emerald-600"
+                  className="w-full bg-neutral-900 border border-white/10 p-2 rounded-lg text-neutral-300"
                 />
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-baseline">
-                {/* Column 1: Symptom / Mistake (4 cols) */}
-                <div className="md:col-span-4 flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                  <span className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">
-                    {item.symptomOrMistake}
-                  </span>
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-3 sm:gap-6 items-baseline">
+                {/* Column 1: The Mistake (4 cols) */}
+                <div className="md:col-span-4 space-y-1">
+                  <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">
+                    Common Mistake #{idx + 1}
+                  </div>
+                  <div className="text-sm sm:text-base font-bold text-white leading-snug">
+                    {pf.symptomOrMistake}
+                  </div>
                 </div>
 
                 {/* Column 2: Root Cause (4 cols) */}
-                <div className="md:col-span-4 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                  <span className="text-[11px] font-semibold text-slate-400 block mb-0.5 uppercase tracking-wider">
-                    Root Cause:
-                  </span>
-                  {item.rootCause}
+                <div className="md:col-span-4 space-y-1 text-xs">
+                  <div className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
+                    Feynman Root Cause
+                  </div>
+                  <p className="text-neutral-300 leading-relaxed font-normal">
+                    {pf.rootCause}
+                  </p>
                 </div>
 
-                {/* Column 3: Immediate Fix (4 cols) */}
-                <div className="md:col-span-4 text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed">
-                  <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 block mb-0.5 uppercase tracking-wider flex items-center gap-1">
-                    <RefreshCw className="w-3 h-3" />
-                    <span>Immediate Action:</span>
-                  </span>
-                  <span className="font-medium">{item.immediateFix}</span>
+                {/* Column 3: The Protocol Fix (4 cols) */}
+                <div className="md:col-span-4 space-y-1 text-xs">
+                  <div className="text-[11px] font-medium text-neutral-400 uppercase tracking-wider flex items-center gap-1">
+                    <CheckCircle className="w-3.5 h-3.5 text-neutral-400" />
+                    <span>Immediate Corrective Action</span>
+                  </div>
+                  <p className="text-neutral-200 leading-relaxed font-normal">
+                    {pf.immediateFix}
+                  </p>
                 </div>
               </div>
             )}
