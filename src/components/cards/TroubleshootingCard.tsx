@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Wrench, AlertCircle, RefreshCw, CheckCircle } from 'lucide-react';
-import { DeckCard, Pitfall } from '../../types/deck';
+import { DeckCard, Pitfall, CardImage } from '../../types/deck';
 import { CardToolbar } from '../CardToolbar';
 
 interface TroubleshootingCardProps {
@@ -42,8 +42,8 @@ export const TroubleshootingCard: React.FC<TroubleshootingCardProps> = ({
   };
 
   return (
-    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-6 sm:p-8 transition-colors">
-      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400 mb-2">
+    <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-6 sm:p-10 transition-colors">
+      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400 mb-3">
         <Wrench className="w-4 h-4" />
         <span>{card.badgeText || 'Field Traps & Troubleshooting'}</span>
       </div>
@@ -54,50 +54,47 @@ export const TroubleshootingCard: React.FC<TroubleshootingCardProps> = ({
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full text-xl font-bold bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white"
+            className="w-full text-xl font-bold bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-slate-900 dark:text-white"
           />
           <input
             type="text"
             value={subtitle}
             onChange={(e) => setSubtitle(e.target.value)}
-            className="w-full text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-600 dark:text-slate-400"
+            className="w-full text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-slate-600 dark:text-slate-400"
           />
           <textarea
             value={explanation}
             onChange={(e) => setExplanation(e.target.value)}
             rows={2}
-            className="w-full text-sm bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-700 dark:text-slate-300"
+            className="w-full text-sm bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-slate-700 dark:text-slate-300"
           />
           <button
             onClick={handleSave}
-            className="px-3 py-1.5 text-xs font-semibold bg-amber-400 text-slate-950 rounded-md"
+            className="px-3.5 py-1.5 text-xs font-semibold bg-amber-400 text-slate-950 rounded-lg shadow-sm"
           >
             Save Card Changes
           </button>
         </div>
       ) : (
         <div className="mb-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-1">
+          <h2 className="text-xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-1.5">
             {card.title}
           </h2>
           {card.subtitle && (
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-3">
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-2">
               {card.subtitle}
             </p>
           )}
-          <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-3xl">
             {card.feynmanExplanation}
           </p>
         </div>
       )}
 
-      {/* Troubleshooting Grid */}
-      <div className="space-y-4 mb-4">
+      {/* Ultra-Premium Open Table Layout (NO nested bordered boxes) */}
+      <div className="divide-y divide-slate-100 dark:divide-slate-800/80 mb-6">
         {pitfalls.map((item, idx) => (
-          <div
-            key={idx}
-            className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30"
-          >
+          <div key={idx} className="py-5 first:pt-0 last:pb-0">
             {isEditing ? (
               <div className="space-y-2 text-xs">
                 <input
@@ -123,31 +120,30 @@ export const TroubleshootingCard: React.FC<TroubleshootingCardProps> = ({
                 />
               </div>
             ) : (
-              <div>
-                <div className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white mb-2">
-                  <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
-                  <span>{item.symptomOrMistake}</span>
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-baseline">
+                {/* Column 1: Symptom / Mistake (4 cols) */}
+                <div className="md:col-span-4 flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                  <span className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">
+                    {item.symptomOrMistake}
+                  </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs mt-2 pt-2 border-t border-slate-200 dark:border-slate-700/60">
-                  <div>
-                    <span className="font-semibold text-slate-500 dark:text-slate-400 block mb-0.5">
-                      Why This Happens (Root Cause):
-                    </span>
-                    <span className="text-slate-700 dark:text-slate-300">
-                      {item.rootCause}
-                    </span>
-                  </div>
+                {/* Column 2: Root Cause (4 cols) */}
+                <div className="md:col-span-4 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                  <span className="text-[11px] font-semibold text-slate-400 block mb-0.5 uppercase tracking-wider">
+                    Root Cause:
+                  </span>
+                  {item.rootCause}
+                </div>
 
-                  <div>
-                    <span className="font-semibold text-emerald-700 dark:text-emerald-400 block mb-0.5 flex items-center gap-1">
-                      <RefreshCw className="w-3 h-3" />
-                      <span>Immediate Field Protocol:</span>
-                    </span>
-                    <span className="text-slate-800 dark:text-slate-200 font-medium">
-                      {item.immediateFix}
-                    </span>
-                  </div>
+                {/* Column 3: Immediate Fix (4 cols) */}
+                <div className="md:col-span-4 text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed">
+                  <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 block mb-0.5 uppercase tracking-wider flex items-center gap-1">
+                    <RefreshCw className="w-3 h-3" />
+                    <span>Immediate Action:</span>
+                  </span>
+                  <span className="font-medium">{item.immediateFix}</span>
                 </div>
               </div>
             )}

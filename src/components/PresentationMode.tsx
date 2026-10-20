@@ -15,6 +15,7 @@ import { ProcessStepsCard } from './cards/ProcessStepsCard';
 import { TroubleshootingCard } from './cards/TroubleshootingCard';
 import { ScenarioQuizCard } from './cards/ScenarioQuizCard';
 import { QuickReferenceCard } from './cards/QuickReferenceCard';
+import { CardVisual } from './visuals/CardVisual';
 
 interface PresentationModeProps {
   deck: FeynmanDeck;
@@ -105,41 +106,58 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({
       <div className="flex-1 flex items-center justify-center p-3 sm:p-8 md:p-12 overflow-y-auto">
         <div className="w-full max-w-4xl max-h-[82vh] transition-all">
           {currentSlideIndex === 0 ? (
-            /* Cover Slide */
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl p-5 sm:p-10 shadow-2xl relative overflow-hidden">
+            /* Cover Slide: Ultra-Premium 2-Column Split (No cards-in-cards) */
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-orange-400 to-amber-300" />
-              <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-amber-400 uppercase tracking-wider mb-3">
-                <span>{deck.originalDocType}</span>
-                <span>·</span>
-                <span className="flex items-center gap-1">
-                  <Clock className="w-3.5 h-3.5" />
-                  {deck.estimatedMinutes} min
-                </span>
-                <span>·</span>
-                <span>{deck.targetAudience}</span>
-              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                <div className="lg:col-span-7 space-y-4">
+                  <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-amber-400 uppercase tracking-wider">
+                    <span>{deck.originalDocType}</span>
+                    <span>·</span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5" />
+                      {deck.estimatedMinutes} min
+                    </span>
+                    <span>·</span>
+                    <span>{deck.targetAudience}</span>
+                  </div>
 
-              <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white mb-4 leading-tight">
-                {deck.title}
-              </h1>
+                  <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white leading-tight">
+                    {deck.title}
+                  </h1>
 
-              <p className="text-xs sm:text-base text-slate-300 leading-relaxed mb-6 max-w-2xl">
-                {deck.summary}
-              </p>
+                  <p className="text-xs sm:text-base text-slate-300 leading-relaxed max-w-2xl">
+                    {deck.summary}
+                  </p>
 
-              <div className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-slate-800/60 border border-amber-500/30">
-                <div className="text-[11px] sm:text-xs font-bold text-amber-400 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                  <Lightbulb className="w-4 h-4 text-amber-400" />
-                  <span>The Central Mental Model</span>
+                  <div className="pt-3 border-t border-slate-800 space-y-1.5">
+                    <div className="text-[11px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <Lightbulb className="w-4 h-4 text-amber-400" />
+                      <span>{deck.feynmanCoreConcept.centralAnalogy.title}</span>
+                    </div>
+                    <blockquote className="text-xs sm:text-sm text-slate-300 leading-relaxed italic border-l-2 border-amber-400 pl-3">
+                      "{deck.feynmanCoreConcept.centralAnalogy.analogyText}"
+                    </blockquote>
+                  </div>
                 </div>
-                <h3 className="text-sm sm:text-lg font-bold text-white mb-1.5">
-                  {deck.feynmanCoreConcept.centralAnalogy.title}
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed italic mb-2">
-                  "{deck.feynmanCoreConcept.centralAnalogy.analogyText}"
-                </p>
-                <div className="text-[11px] sm:text-xs text-slate-400">
-                  {deck.feynmanCoreConcept.centralAnalogy.howItMapsToSOP}
+
+                <div className="lg:col-span-5 w-full">
+                  <CardVisual
+                    image={deck.heroImage}
+                    onUpdateImage={(newImg) => {
+                      deck.heroImage = newImg;
+                    }}
+                    defaultDiagram={
+                      deck.title.toLowerCase().includes('cold')
+                        ? 'cold_chain'
+                        : deck.title.toLowerCase().includes('clean')
+                        ? 'cleanroom'
+                        : deck.title.toLowerCase().includes('incident')
+                        ? 'incident_triage'
+                        : 'flowchart'
+                    }
+                    titleContext={deck.title}
+                  />
                 </div>
               </div>
             </div>

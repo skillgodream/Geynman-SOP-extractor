@@ -8,6 +8,10 @@ export const SAMPLE_DECKS: FeynmanDeck[] = [
     targetAudience: 'Pharmacy Techs, Clinical Nurses, and Warehouse Staff',
     estimatedMinutes: 7,
     originalDocType: 'Standard Operating Procedure SOP-CLIN-408',
+    heroImage: {
+      diagramType: 'cold_chain',
+      caption: 'Calibrated digital probe monitoring: 2.0°C to 8.0°C target boundary',
+    },
     feynmanCoreConcept: {
       intuitiveExplanation: 'Think of biologic vaccines like ice cream sandwiches on a hot summer picnic: they have a delicate physical protein shape. If they warm up even once, the proteins unravel like melted ice cream. Refreezing them does not fix the shape; it just preserves ruined medicine.',
       centralAnalogy: {
@@ -24,6 +28,10 @@ export const SAMPLE_DECKS: FeynmanDeck[] = [
         cardType: 'concept_analogy',
         feynmanExplanation: 'Biologic medications are living protein structures held together by fragile chemical bonds. They only work when their 3D shape fits into patient receptors like a specific key into a padlock.',
         badgeText: 'The 12-Year-Old Test',
+        image: {
+          diagramType: 'protein_origami',
+          caption: 'Figure 1: Intact receptor key vs denatured non-functional protein chain',
+        },
         analogy: {
           metaphor: 'A delicate chocolate key that will melt and distort if left in a warm pocket.',
           takeaway: 'Never trust medicine that experienced an unlogged excursion, even if it looks visually identical.'
@@ -64,6 +72,10 @@ export const SAMPLE_DECKS: FeynmanDeck[] = [
         cardType: 'process_steps',
         feynmanExplanation: 'When a temperature sensor beeps, treat it like an ambulance dispatch: keep the door shut, seal the evidence, isolate the medicine, and inform QA.',
         badgeText: 'Execution Sequence',
+        image: {
+          diagramType: 'flowchart',
+          caption: 'Protocol Sequence: Door Seal -> Cooler Prep -> Quarantine Sign -> QA Log',
+        },
         steps: [
           {
             stepNumber: 1,
@@ -127,6 +139,10 @@ export const SAMPLE_DECKS: FeynmanDeck[] = [
         cardType: 'scenario_quiz',
         feynmanExplanation: 'Knowledge is useless if you panic during night shift. Apply the Feynman principles to this realistic scenario.',
         badgeText: 'Active Recall',
+        image: {
+          diagramType: 'cold_chain',
+          caption: 'Scenario Context: Sensor displays 9.4°C at 02:15 AM following power flicker',
+        },
         quiz: {
           scenario: 'It is 02:15 AM on Saturday. A brief thunderstorm knocks out facility power for 12 minutes. The auxiliary generator kicks in. You check Refrigerator #3: the display reads 9.4°C (1.4°C above the 8°C limit). The compressor is humming loudly and the temperature is slowly trending down.',
           question: 'What is your immediate and legally compliant action?',
@@ -184,6 +200,10 @@ export const SAMPLE_DECKS: FeynmanDeck[] = [
     targetAudience: 'Software Engineers, SREs, Engineering Managers, and On-Call Responders',
     estimatedMinutes: 8,
     originalDocType: 'Engineering Operational Runbook ENG-SOP-09',
+    heroImage: {
+      diagramType: 'incident_triage',
+      caption: 'Incident Bridge Command: IC, Operations Lead, and Comms Liaison topology',
+    },
     feynmanCoreConcept: {
       intuitiveExplanation: 'Think of a P1 outage like a 3-alarm structure fire. The firefighter pointing the hose at the flames (Incident Commander) cannot simultaneously give press conferences on television. You must split roles immediately: one person directs the rescue, one person talks to the crowd.',
       centralAnalogy: {
@@ -200,6 +220,10 @@ export const SAMPLE_DECKS: FeynmanDeck[] = [
         cardType: 'concept_analogy',
         feynmanExplanation: 'When systems crash, natural human panic makes everyone talk at once or freeze. A structured command protocol turns a frantic mob into a surgical team.',
         badgeText: 'Cognitive Model',
+        image: {
+          diagramType: 'incident_triage',
+          caption: 'Role Isolation: IC manages direction, Ops Lead executes, Comms Lead shields from external queries',
+        },
         analogy: {
           metaphor: 'Air Traffic Control during an emergency landing.',
           takeaway: 'Only one voice gives commands; everyone else confirms status with closed-loop precision.'
@@ -240,6 +264,10 @@ export const SAMPLE_DECKS: FeynmanDeck[] = [
         cardType: 'process_steps',
         feynmanExplanation: 'Follow this exact sequence. Never skip directly to remediation without establishing the Incident Command structure.',
         badgeText: 'Runbook Steps',
+        image: {
+          diagramType: 'flowchart',
+          caption: 'Execution Sequence: Declare -> Assign 3 Roles -> Fast Mitigation -> All-Clear Check',
+        },
         steps: [
           {
             stepNumber: 1,
@@ -303,6 +331,10 @@ export const SAMPLE_DECKS: FeynmanDeck[] = [
         cardType: 'scenario_quiz',
         feynmanExplanation: 'A real incident manager must protect their team from outside distraction while executing the procedure.',
         badgeText: 'Scenario Quiz',
+        image: {
+          diagramType: 'incident_triage',
+          caption: 'Dilemma: Executive pressure on the active bridge while revenue losses mount',
+        },
         quiz: {
           scenario: 'You are Incident Commander during a P1 payment checkout outage. Total revenue loss is $40,000/minute. The VP of Sales enters the audio bridge loudly asking: "What broke? Who pushed the code? When will this be fixed? I have a Fortune 500 client on the phone!"',
           question: 'What is your correct response as Incident Commander?',
@@ -360,6 +392,10 @@ export const SAMPLE_DECKS: FeynmanDeck[] = [
     targetAudience: 'Cleanroom Operators, Lab Technicians, and QA Inspectors',
     estimatedMinutes: 6,
     originalDocType: 'GMP Standard Operating Procedure SOP-MFG-002',
+    heroImage: {
+      diagramType: 'cleanroom',
+      caption: 'Airlock Demarcation Bench: Dirty (CNC) side to Sterile (ISO 5) side transition',
+    },
     feynmanCoreConcept: {
       intuitiveExplanation: 'Think of human skin as an invisible dirt volcano: every minute, we shed 40,000 microscopic skin flakes teeming with bacteria. A cleanroom suit is not armor to protect you from the room; it is an airtight filter bag designed to keep your personal micro-dust trapped inside.',
       centralAnalogy: {
@@ -376,6 +412,10 @@ export const SAMPLE_DECKS: FeynmanDeck[] = [
         cardType: 'concept_analogy',
         feynmanExplanation: 'Machines do not shed skin, breathe moisture, or touch their foreheads. Humans do. The suit is a mechanical barrier that isolates biology from the product.',
         badgeText: 'Core Intuition',
+        image: {
+          diagramType: 'cleanroom',
+          caption: 'Demarcation line: Boundary between unclassified airlock and positive-pressure sterile cleanroom',
+        },
         analogy: {
           metaphor: 'A vacuum bag that seals in microscopic dust particles.',
           takeaway: 'Any gap in the suit cuff or neck is a leak where thousands of bacteria escape into the airflow.'
@@ -416,6 +456,10 @@ export const SAMPLE_DECKS: FeynmanDeck[] = [
         cardType: 'process_steps',
         feynmanExplanation: 'Always dress from top to bottom. If you put on clean booties first and then shake your hair cover, hair flakes fall directly onto your clean feet!',
         badgeText: 'Execution Flow',
+        image: {
+          diagramType: 'flowchart',
+          caption: 'Top-to-Bottom Gravity Sequence: Bouffant -> Pre-Wash -> Hood -> Coverall -> Bench Leg Swing',
+        },
         steps: [
           {
             stepNumber: 1,
@@ -486,6 +530,10 @@ export const SAMPLE_DECKS: FeynmanDeck[] = [
         cardType: 'scenario_quiz',
         feynmanExplanation: 'Test your instinctive reaction to unexpected physical balance issues.',
         badgeText: 'Scenario Quiz',
+        image: {
+          diagramType: 'cleanroom',
+          caption: 'Demarcation Bench crossing: Heel brush incident on entry side',
+        },
         quiz: {
           scenario: 'You are seated on the cleanroom demarcation bench putting on your right sterile bootie. As you swing your right leg over to the clean side, you momentarily lose your balance and your right bootie heel lightly brushes the dirty floor on the entry side.',
           question: 'What is the correct SOP requirement?',

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Bookmark, FileCheck } from 'lucide-react';
-import { DeckCard, ReferenceItem } from '../../types/deck';
+import { DeckCard, ReferenceItem, CardImage } from '../../types/deck';
 import { CardToolbar } from '../CardToolbar';
 
 interface QuickReferenceCardProps {
@@ -42,8 +42,8 @@ export const QuickReferenceCard: React.FC<QuickReferenceCardProps> = ({
   };
 
   return (
-    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-6 sm:p-8 transition-colors">
-      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-2">
+    <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-6 sm:p-10 transition-colors">
+      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-3">
         <Bookmark className="w-4 h-4" />
         <span>{card.badgeText || 'High-Yield Pocket Reference'}</span>
       </div>
@@ -54,52 +54,49 @@ export const QuickReferenceCard: React.FC<QuickReferenceCardProps> = ({
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full text-xl font-bold bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white"
+            className="w-full text-xl font-bold bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-slate-900 dark:text-white"
           />
           <input
             type="text"
             value={subtitle}
             onChange={(e) => setSubtitle(e.target.value)}
-            className="w-full text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-600 dark:text-slate-400"
+            className="w-full text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-slate-600 dark:text-slate-400"
           />
           <textarea
             value={explanation}
             onChange={(e) => setExplanation(e.target.value)}
             rows={2}
-            className="w-full text-sm bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-700 dark:text-slate-300"
+            className="w-full text-sm bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-slate-700 dark:text-slate-300"
           />
           <button
             onClick={handleSave}
-            className="px-3 py-1.5 text-xs font-semibold bg-amber-400 text-slate-950 rounded-md"
+            className="px-3.5 py-1.5 text-xs font-semibold bg-amber-400 text-slate-950 rounded-lg shadow-sm"
           >
             Save Card Changes
           </button>
         </div>
       ) : (
         <div className="mb-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-1">
+          <h2 className="text-xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-1.5">
             {card.title}
           </h2>
           {card.subtitle && (
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-3">
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-2">
               {card.subtitle}
             </p>
           )}
-          <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-3xl">
             {card.feynmanExplanation}
           </p>
         </div>
       )}
 
-      {/* Cheatsheet Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+      {/* Ultra-Premium Open Table (Zero cards-in-cards) */}
+      <div className="divide-y divide-slate-100 dark:divide-slate-800/80 mb-6">
         {items.map((ref, idx) => (
-          <div
-            key={idx}
-            className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 flex flex-col justify-between"
-          >
+          <div key={idx} className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
             {isEditing ? (
-              <div className="space-y-1.5 text-xs">
+              <div className="w-full space-y-1.5 text-xs">
                 <input
                   type="text"
                   value={ref.label}
@@ -123,17 +120,23 @@ export const QuickReferenceCard: React.FC<QuickReferenceCardProps> = ({
                 />
               </div>
             ) : (
-              <div>
-                <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                  {ref.label}
+              <>
+                <div className="sm:w-1/3">
+                  <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    {ref.label}
+                  </div>
                 </div>
-                <div className="text-base sm:text-lg font-bold text-amber-600 dark:text-amber-400 font-mono tabular-nums mb-1">
-                  {ref.value}
+
+                <div className="sm:w-1/3">
+                  <div className="text-sm sm:text-base font-bold text-amber-600 dark:text-amber-400 font-mono tabular-nums">
+                    {ref.value}
+                  </div>
                 </div>
-                <div className="text-xs text-slate-600 dark:text-slate-300">
+
+                <div className="sm:w-1/3 text-xs text-slate-500 dark:text-slate-400">
                   {ref.detail}
                 </div>
-              </div>
+              </>
             )}
           </div>
         ))}

@@ -61,6 +61,11 @@ Structure the response as a JSON object with this exact shape:
   "targetAudience": "Who this training is for",
   "estimatedMinutes": 8,
   "originalDocType": "SOP / Standard Operating Procedure",
+  "heroImage": {
+    "caption": "Primary operational context or equipment diagram",
+    "diagramType": "cold_chain", // One of: "cold_chain", "protein_origami", "cleanroom", "incident_triage", "flowchart", "custom"
+    "alt": "SOP Overview schematic"
+  },
   "feynmanCoreConcept": {
     "intuitiveExplanation": "Clear, jargon-free explanation of the SOP's core goal",
     "centralAnalogy": {
@@ -77,6 +82,10 @@ Structure the response as a JSON object with this exact shape:
       "cardType": "concept_analogy", // One of: "concept_analogy", "critical_rules", "process_steps", "pitfalls_troubleshooting", "scenario_quiz", "quick_reference"
       "feynmanExplanation": "Engaging explanation of this card's concept",
       "badgeText": "Intuition & Purpose",
+      "image": {
+        "caption": "Visual mental model or physical mechanism",
+        "diagramType": "protein_origami"
+      },
       "analogy": {
         "metaphor": "Brief metaphor or visual comparison",
         "takeaway": "Key takeaway"

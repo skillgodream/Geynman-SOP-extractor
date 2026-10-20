@@ -42,6 +42,14 @@ export interface ReferenceItem {
   detail: string;
 }
 
+export interface CardImage {
+  url?: string;
+  caption?: string;
+  alt?: string;
+  diagramType?: 'cold_chain' | 'protein_origami' | 'cleanroom' | 'incident_triage' | 'chemical_neutralization' | 'flowchart' | 'custom';
+  layout?: 'split' | 'hero' | 'inset';
+}
+
 export interface DeckCard {
   id: string;
   title: string;
@@ -49,6 +57,7 @@ export interface DeckCard {
   cardType: CardType;
   feynmanExplanation: string;
   badgeText?: string;
+  image?: CardImage;
   analogy?: {
     metaphor: string;
     takeaway: string;
@@ -67,6 +76,7 @@ export interface FeynmanDeck {
   targetAudience: string;
   estimatedMinutes: number;
   originalDocType: string;
+  heroImage?: CardImage;
   feynmanCoreConcept: {
     intuitiveExplanation: string;
     centralAnalogy: {
