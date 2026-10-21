@@ -97,29 +97,20 @@ export const ProcessStepsCard: React.FC<ProcessStepsCardProps> = ({
         </div>
       )}
 
-      {/* Step Selector Pills in Apple Segmented Style */}
-      <div className="flex items-center gap-1.5 p-1 bg-neutral-900/90 border border-white/[0.08] rounded-full mb-6 overflow-x-auto scrollbar-none">
+      {/* Step Selector Pills in Apple Segmented Style (All 4 in single view: P1, P2, P3, P4) */}
+      <div className="flex items-center gap-1.5 p-1 bg-neutral-900/90 border border-white/[0.08] rounded-full mb-6 w-full">
         {steps.map((st, idx) => (
           <button
             key={idx}
             type="button"
             onClick={() => setActiveStepIndex(idx)}
-            className={`min-h-[40px] flex-1 min-w-[120px] py-1.5 px-3 text-xs font-medium rounded-full transition-all flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer ${
+            className={`min-h-[38px] flex-1 py-1.5 px-2 text-xs sm:text-sm font-bold tracking-wide rounded-full transition-all flex items-center justify-center cursor-pointer ${
               activeStepIndex === idx
-                ? 'bg-white text-black font-semibold shadow-sm'
-                : 'text-neutral-400 hover:text-white'
+                ? 'bg-white text-black shadow-sm'
+                : 'text-neutral-400 hover:text-white hover:bg-neutral-800/50'
             }`}
           >
-            <span
-              className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                activeStepIndex === idx
-                  ? 'bg-neutral-200 text-black'
-                  : 'bg-neutral-800 text-neutral-400'
-              }`}
-            >
-              {st.stepNumber || idx + 1}
-            </span>
-            <span className="truncate">Phase {st.stepNumber || idx + 1}</span>
+            <span>P{st.stepNumber || idx + 1}</span>
           </button>
         ))}
       </div>

@@ -32,8 +32,8 @@ export const DemoDecksScreen: React.FC<DemoDecksScreenProps> = ({
             <span>Explore</span>
           </button>
 
-          <span className="text-xs font-semibold tracking-tight text-white uppercase font-mono">
-            Demo & Created Decks
+          <span className="text-xs font-bold tracking-wider text-white uppercase font-mono">
+            LIBRARY
           </span>
 
           <div className="w-12" />
@@ -65,13 +65,13 @@ export const DemoDecksScreen: React.FC<DemoDecksScreenProps> = ({
                       </span>
                     </div>
 
-                    {/* Title */}
-                    <h2 className="text-sm sm:text-base font-bold text-white group-hover:text-blue-300 transition-colors leading-snug truncate">
+                    {/* Title — Fully visible, no truncate */}
+                    <h2 className="text-sm sm:text-base font-bold text-white group-hover:text-blue-300 transition-colors leading-snug break-words">
                       {deck.title}
                     </h2>
 
-                    {/* Short Subtitle Snippet */}
-                    <p className="text-xs text-neutral-400 font-normal leading-relaxed truncate">
+                    {/* Subtitle Snippet — 2 full readable lines */}
+                    <p className="text-xs text-neutral-400 font-normal leading-relaxed line-clamp-2">
                       {deck.summary || deck.feynmanCoreConcept?.centralAnalogy?.title || 'Standard Operating Procedure execution guide'}
                     </p>
 

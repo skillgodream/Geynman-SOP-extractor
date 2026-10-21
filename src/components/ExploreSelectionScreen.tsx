@@ -81,7 +81,7 @@ export const ExploreSelectionScreen: React.FC<ExploreSelectionScreenProps> = ({
               className="min-h-[48px] w-full px-6 py-3 text-sm font-medium text-white bg-neutral-900 hover:bg-neutral-800 border border-white/10 rounded-full transition-all active:scale-95 flex items-center justify-center gap-2.5 cursor-pointer"
             >
               <Play className="w-4 h-4 text-neutral-300" />
-              <span>Demo (Preloaded Decks)</span>
+              <span>Library (Decks)</span>
             </button>
           </div>
         </div>
