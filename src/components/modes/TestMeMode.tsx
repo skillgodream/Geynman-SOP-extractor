@@ -11,15 +11,17 @@ import {
   X
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { FeynmanDeck, AssessmentQuestion } from '../../types/deck';
+import { FeynmanDeck, AssessmentQuestion, AppViewMode } from '../../types/deck';
 import { deriveAssessmentQuestions } from '../../utils/deckDerivations';
+import { ModePills } from '../ModePills';
 
 interface TestMeModeProps {
   deck: FeynmanDeck;
   onExit: () => void;
+  onSwitchToMode?: (mode: AppViewMode, slideIndex?: number) => void;
 }
 
-export const TestMeMode: React.FC<TestMeModeProps> = ({ deck, onExit }) => {
+export const TestMeMode: React.FC<TestMeModeProps> = ({ deck, onExit, onSwitchToMode }) => {
   const questions: AssessmentQuestion[] = deriveAssessmentQuestions(deck);
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -107,6 +109,17 @@ export const TestMeMode: React.FC<TestMeModeProps> = ({ deck, onExit }) => {
           <span>Exit Test</span>
         </button>
       </div>
+
+      {/* Mode Pills Sub-Bar */}
+      {onSwitchToMode && (
+        <div className="px-4 py-1.5 border-b border-white/[0.08] bg-neutral-950/90 backdrop-blur-md flex items-center justify-center shrink-0">
+          <ModePills
+            activeMode="test_me"
+            slideIndex={currentQuestionIndex + 1}
+            onSelectMode={(mode, idx) => onSwitchToMode(mode, idx)}
+          />
+        </div>
+      )}
 
       {/* Main Assessment Container */}
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 flex items-center justify-center">

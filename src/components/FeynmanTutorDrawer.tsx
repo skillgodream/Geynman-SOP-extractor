@@ -116,15 +116,18 @@ export const FeynmanTutorDrawer: React.FC<FeynmanTutorDrawerProps> = ({
           </button>
         </div>
 
-        {/* Card Context Banner */}
-        {activeCard && (
-          <div className="px-4 py-2 bg-neutral-900 border-b border-white/[0.08] text-xs text-neutral-300 flex items-center gap-2">
-            <Lightbulb className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-            <span className="truncate">
-              Focus: <strong className="text-white">{activeCard.title}</strong>
-            </span>
-          </div>
-        )}
+        {/* Deck & Card Context Banner */}
+        <div className="px-4 py-2.5 bg-neutral-900 border-b border-white/[0.08] text-xs text-neutral-300 flex items-center gap-2">
+          <Lightbulb className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+          <span className="truncate">
+            Deck: <strong className="text-white">{deck?.title || 'Active SOP'}</strong>
+            {activeCard && (
+              <span className="text-neutral-400 ml-1.5 font-normal">
+                • Card: <strong className="text-blue-300">{activeCard.title}</strong>
+              </span>
+            )}
+          </span>
+        </div>
 
         {/* Message Log */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">

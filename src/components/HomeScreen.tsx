@@ -21,8 +21,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onExplore }) => {
         <div className="relative group cursor-default flex items-center justify-center shrink-0">
           <div className="absolute -inset-8 bg-white/[0.05] rounded-full blur-3xl group-hover:bg-white/[0.08] transition-all duration-700 pointer-events-none" />
           <img
-            src="/assets/aistudio/Cheerful Koala Learning Mascot.png"
-            alt="Cheerful Koala Learning Mascot"
+            src="/assets/aistudio/Glossy Black Chrome Lightning Bolt.png"
+            alt="Glossy Black Chrome Lightning Bolt"
             className="relative z-10 w-auto h-auto max-h-[250px] sm:max-h-[320px] md:max-h-[360px] object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.9)] transition-transform duration-500 hover:scale-105 select-none"
             loading="eager"
           />

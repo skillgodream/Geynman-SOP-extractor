@@ -23,8 +23,8 @@ export const KoalaCharacter: React.FC<KoalaCharacterProps> = ({
       <div className={`relative flex items-center justify-center select-none ${sizeMap[size]} ${className}`}>
         <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/10 to-transparent blur-2xl pointer-events-none" />
         <img
-          src="/assets/aistudio/Cheerful Koala Learning Mascot.png"
-          alt="Cheerful Koala Learning Mascot"
+          src="/assets/aistudio/Glossy Black Chrome Lightning Bolt.png"
+          alt="Glossy Black Chrome Lightning Bolt"
           className="w-full h-full object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)] transition-transform duration-500 hover:scale-105"
           onError={() => setHasImageError(true)}
         />

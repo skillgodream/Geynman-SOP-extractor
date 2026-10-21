@@ -13,7 +13,8 @@ import {
   Thermometer,
   Activity,
   Cpu,
-  ArrowRight
+  ArrowRight,
+  Loader2
 } from 'lucide-react';
 import { CardImage } from '../../types/deck';
 
@@ -42,7 +43,38 @@ export const CardVisual: React.FC<CardVisualProps> = ({
     image?.layout === 'hero' ? 'hero' : 'split'
   );
 
+  // AI Text-to-Image State
+  const [aiPrompt, setAiPrompt] = useState(titleContext || '');
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+
   const activeDiagram = image?.diagramType || defaultDiagram;
+
+  const handleGenerateAiImage = async () => {
+    const promptText = aiPrompt.trim() || titleContext || 'Operational SOP procedure visual';
+    setIsGeneratingAi(true);
+    setAiError(null);
+
+    try {
+      const res = await fetch('/api/generate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: promptText }),
+      });
+
+      const data = await res.json();
+      if (data.success && data.imageUrl) {
+        setUrlInput(data.imageUrl);
+        if (!captionInput) setCaptionInput(`AI Generated: ${promptText}`);
+      } else {
+        setAiError(data.error || 'Could not generate AI image.');
+      }
+    } catch (err: any) {
+      setAiError('Failed to connect to AI image generator.');
+    } finally {
+      setIsGeneratingAi(false);
+    }
+  };
 
   const handleSave = () => {
     onUpdateImage({
@@ -66,237 +98,36 @@ export const CardVisual: React.FC<CardVisualProps> = ({
     }
   };
 
+  // Default professional photographic images corresponding to each domain type instead of neon vector drawings
+  const defaultPhotoMap: Record<string, string> = {
+    cold_chain: 'https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?auto=format&fit=crop&w=1200&q=80',
+    protein_origami: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=1200&q=80',
+    cleanroom: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=80',
+    incident_triage: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80',
+    warehouse: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80',
+    flowchart: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80'
+  };
+
+  // Prioritize custom user image URL, then domain-specific photo mapping, then generic flowchart photo
+  const activePhotoUrl =
+    image?.url || defaultPhotoMap[activeDiagram] || defaultPhotoMap[defaultDiagram] || defaultPhotoMap.flowchart;
+
   return (
     <div className="relative group w-full overflow-hidden rounded-2xl bg-neutral-950 border border-white/[0.08] transition-all flex flex-col justify-between">
-      {/* Visual Content: Custom Image OR High-Fidelity Vector Schematic */}
-      {image?.url ? (
+      {/* Visual Content: Professional Photographic Picture */}
+      {activePhotoUrl && (
         <div className="relative w-full aspect-video sm:aspect-4/3 overflow-hidden bg-black">
           <img
-            src={image.url}
-            alt={image.alt || 'SOP visual diagram'}
+            src={activePhotoUrl}
+            alt={image?.alt || titleContext || 'Professional SOP visual photo'}
             referrerPolicy="no-referrer"
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-102"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent pointer-events-none" />
         </div>
-      ) : activeDiagram === 'cold_chain' ? (
-        <div className="w-full p-6 sm:p-7 bg-neutral-950 text-white flex flex-col justify-between min-h-[260px]">
-          <div className="flex items-center justify-between text-xs font-mono text-neutral-400 border-b border-white/[0.08] pb-2">
-            <span className="flex items-center gap-1.5 text-neutral-200 font-semibold">
-              <Thermometer className="w-4 h-4 text-neutral-400" />
-              <span>COLD-CHAIN SENSOR GAUGING</span>
-            </span>
-            <span className="text-emerald-400">● 5.0°C NOMINAL</span>
-          </div>
-
-          {/* Precision SVG gauge */}
-          <div className="py-4 flex flex-col items-center justify-center">
-            <svg viewBox="0 0 240 120" className="w-48 sm:w-56 overflow-visible">
-              {/* Arc background */}
-              <path
-                d="M 20 110 A 100 100 0 0 1 220 110"
-                fill="none"
-                stroke="#1e293b"
-                strokeWidth="16"
-                strokeLinecap="round"
-              />
-              {/* Danger sub-zero freezing (<2°C) */}
-              <path
-                d="M 20 110 A 100 100 0 0 1 50 55"
-                fill="none"
-                stroke="#38bdf8"
-                strokeWidth="16"
-                strokeLinecap="round"
-              />
-              {/* Optimal 2°C - 8°C zone */}
-              <path
-                d="M 50 55 A 100 100 0 0 1 190 55"
-                fill="none"
-                stroke="#10b981"
-                strokeWidth="16"
-              />
-              {/* Danger heat excursion (>8°C) */}
-              <path
-                d="M 190 55 A 100 100 0 0 1 220 110"
-                fill="none"
-                stroke="#ef4444"
-                strokeWidth="16"
-                strokeLinecap="round"
-              />
-              {/* Needle pointing to 5°C */}
-              <line
-                x1="120"
-                y1="110"
-                x2="120"
-                y2="28"
-                stroke="#f59e0b"
-                strokeWidth="4"
-                strokeLinecap="round"
-              />
-              <circle cx="120" cy="110" r="8" fill="#f59e0b" />
-            </svg>
-
-            <div className="flex items-center justify-between w-full text-[11px] font-mono text-slate-400 px-2 mt-1">
-              <span className="text-sky-400 font-bold">&lt; 2°C Freezing</span>
-              <span className="text-emerald-400 font-bold">2°C – 8°C Target</span>
-              <span className="text-red-400 font-bold">&gt; 8°C Excursion</span>
-            </div>
-          </div>
-
-          <div className="text-[11px] text-slate-400 border-t border-slate-800/80 pt-2 flex items-center justify-between">
-            <span>Calibrated Liquid Glycol Probe</span>
-            <span className="text-amber-400">Target Setpoint: 5.0°C</span>
-          </div>
-        </div>
-      ) : activeDiagram === 'protein_origami' ? (
-        /* Protein Origami folding comparison */
-        <div className="w-full p-6 sm:p-7 bg-slate-900 text-white flex flex-col justify-between min-h-[260px]">
-          <div className="flex items-center justify-between text-xs font-mono text-slate-400 border-b border-slate-800 pb-2">
-            <span className="text-amber-400 font-semibold">MOLECULAR MENTAL MODEL</span>
-            <span className="text-slate-400">Protein Conformation</span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 py-4">
-            {/* Intact active protein */}
-            <div className="text-center p-3 rounded-xl bg-slate-800/60 border border-emerald-500/30">
-              <div className="w-10 h-10 mx-auto mb-2 text-emerald-400 flex items-center justify-center">
-                <svg viewBox="0 0 40 40" className="w-full h-full fill-none stroke-current stroke-2">
-                  <polygon points="20,5 35,15 30,35 10,35 5,15" />
-                  <line x1="20" y1="5" x2="30" y2="35" />
-                  <line x1="20" y1="5" x2="10" y2="35" />
-                  <line x1="5" y1="15" x2="35" y2="15" />
-                </svg>
-              </div>
-              <div className="text-xs font-bold text-emerald-400">Folded & Potent</div>
-              <div className="text-[10px] text-slate-400 mt-0.5">3D receptor lock fits perfectly</div>
-            </div>
-
-            {/* Denatured protein */}
-            <div className="text-center p-3 rounded-xl bg-slate-800/60 border border-red-500/30">
-              <div className="w-10 h-10 mx-auto mb-2 text-red-400 flex items-center justify-center">
-                <svg viewBox="0 0 40 40" className="w-full h-full fill-none stroke-current stroke-2">
-                  <path d="M 5,20 Q 15,5 20,25 T 35,15" strokeDasharray="3 3" />
-                  <circle cx="10" cy="18" r="2" fill="currentColor" />
-                  <circle cx="28" cy="22" r="2" fill="currentColor" />
-                </svg>
-              </div>
-              <div className="text-xs font-bold text-red-400">Denatured (Melted)</div>
-              <div className="text-[10px] text-slate-400 mt-0.5">Heat permanently destroys shape</div>
-            </div>
-          </div>
-
-          <div className="text-[11px] text-slate-400 border-t border-slate-800 pt-2 text-center">
-            Feynman Rule: Paper origami does not refold itself once crushed.
-          </div>
-        </div>
-      ) : activeDiagram === 'cleanroom' ? (
-        /* Cleanroom Demarcation Bench & Airlock Flow */
-        <div className="w-full p-6 sm:p-7 bg-slate-900 text-white flex flex-col justify-between min-h-[260px]">
-          <div className="flex items-center justify-between text-xs font-mono text-slate-400 border-b border-slate-800 pb-2">
-            <span className="text-blue-400 font-semibold">ASEPTIC BOUNDARY SCHEMATIC</span>
-            <span className="text-emerald-400">+15 Pa Pressure Outflow</span>
-          </div>
-
-          <div className="py-4">
-            <div className="relative h-24 rounded-xl border border-slate-700 bg-slate-950 overflow-hidden flex items-stretch text-xs font-mono">
-              {/* Dirty Pre-Gowning Zone */}
-              <div className="w-1/2 p-3 bg-red-950/20 flex flex-col justify-between border-r-2 border-dashed border-amber-400">
-                <span className="text-red-400 font-bold">DIRTY SIDE (CNC)</span>
-                <span className="text-[10px] text-slate-400">Street Shoes & Pre-Donning</span>
-              </div>
-
-              {/* The Demarcation Bench Line */}
-              <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-4 bg-amber-400 text-slate-950 flex items-center justify-center font-bold text-[9px] uppercase tracking-tighter writing-vertical">
-                BENCH
-              </div>
-
-              {/* Clean Class 5 Zone */}
-              <div className="w-1/2 p-3 bg-emerald-950/20 flex flex-col justify-between pl-4">
-                <span className="text-emerald-400 font-bold">CLEAN SIDE (ISO 5)</span>
-                <span className="text-[10px] text-slate-400">Sterile Booties ONLY</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="text-[11px] text-slate-400 border-t border-slate-800 pt-2 flex items-center justify-between">
-            <span>Don bootie & swing leg over bench</span>
-            <span className="text-amber-400">Zero Floor Contact Rule</span>
-          </div>
-        </div>
-      ) : activeDiagram === 'incident_triage' ? (
-        /* SRE Incident War Room & Rollback Topology */
-        <div className="w-full p-6 sm:p-7 bg-slate-900 text-white flex flex-col justify-between min-h-[260px]">
-          <div className="flex items-center justify-between text-xs font-mono text-slate-400 border-b border-slate-800 pb-2">
-            <span className="text-orange-400 font-semibold">INCIDENT COMMAND TOPOLOGY</span>
-            <span className="text-red-400">P1 ACTIVE BRIDGE</span>
-          </div>
-
-          <div className="py-4 space-y-2 text-xs font-mono">
-            <div className="flex items-center justify-between p-2 rounded-lg bg-slate-800/80 border border-amber-500/30">
-              <span className="text-amber-400 font-bold">INCIDENT COMMANDER (IC)</span>
-              <span className="text-slate-300">Single Voice / Coordinates</span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <div className="p-2 rounded-lg bg-slate-800/60 border border-blue-500/20">
-                <div className="text-blue-400 font-bold text-[11px]">OPS LEAD</div>
-                <div className="text-[10px] text-slate-400">Executes Rollback</div>
-              </div>
-
-              <div className="p-2 rounded-lg bg-slate-800/60 border border-purple-500/20">
-                <div className="text-purple-400 font-bold text-[11px]">COMMS LEAD</div>
-                <div className="text-[10px] text-slate-400">Shields Bridge / VPs</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="text-[11px] text-slate-400 border-t border-slate-800 pt-2 flex items-center justify-between">
-            <span>Rule: Mitigate First, Root Cause Later</span>
-            <span className="text-emerald-400">15m Status SLA</span>
-          </div>
-        </div>
-      ) : (
-        /* Connected Workflow Nodes Flowchart */
-        <div className="w-full p-6 sm:p-7 bg-slate-900 text-white flex flex-col justify-between min-h-[260px]">
-          <div className="flex items-center justify-between text-xs font-mono text-slate-400 border-b border-slate-800 pb-2">
-            <span className="text-amber-400 font-semibold">SOP EXECUTION FLOWCHART</span>
-            <span className="text-slate-400">Instructional Sequence</span>
-          </div>
-
-          <div className="py-4 flex items-center justify-between gap-1 overflow-x-auto">
-            <div className="p-2.5 rounded-lg bg-slate-800 border border-slate-700 text-center shrink-0 w-20">
-              <div className="text-[10px] text-amber-400 font-bold">STAGE 1</div>
-              <div className="text-[11px] font-semibold text-white mt-0.5">Trigger</div>
-            </div>
-
-            <ArrowRight className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-
-            <div className="p-2.5 rounded-lg bg-slate-800 border border-slate-700 text-center shrink-0 w-20">
-              <div className="text-[10px] text-blue-400 font-bold">STAGE 2</div>
-              <div className="text-[11px] font-semibold text-white mt-0.5">Action</div>
-            </div>
-
-            <ArrowRight className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-
-            <div className="p-2.5 rounded-lg bg-slate-800 border border-slate-700 text-center shrink-0 w-20">
-              <div className="text-[10px] text-red-400 font-bold">WATCHOUT</div>
-              <div className="text-[11px] font-semibold text-white mt-0.5">Safety</div>
-            </div>
-
-            <ArrowRight className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-
-            <div className="p-2.5 rounded-lg bg-emerald-950/40 border border-emerald-500/40 text-center shrink-0 w-20">
-              <div className="text-[10px] text-emerald-400 font-bold">VERIFY</div>
-              <div className="text-[11px] font-semibold text-white mt-0.5">Sign-Off</div>
-            </div>
-          </div>
-
-          <div className="text-[11px] text-slate-400 border-t border-slate-800 pt-2 flex items-center justify-between">
-            <span>Visual Scaffold (Dual Coding)</span>
-            <span className="text-amber-400">Miller's Law (Chunked)</span>
-          </div>
-        </div>
       )}
+
+
 
       {/* Caption strip (if present) */}
       {!cleanVideoMode && image?.caption && (
@@ -337,10 +168,57 @@ export const CardVisual: React.FC<CardVisualProps> = ({
             </div>
 
             <div className="space-y-4 text-xs">
-              {/* Option A: Select High-Fidelity Domain Schematic */}
+              {/* Option A: ✨ AI Text-to-Image Generation (Imagen 3) */}
+              <div className="p-3.5 rounded-2xl bg-blue-950/40 border border-blue-500/30 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 font-bold text-blue-400 text-xs">
+                    <Sparkles className="w-4 h-4 text-blue-400" />
+                    <span>Generate AI Image from Text Prompt (Imagen)</span>
+                  </div>
+                  <span className="text-[10px] font-mono bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full">
+                    Gemini AI
+                  </span>
+                </div>
+
+                <p className="text-[11px] text-neutral-400">
+                  Describe any workplace scene, equipment, or SOP action to generate a custom visual.
+                </p>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={aiPrompt}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                    placeholder="e.g. Operator checking calibrated temperature sensor"
+                    className="flex-1 p-2.5 bg-neutral-900 border border-white/10 rounded-xl text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-blue-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleGenerateAiImage}
+                    disabled={isGeneratingAi}
+                    className="min-h-[38px] px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs shrink-0 flex items-center gap-1.5 transition-colors disabled:opacity-50 cursor-pointer shadow-md"
+                  >
+                    {isGeneratingAi ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>Generating...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>Generate AI Image</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {aiError && <p className="text-[11px] text-rose-400">{aiError}</p>}
+              </div>
+
+              {/* Option B: Select High-Fidelity Domain Schematic */}
               <div>
                 <label className="block font-semibold mb-2 text-slate-700 dark:text-slate-300 uppercase tracking-wider text-[11px]">
-                  1. Choose Domain Schematic (Zero Broken Links)
+                  2. Choose Domain Schematic (Zero Broken Links)
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button

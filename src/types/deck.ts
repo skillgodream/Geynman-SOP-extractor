@@ -46,7 +46,7 @@ export interface CardImage {
   url?: string;
   caption?: string;
   alt?: string;
-  diagramType?: 'cold_chain' | 'protein_origami' | 'cleanroom' | 'incident_triage' | 'chemical_neutralization' | 'flowchart' | 'custom';
+  diagramType?: 'cold_chain' | 'protein_origami' | 'cleanroom' | 'incident_triage' | 'warehouse' | 'chemical_neutralization' | 'flowchart' | 'custom';
   layout?: 'split' | 'hero' | 'inset';
 }
 
@@ -100,6 +100,8 @@ export interface GuideScenario {
   options: GuideScenarioOption[];
   feynmanRuleLearned: string;
   diagramType?: CardImage['diagramType'];
+  imageUrl?: string;
+  codeBadge?: string;
 }
 
 export interface AssessmentQuestion {

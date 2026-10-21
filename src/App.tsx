@@ -47,6 +47,7 @@ export default function App() {
   const handleDeckGenerated = (newDeck: FeynmanDeck) => {
     setAllDecks((prev) => [newDeck, ...prev]);
     setCurrentDeck(newDeck);
+    setActiveTutorCard(newDeck.cards[0] || null);
     setActiveView('outline');
     setCurrentScreen('deck');
   };
@@ -54,6 +55,7 @@ export default function App() {
   // Select a Demo or Ingested Deck -> First page is Card Outline
   const handleSelectDeck = (deck: FeynmanDeck, initialView: AppViewMode = 'outline') => {
     setCurrentDeck(deck);
+    setActiveTutorCard(deck.cards[0] || null);
     setActiveView(initialView);
     setCurrentScreen('deck');
   };
@@ -245,6 +247,10 @@ export default function App() {
           if (card) setActiveTutorCard(card);
           setIsTutorOpen(true);
         }}
+        onSwitchToMode={(mode, slideIndex = 0) => {
+          setPresentationSlideIndex(slideIndex);
+          setActiveView(mode);
+        }}
       />
     );
   }
@@ -255,6 +261,10 @@ export default function App() {
       <ShowMeMode
         deck={currentDeck}
         onExit={() => setActiveView('outline')}
+        onSwitchToMode={(mode, slideIndex = 0) => {
+          setPresentationSlideIndex(slideIndex);
+          setActiveView(mode);
+        }}
       />
     );
   }
@@ -265,6 +275,10 @@ export default function App() {
       <GuideMeMode
         deck={currentDeck}
         onExit={() => setActiveView('outline')}
+        onSwitchToMode={(mode, slideIndex = 0) => {
+          setPresentationSlideIndex(slideIndex);
+          setActiveView(mode);
+        }}
       />
     );
   }
@@ -275,6 +289,10 @@ export default function App() {
       <TestMeMode
         deck={currentDeck}
         onExit={() => setActiveView('outline')}
+        onSwitchToMode={(mode, slideIndex = 0) => {
+          setPresentationSlideIndex(slideIndex);
+          setActiveView(mode);
+        }}
       />
     );
   }

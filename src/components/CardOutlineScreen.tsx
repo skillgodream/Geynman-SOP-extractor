@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import { FeynmanDeck, CardType, AppViewMode } from '../types/deck';
 
+import { ModePills } from './ModePills';
+
 interface CardOutlineScreenProps {
   deck: FeynmanDeck;
   onBackToExplore: () => void;
@@ -33,6 +35,14 @@ export const CardOutlineScreen: React.FC<CardOutlineScreenProps> = ({
   onSwitchToMode,
   onAddCardChunk,
 }) => {
+  const handleSelectMode = (mode: AppViewMode, slideIndex = 0) => {
+    if (mode === 'presentation') {
+      onOpenSlideView(slideIndex);
+    } else {
+      onSwitchToMode(mode);
+    }
+  };
+
   const getCardIcon = (type: CardType) => {
     switch (type) {
       case 'concept_analogy':
@@ -56,7 +66,7 @@ export const CardOutlineScreen: React.FC<CardOutlineScreenProps> = ({
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col font-sans antialiased selection:bg-neutral-800 selection:text-white">
-      {/* 1. Header — strictly Back to Decks (Removed truncated title & Slide View to avoid crowding) */}
+      {/* 1. Header — strictly Back to Decks */}
       <header className="sticky top-0 z-40 w-full border-b border-white/[0.08] bg-black/85 backdrop-blur-xl">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <button
@@ -77,19 +87,10 @@ export const CardOutlineScreen: React.FC<CardOutlineScreenProps> = ({
         </div>
       </header>
 
-      {/* 2. Main Content — Clean Apple layout with ZERO card-in-card nesting */}
+      {/* 2. Main Content */}
       <main className="flex-1 w-full max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex flex-col justify-start">
-        {/* Top Info Section: Deck Title & Subtitle with Start Slides CTA */}
+        {/* Top Info Section: Deck Title & Subtitle with Mode Pills */}
         <div className="pb-6 border-b border-white/[0.08] space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-mono text-neutral-400 uppercase tracking-wider">
-              {totalCardsCount} Instructional Cards
-            </span>
-            <span className="text-xs text-neutral-500 font-mono">
-              Feynman Structure
-            </span>
-          </div>
-
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white leading-tight">
             {deck.title}
           </h1>
@@ -98,72 +99,41 @@ export const CardOutlineScreen: React.FC<CardOutlineScreenProps> = ({
             {deck.summary}
           </p>
 
-          <div className="pt-2">
-            <button
-              type="button"
-              onClick={() => onOpenSlideView(0)}
-              className="min-h-[44px] px-6 py-2.5 bg-white hover:bg-neutral-200 active:scale-95 text-black text-xs font-semibold rounded-full inline-flex items-center gap-2 shadow-md transition-all cursor-pointer"
-              aria-label="Start Slide View"
-            >
-              <Presentation className="w-3.5 h-3.5" />
-              <span>Start Slides</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+          <div className="pt-2 space-y-2">
+            <div className="text-[11px] font-mono tracking-wider font-semibold text-neutral-400 uppercase">
+              Select Deck Mode:
+            </div>
+            <ModePills
+              activeMode="outline"
+              allowedModes={['outline', 'presentation']}
+              onSelectMode={handleSelectMode}
+            />
           </div>
         </div>
 
-        {/* List of Instructional Cards — Clean list rows with NO card-in-card nesting & NO text truncation */}
+        {/* List of Instructional Cards */}
         <div className="divide-y divide-white/[0.07]">
           {/* Card 0: Overview & Central Analogy */}
-          <div
-            role="button"
-            tabIndex={0}
-            onClick={() => onOpenSlideView(0)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') onOpenSlideView(0);
-            }}
-            className="py-4 sm:py-5 flex items-start justify-between gap-3.5 group cursor-pointer hover:bg-neutral-900/30 -mx-2 px-2 rounded-xl transition-colors active:scale-[0.99]"
-          >
-            <div className="w-9 h-9 rounded-xl bg-neutral-900 border border-white/10 flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-105 transition-transform">
-              <BookOpen className="w-4 h-4 text-amber-300" />
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <h2 className="text-sm sm:text-base font-semibold text-white group-hover:text-neutral-200 leading-snug">
-                Overview & Central Analogy
-              </h2>
-              <p className="text-xs text-neutral-400 leading-relaxed mt-1">
-                {deck.feynmanCoreConcept?.centralAnalogy?.title || 'Core Mental Model & Mission'}
-              </p>
-            </div>
-
-            <div className="w-7 h-7 flex items-center justify-center text-neutral-500 group-hover:text-white shrink-0 mt-1">
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-            </div>
-          </div>
-
-          {/* Cards 1 to N */}
-          {deck.cards.map((card, idx) => (
+          <div className="py-4 sm:py-5 hover:bg-neutral-900/30 -mx-2 px-2 rounded-xl transition-colors">
             <div
-              key={card.id}
               role="button"
               tabIndex={0}
-              onClick={() => onOpenSlideView(idx + 1)}
+              onClick={() => onOpenSlideView(0)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') onOpenSlideView(idx + 1);
+                if (e.key === 'Enter' || e.key === ' ') onOpenSlideView(0);
               }}
-              className="py-4 sm:py-5 flex items-start justify-between gap-3.5 group cursor-pointer hover:bg-neutral-900/30 -mx-2 px-2 rounded-xl transition-colors active:scale-[0.99]"
+              className="flex items-start justify-between gap-3.5 group cursor-pointer"
             >
               <div className="w-9 h-9 rounded-xl bg-neutral-900 border border-white/10 flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-105 transition-transform">
-                {getCardIcon(card.cardType)}
+                <BookOpen className="w-4 h-4 text-amber-300" />
               </div>
 
               <div className="flex-1 min-w-0">
                 <h2 className="text-sm sm:text-base font-semibold text-white group-hover:text-neutral-200 leading-snug">
-                  {idx + 1}. {card.title}
+                  Overview & Central Analogy
                 </h2>
                 <p className="text-xs text-neutral-400 leading-relaxed mt-1">
-                  {card.subtitle || card.feynmanExplanation}
+                  {deck.feynmanCoreConcept?.centralAnalogy?.title || 'Core Mental Model & Mission'}
                 </p>
               </div>
 
@@ -171,11 +141,46 @@ export const CardOutlineScreen: React.FC<CardOutlineScreenProps> = ({
                 <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </div>
             </div>
+          </div>
+
+          {/* Cards 1 to N */}
+          {deck.cards.map((card, idx) => (
+            <div
+              key={card.id}
+              className="py-4 sm:py-5 hover:bg-neutral-900/30 -mx-2 px-2 rounded-xl transition-colors"
+            >
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => onOpenSlideView(idx + 1)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') onOpenSlideView(idx + 1);
+                }}
+                className="flex items-start justify-between gap-3.5 group cursor-pointer"
+              >
+                <div className="w-9 h-9 rounded-xl bg-neutral-900 border border-white/10 flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-105 transition-transform">
+                  {getCardIcon(card.cardType)}
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-sm sm:text-base font-semibold text-white group-hover:text-neutral-200 leading-snug">
+                    {idx + 1}. {card.title}
+                  </h2>
+                  <p className="text-xs text-neutral-400 leading-relaxed mt-1">
+                    {card.subtitle || card.feynmanExplanation}
+                  </p>
+                </div>
+
+                <div className="w-7 h-7 flex items-center justify-center text-neutral-500 group-hover:text-white shrink-0 mt-1">
+                  <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                </div>
+              </div>
+            </div>
           ))}
         </div>
 
-        {/* ADD NEW CARD CHUNK Section */}
-        <div className="pt-8 mt-4 border-t border-white/[0.08] space-y-3">
+        {/* ADD NEW CARD CHUNK Section (White Cards) */}
+        <div className="pt-8 mt-4 border-t border-white/[0.08] space-y-3 pb-8">
           <div className="text-[11px] font-bold tracking-wider text-neutral-400 uppercase">
             Add New Card Chunk:
           </div>
@@ -184,77 +189,37 @@ export const CardOutlineScreen: React.FC<CardOutlineScreenProps> = ({
             <button
               type="button"
               onClick={() => onAddCardChunk('critical_rules')}
-              className="min-h-[44px] px-3 py-2.5 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 text-rose-200 hover:text-white border border-rose-500/30 hover:border-rose-400/50 flex items-center justify-center gap-2 text-xs font-semibold transition-all active:scale-95 cursor-pointer shadow-sm"
+              className="min-h-[46px] px-3 py-3 rounded-2xl bg-white hover:bg-neutral-200 text-black border border-white flex items-center justify-center gap-2 text-xs font-semibold transition-all active:scale-95 cursor-pointer shadow-md"
             >
-              <ShieldAlert className="w-4 h-4 text-rose-400" />
+              <ShieldAlert className="w-4 h-4 text-red-600 stroke-[2]" />
               <span>+ Red Lines</span>
             </button>
 
             <button
               type="button"
               onClick={() => onAddCardChunk('process_steps')}
-              className="min-h-[44px] px-3 py-2.5 rounded-xl bg-sky-950/40 hover:bg-sky-900/60 text-sky-200 hover:text-white border border-sky-500/30 hover:border-sky-400/50 flex items-center justify-center gap-2 text-xs font-semibold transition-all active:scale-95 cursor-pointer shadow-sm"
+              className="min-h-[46px] px-3 py-3 rounded-2xl bg-white hover:bg-neutral-200 text-black border border-white flex items-center justify-center gap-2 text-xs font-semibold transition-all active:scale-95 cursor-pointer shadow-md"
             >
-              <Layers className="w-4 h-4 text-sky-400" />
+              <Layers className="w-4 h-4 text-blue-600 stroke-[2]" />
               <span>+ Step Sequence</span>
             </button>
 
             <button
               type="button"
               onClick={() => onAddCardChunk('scenario_quiz')}
-              className="min-h-[44px] px-3 py-2.5 rounded-xl bg-purple-950/40 hover:bg-purple-900/60 text-purple-200 hover:text-white border border-purple-500/30 hover:border-purple-400/50 flex items-center justify-center gap-2 text-xs font-semibold transition-all active:scale-95 cursor-pointer shadow-sm"
+              className="min-h-[46px] px-3 py-3 rounded-2xl bg-white hover:bg-neutral-200 text-black border border-white flex items-center justify-center gap-2 text-xs font-semibold transition-all active:scale-95 cursor-pointer shadow-md"
             >
-              <HelpCircle className="w-4 h-4 text-purple-400" />
+              <HelpCircle className="w-4 h-4 text-purple-600 stroke-[2]" />
               <span>+ Dilemma Quiz</span>
             </button>
 
             <button
               type="button"
               onClick={() => onAddCardChunk('concept_analogy')}
-              className="min-h-[44px] px-3 py-2.5 rounded-xl bg-amber-950/40 hover:bg-amber-900/60 text-amber-200 hover:text-white border border-amber-500/30 hover:border-amber-400/50 flex items-center justify-center gap-2 text-xs font-semibold transition-all active:scale-95 cursor-pointer shadow-sm"
+              className="min-h-[46px] px-3 py-3 rounded-2xl bg-white hover:bg-neutral-200 text-black border border-white flex items-center justify-center gap-2 text-xs font-semibold transition-all active:scale-95 cursor-pointer shadow-md"
             >
-              <Lightbulb className="w-4 h-4 text-amber-300" />
+              <Lightbulb className="w-4 h-4 text-amber-600 stroke-[2]" />
               <span>+ Analogy</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Alternative Modes Row */}
-        <div className="pt-6 mt-6 border-t border-white/[0.08] flex flex-wrap items-center justify-between gap-2 pb-12">
-          <span className="text-[11px] text-neutral-400 font-medium">
-            Alternative Modes:
-          </span>
-          <div className="flex flex-wrap items-center gap-1.5">
-            <button
-              type="button"
-              onClick={() => onOpenFlowView()}
-              className="min-h-[36px] px-3 py-1.5 rounded-full bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white border border-white/10 text-xs font-medium transition-colors cursor-pointer"
-            >
-              Deck Flow
-            </button>
-            <button
-              type="button"
-              onClick={() => onSwitchToMode('show_me')}
-              className="min-h-[36px] px-3 py-1.5 rounded-full bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white border border-white/10 text-xs font-medium transition-colors flex items-center gap-1 cursor-pointer"
-            >
-              <Film className="w-3 h-3 text-sky-300" />
-              <span>Video</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => onSwitchToMode('guide_me')}
-              className="min-h-[36px] px-3 py-1.5 rounded-full bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white border border-white/10 text-xs font-medium transition-colors flex items-center gap-1 cursor-pointer"
-            >
-              <HelpCircle className="w-3 h-3 text-amber-300" />
-              <span>Guide Me</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => onSwitchToMode('test_me')}
-              className="min-h-[36px] px-3 py-1.5 rounded-full bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white border border-white/10 text-xs font-medium transition-colors flex items-center gap-1 cursor-pointer"
-            >
-              <Award className="w-3 h-3 text-emerald-300" />
-              <span>Test Me</span>
             </button>
           </div>
         </div>

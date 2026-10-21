@@ -9,16 +9,18 @@ import {
   X
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { FeynmanDeck, GuideScenario, GuideScenarioOption } from '../../types/deck';
+import { FeynmanDeck, GuideScenario, GuideScenarioOption, AppViewMode } from '../../types/deck';
 import { deriveGuideScenarios } from '../../utils/deckDerivations';
 import { CardVisual } from '../visuals/CardVisual';
+import { ModePills } from '../ModePills';
 
 interface GuideMeModeProps {
   deck: FeynmanDeck;
   onExit: () => void;
+  onSwitchToMode?: (mode: AppViewMode, slideIndex?: number) => void;
 }
 
-export const GuideMeMode: React.FC<GuideMeModeProps> = ({ deck, onExit }) => {
+export const GuideMeMode: React.FC<GuideMeModeProps> = ({ deck, onExit, onSwitchToMode }) => {
   const scenarios: GuideScenario[] = deriveGuideScenarios(deck);
 
   const [activeScenarioIndex, setActiveScenarioIndex] = useState(0);
@@ -95,132 +97,110 @@ export const GuideMeMode: React.FC<GuideMeModeProps> = ({ deck, onExit }) => {
       </div>
 
       {/* Main Guided Practice Stage */}
-      <div className="flex-1 flex items-center justify-center p-3 sm:p-6 md:p-8 overflow-y-auto">
-        <div className="w-full max-w-5xl bg-neutral-950 border border-white/[0.08] rounded-3xl overflow-hidden shadow-2xl p-6 sm:p-10 flex flex-col">
-          {/* Scenario Selector Tabs in Apple Segmented Style */}
-          <div className="flex items-center gap-1.5 p-1 bg-neutral-900/90 border border-white/[0.08] rounded-full mb-6 overflow-x-auto scrollbar-none">
-            {scenarios.map((sc, idx) => (
-              <button
-                key={sc.id}
-                type="button"
-                onClick={() => {
-                  setActiveScenarioIndex(idx);
-                  setSelectedOptionId(null);
-                  setHasSubmitted(false);
-                }}
-                className={`min-h-[40px] flex-1 min-w-[130px] px-3.5 py-1.5 rounded-full text-xs font-medium flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                  activeScenarioIndex === idx
-                    ? 'bg-white text-black font-semibold shadow-sm'
-                    : 'text-neutral-400 hover:text-white'
-                }`}
-              >
-                <span>Situation {idx + 1}</span>
-                {scenarioResults[idx] === true && (
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                )}
-                {scenarioResults[idx] === false && (
-                  <XCircle className="w-3.5 h-3.5 text-red-400" />
-                )}
-              </button>
-            ))}
+      <div className="flex-1 flex flex-col p-4 sm:p-6 md:p-8 overflow-y-auto items-center">
+        <div className="w-full max-w-2xl flex flex-col gap-6 pb-12">
+          {/* Top Situation Picture Banner (Matching User Reference App Layout) */}
+          <div className="relative w-full h-48 sm:h-60 rounded-3xl overflow-hidden border border-white/[0.08] bg-neutral-900 shadow-2xl shrink-0">
+            <img
+              src={
+                currentScenario.imageUrl ||
+                'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80'
+              }
+              alt={currentScenario.title}
+              className="w-full h-full object-cover"
+              referrerPolicy="no-referrer"
+              loading="eager"
+            />
+            {/* Subtle Gradient Vignette */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+
+            {/* Code Badge Overlay (Matching Reference App: Code: STEP-1 / Code: PICKING) */}
+            <div className="absolute bottom-4 left-4 z-10">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-neutral-950/85 backdrop-blur-md border border-white/15 text-xs font-mono font-bold text-neutral-200 tracking-wider shadow-lg">
+                <span className="text-white uppercase">{currentScenario.codeBadge || `Code: STEP-${activeScenarioIndex + 1}`}</span>
+              </span>
+            </div>
           </div>
 
-          {/* 2-Column Split: Situation Narrative + Visual Schematic */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-6">
-            {/* Left Column (7 cols): The Dilemma Situation & Question */}
-            <div className="lg:col-span-7 space-y-4">
-              <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-neutral-400">
-                <span className="text-white">{currentScenario.context}</span>
-                <span className="text-neutral-600">·</span>
-                <span className="text-neutral-500">Field Dilemma</span>
-              </div>
-
-              <h2 className="text-xl sm:text-2xl font-bold text-white">
-                {currentScenario.title}
-              </h2>
-
-              {/* The Situation Context Block */}
-              <div className="p-4 rounded-2xl bg-neutral-900/60 border border-white/[0.08] text-neutral-200 text-xs sm:text-sm leading-relaxed">
-                <span className="font-bold text-neutral-400 block mb-1 uppercase tracking-wider text-[11px]">
-                  Situational Context:
-                </span>
-                {currentScenario.situation}
-              </div>
-
-              {/* The Question */}
-              <div className="text-sm sm:text-base font-bold text-white pt-1">
-                {currentScenario.question}
-              </div>
-
-              {/* Options List */}
-              <div className="space-y-2.5">
-                {currentScenario.options.map((option, idx) => {
-                  const isSelected = selectedOptionId === option.id;
-                  const isCorrect = option.isCorrect;
-
-                  let styleClass =
-                    'border-white/[0.08] bg-neutral-900/50 text-neutral-200 hover:border-white/20 hover:bg-neutral-900';
-
-                  if (hasSubmitted) {
-                    if (isSelected && isCorrect) {
-                      styleClass =
-                        'border-emerald-500 bg-emerald-950/40 text-emerald-100 ring-1 ring-emerald-500';
-                    } else if (isSelected && !isCorrect) {
-                      styleClass =
-                        'border-red-500/80 bg-red-950/40 text-red-100 ring-1 ring-red-500/80';
-                    } else if (!isSelected && isCorrect && !isUserCorrect) {
-                      styleClass =
-                        'border-emerald-500/80 bg-emerald-950/30 text-emerald-200 ring-1 ring-emerald-500/40';
-                    } else {
-                      styleClass = 'border-white/5 opacity-40';
-                    }
-                  }
-
-                  return (
-                    <button
-                      key={option.id}
-                      type="button"
-                      onClick={() => handleSelectOption(option)}
-                      disabled={hasSubmitted}
-                      className={`w-full min-h-[50px] text-left p-3.5 rounded-xl border text-xs sm:text-sm transition-all flex items-start gap-3 active:scale-[0.99] cursor-pointer ${styleClass}`}
-                    >
-                      <div
-                        className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold ${
-                          hasSubmitted && isCorrect
-                            ? 'border-emerald-500 bg-emerald-500 text-white'
-                            : hasSubmitted && isSelected && !isCorrect
-                            ? 'border-red-500 bg-red-500 text-white'
-                            : 'border-neutral-700 text-neutral-400'
-                        }`}
-                      >
-                        {hasSubmitted && isCorrect ? (
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                        ) : hasSubmitted && isSelected && !isCorrect ? (
-                          <XCircle className="w-3.5 h-3.5" />
-                        ) : (
-                          String.fromCharCode(65 + idx)
-                        )}
-                      </div>
-                      <div className="flex-1 leading-snug">
-                        {option.text}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+          {/* Question & Options Stack */}
+          <div className="space-y-6">
+            {/* Metadata / Context Tag */}
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-neutral-500">
+              <span className="text-white">{currentScenario.context || 'OPERATIONAL DILEMMA'}</span>
+              <span className="text-neutral-700">·</span>
+              <span className="text-neutral-500">FIELD DILEMMA SITUATION {activeScenarioIndex + 1}</span>
             </div>
 
-            {/* Right Column (5 cols): Visual Context Schematic */}
-            <div className="lg:col-span-5 w-full">
-              <CardVisual
-                image={{
-                  diagramType: currentScenario.diagramType || 'cold_chain',
-                  caption: `Field Situation: ${currentScenario.title}`,
-                }}
-                onUpdateImage={() => {}}
-                defaultDiagram={currentScenario.diagramType || 'cold_chain'}
-                titleContext={currentScenario.title}
-              />
+            {/* Heading / Question with Animated Typing / Fade-In */}
+            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-white leading-tight animate-fadeIn">
+              {currentScenario.question}
+            </div>
+
+            {/* Situation Context Detail Block */}
+            <div className="p-5 rounded-2xl bg-neutral-900/60 border border-white/[0.05] text-neutral-300 text-sm leading-relaxed">
+              <span className="font-bold text-neutral-500 block mb-2 uppercase tracking-wider text-[11px]">
+                Situational Context:
+              </span>
+              {currentScenario.situation}
+            </div>
+
+            {/* Options List with Staggered Animation */}
+            <div className="space-y-3">
+              {currentScenario.options.map((option, idx) => {
+                const isSelected = selectedOptionId === option.id;
+                const isCorrect = option.isCorrect;
+
+                let styleClass =
+                  'border-white/[0.05] bg-neutral-900/40 text-neutral-300 hover:border-white/10 hover:bg-neutral-900';
+
+                if (hasSubmitted) {
+                  if (isSelected && isCorrect) {
+                    styleClass =
+                      'border-emerald-500/50 bg-emerald-950/30 text-emerald-100 ring-1 ring-emerald-500/50';
+                  } else if (isSelected && !isCorrect) {
+                    styleClass =
+                      'border-red-500/50 bg-red-950/30 text-red-100 ring-1 ring-red-500/50';
+                  } else if (!isSelected && isCorrect && !isUserCorrect) {
+                    // BLINKING / HIGHLIGHTING CORRECT OPTION IN GREEN WHEN WRONG
+                    styleClass =
+                      'animate-blink-green border-emerald-500 bg-emerald-950/70 text-emerald-100 ring-2 ring-emerald-500 shadow-lg';
+                  } else {
+                    styleClass = 'border-white/5 opacity-40';
+                  }
+                }
+
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => handleSelectOption(option)}
+                    disabled={hasSubmitted}
+                    style={{ animationDelay: `${idx * 90}ms` }}
+                    className={`w-full min-h-[60px] text-left p-4 rounded-xl border text-sm transition-all flex items-start gap-4 active:scale-[0.99] cursor-pointer animate-fadeIn ${styleClass}`}
+                  >
+                    <div
+                      className={`w-7 h-7 rounded-full border flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold ${
+                        hasSubmitted && isCorrect
+                          ? 'border-emerald-500 bg-emerald-500 text-white'
+                          : hasSubmitted && isSelected && !isCorrect
+                          ? 'border-red-500 bg-red-500 text-white'
+                          : 'border-neutral-700 text-neutral-400 bg-neutral-800'
+                      }`}
+                    >
+                      {hasSubmitted && isCorrect ? (
+                        <CheckCircle2 className="w-4 h-4" />
+                      ) : hasSubmitted && isSelected && !isCorrect ? (
+                        <XCircle className="w-4 h-4" />
+                      ) : (
+                        String.fromCharCode(65 + idx)
+                      )}
+                    </div>
+                    <div className="flex-1 leading-relaxed">
+                      {option.text}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
 

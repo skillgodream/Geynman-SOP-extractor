@@ -358,80 +358,37 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
         </div>
       </main>
 
-      {/* Apple Translucent Generation Card Modal */}
+      {/* Apple Translucent Generation Card Modal matching Screenshot IMG_7864 */}
       {isGenerating && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xl transition-all animate-in fade-in duration-300">
-          <div className="w-full max-w-md bg-neutral-950/80 backdrop-blur-2xl border border-white/15 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden space-y-6">
-            {/* Top ambient highlight line */}
-            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-blue-400/50 to-transparent" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-2xl transition-all animate-in fade-in duration-300">
+          <div className="w-full max-w-sm bg-[#18181b]/95 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 shadow-[0_30px_90px_rgba(0,0,0,0.8)] relative overflow-hidden flex flex-col items-center text-center space-y-6">
+            
+            {/* Circular Spinner */}
+            <div className="relative w-20 h-20 flex items-center justify-center my-2">
+              <div className="absolute inset-0 rounded-full border-4 border-neutral-800" />
+              <div className="absolute inset-0 rounded-full border-4 border-blue-500 border-t-transparent animate-spin" />
+              <div className="absolute inset-2 rounded-full bg-neutral-900/40" />
+            </div>
 
-            {/* Glowing Icon & Title */}
-            <div className="text-center space-y-2">
-              <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-400/20 flex items-center justify-center mx-auto text-blue-400 shadow-lg mb-3">
-                <Sparkles className="w-6 h-6 animate-pulse" />
-              </div>
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
-                Synthesizing Feynman Deck
+            {/* Heading & Subtitle */}
+            <div className="space-y-2">
+              <h2 className="text-2xl font-bold tracking-tight text-white">
+                Analyzing document...
               </h2>
-              <p className="text-xs text-neutral-400 max-w-xs mx-auto leading-relaxed">
-                Applying Feynman principles to distill operational complexity into visual cards.
+              <p className="text-sm text-neutral-400 leading-relaxed max-w-xs">
+                Building your operational training experience.
               </p>
             </div>
 
-            {/* Progress Bar */}
-            <div className="w-full h-1.5 bg-neutral-900 rounded-full overflow-hidden border border-white/5">
-              <div
-                className="h-full bg-gradient-to-r from-blue-500 to-sky-300 transition-all duration-700 ease-out"
-                style={{
-                  width: `${Math.min(100, ((generationStep + 1) / GENERATION_STEPS.length) * 100)}%`,
-                }}
-              />
-            </div>
-
-            {/* Animated Step Breakdown */}
-            <div className="space-y-3 pt-1">
-              {GENERATION_STEPS.map((step, idx) => {
-                const isCompleted = idx < generationStep;
-                const isCurrent = idx === generationStep;
-
-                return (
-                  <div
-                    key={idx}
-                    className={`flex items-center gap-3 p-2.5 rounded-xl transition-all duration-300 ${
-                      isCurrent
-                        ? 'bg-neutral-900/90 border border-white/10 text-white'
-                        : isCompleted
-                        ? 'text-neutral-300'
-                        : 'text-neutral-600'
-                    }`}
-                  >
-                    <div className="shrink-0 flex items-center justify-center w-5 h-5">
-                      {isCompleted ? (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                      ) : isCurrent ? (
-                        <Loader2 className="w-4 h-4 text-blue-400 animate-spin" />
-                      ) : (
-                        <div className="w-2 h-2 rounded-full bg-neutral-700" />
-                      )}
-                    </div>
-                    <span
-                      className={`text-xs ${
-                        isCurrent
-                          ? 'font-semibold text-white'
-                          : isCompleted
-                          ? 'text-neutral-300'
-                          : 'text-neutral-500'
-                      }`}
-                    >
-                      {step}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="text-center text-[11px] font-mono text-neutral-500 pt-2">
-              Step {generationStep + 1} of {GENERATION_STEPS.length}
+            {/* Cancel Button */}
+            <div className="pt-2 w-full">
+              <button
+                type="button"
+                onClick={() => setIsGenerating(false)}
+                className="w-full min-h-[44px] px-6 py-2.5 bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-semibold rounded-full border border-white/10 shadow-sm transition-all active:scale-95 cursor-pointer"
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </div>

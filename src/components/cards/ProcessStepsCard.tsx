@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Layers, HelpCircle, AlertTriangle } from 'lucide-react';
+import { Layers, HelpCircle, AlertTriangle, ArrowRight } from 'lucide-react';
 import { DeckCard, ProcessStep, CardImage } from '../../types/deck';
 import { CardToolbar } from '../CardToolbar';
 import { CardVisual } from '../visuals/CardVisual';
@@ -119,7 +119,7 @@ export const ProcessStepsCard: React.FC<ProcessStepsCardProps> = ({
             >
               {st.stepNumber || idx + 1}
             </span>
-            <span className="truncate">{st.title}</span>
+            <span className="truncate">Phase {st.stepNumber || idx + 1}</span>
           </button>
         ))}
       </div>
@@ -135,8 +135,9 @@ export const ProcessStepsCard: React.FC<ProcessStepsCardProps> = ({
               <span className="text-neutral-300">{activeStep.title}</span>
             </div>
 
-            <div className="font-bold text-white text-base sm:text-xl leading-snug">
-              {activeStep.action}
+            <div className="font-bold text-amber-300 text-base sm:text-xl leading-snug flex items-center justify-between gap-3">
+              <span>{activeStep.action}</span>
+              <ArrowRight className="w-5 h-5 text-amber-400 shrink-0" />
             </div>
 
             <div className="pt-3 border-t border-white/[0.08] space-y-3">

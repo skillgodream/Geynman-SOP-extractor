@@ -8,7 +8,7 @@ import {
   Clock,
   Lightbulb
 } from 'lucide-react';
-import { FeynmanDeck, DeckCard } from '../types/deck';
+import { FeynmanDeck, DeckCard, AppViewMode } from '../types/deck';
 import { ConceptAnalogyCard } from './cards/ConceptAnalogyCard';
 import { CriticalRulesCard } from './cards/CriticalRulesCard';
 import { ProcessStepsCard } from './cards/ProcessStepsCard';
@@ -24,6 +24,7 @@ interface PresentationModeProps {
   onUpdateCard: (card: DeckCard) => void;
   onDeleteCard: (cardId: string) => void;
   onOpenTutor: (card: DeckCard) => void;
+  onSwitchToMode?: (mode: AppViewMode, slideIndex?: number) => void;
 }
 
 export const PresentationMode: React.FC<PresentationModeProps> = ({
@@ -33,6 +34,7 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({
   onUpdateCard,
   onDeleteCard,
   onOpenTutor,
+  onSwitchToMode,
 }) => {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(initialSlideIndex);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -72,16 +74,16 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({
   const currentCard = currentSlideIndex >= 1 ? deck.cards[currentSlideIndex - 1] : null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black text-white flex flex-col select-none overflow-hidden font-sans">
+    <div className="fixed inset-0 z-50 bg-gradient-to-b from-[#1c1c1e] via-[#141416] to-[#0a0a0c] text-white flex flex-col select-none overflow-hidden font-sans">
       {/* Top control bar */}
-      <div className="h-14 px-4 sm:px-6 flex items-center justify-between border-b border-white/[0.08] bg-black/80 backdrop-blur-xl">
+      <div className="h-14 px-4 sm:px-6 flex items-center justify-between border-b border-white/[0.08] bg-[#1c1c1e]/90 backdrop-blur-2xl">
         <div className="flex items-center gap-2 truncate">
           <span className="font-semibold text-xs sm:text-sm tracking-tight text-white truncate max-w-[150px] sm:max-w-xs">
             {deck.title}
           </span>
-          <span className="text-neutral-600">·</span>
+          <span className="text-neutral-500">·</span>
           <span className="text-[11px] sm:text-xs text-neutral-400 font-mono">
-            {currentSlideIndex + 1}/{totalSlides}
+            Slide {currentSlideIndex + 1} of {totalSlides}
           </span>
         </div>
 
@@ -89,7 +91,7 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({
           <button
             type="button"
             onClick={toggleFullscreen}
-            className="min-h-[44px] min-w-[44px] flex items-center justify-center text-neutral-400 hover:text-white rounded-full transition-colors cursor-pointer"
+            className="min-h-[38px] min-w-[38px] flex items-center justify-center text-neutral-400 hover:text-white rounded-full bg-neutral-900/60 hover:bg-neutral-800 border border-white/10 transition-colors cursor-pointer"
             title="Toggle fullscreen"
             aria-label="Fullscreen"
           >
@@ -98,7 +100,7 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({
           <button
             type="button"
             onClick={onExit}
-            className="min-h-[44px] flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 border border-white/10 rounded-full transition-colors cursor-pointer"
+            className="min-h-[38px] flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 border border-white/10 rounded-full transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
             <span className="hidden sm:inline">Exit Slides</span>
@@ -106,28 +108,33 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({
         </div>
       </div>
 
+
       {/* Main Slide Stage */}
       <div className="flex-1 flex items-center justify-center p-4 sm:p-8 md:p-12 overflow-y-auto">
-        <div className="w-full max-w-4xl max-h-[82vh] transition-all">
+        <div className="w-full max-w-4xl max-h-[85vh] transition-all">
           {currentSlideIndex === 0 ? (
-            /* Slide 0: Cover / Overview Slide in Apple Black Theme */
-            <div className="bg-neutral-950 border border-white/[0.08] rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden">
+            /* Slide 0: Cover / Overview Slide in Apple Keynote Style */
+            <div className="bg-[#18181b]/95 backdrop-blur-2xl border border-white/[0.1] rounded-3xl p-8 sm:p-12 shadow-[0_30px_90px_rgba(0,0,0,0.8)] relative overflow-hidden">
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                <div className="lg:col-span-7 space-y-4">
-                  <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white leading-tight">
+                <div className="lg:col-span-7 space-y-5">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-800/80 border border-white/10 text-[11px] font-mono font-medium text-neutral-300">
+                    KEYNOTE OVERVIEW SLIDE
+                  </div>
+
+                  <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-white leading-[1.15]">
                     {deck.title}
                   </h1>
 
-                  <p className="text-xs sm:text-base text-neutral-300 leading-relaxed max-w-2xl font-normal">
+                  <p className="text-sm sm:text-base text-neutral-300 leading-relaxed max-w-2xl font-normal">
                     {deck.summary}
                   </p>
 
-                  <div className="pt-3 border-t border-white/[0.08] space-y-1.5">
-                    <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
-                      <Lightbulb className="w-4 h-4 text-neutral-300" />
+                  <div className="pt-4 border-t border-white/[0.08] space-y-2">
+                    <div className="text-xs font-semibold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <Lightbulb className="w-4 h-4 text-amber-400" />
                       <span>{deck.feynmanCoreConcept.centralAnalogy.title}</span>
                     </div>
-                    <blockquote className="text-xs sm:text-sm text-neutral-200 leading-relaxed italic border-l-2 border-white/30 pl-3">
+                    <blockquote className="text-xs sm:text-sm text-neutral-200 leading-relaxed italic border-l-2 border-white/40 pl-3">
                       "{deck.feynmanCoreConcept.centralAnalogy.analogyText}"
                     </blockquote>
                   </div>
