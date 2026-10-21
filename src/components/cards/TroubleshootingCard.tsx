@@ -125,7 +125,7 @@ export const TroubleshootingCard: React.FC<TroubleshootingCardProps> = ({
                 {/* Column 1: The Mistake (4 cols) */}
                 <div className="md:col-span-4 space-y-1">
                   <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">
-                    Common Mistake #{idx + 1}
+                    Issue #{idx + 1}
                   </div>
                   <div className="text-sm sm:text-base font-bold text-white leading-snug">
                     {pf.symptomOrMistake}
@@ -135,7 +135,7 @@ export const TroubleshootingCard: React.FC<TroubleshootingCardProps> = ({
                 {/* Column 2: Root Cause (4 cols) */}
                 <div className="md:col-span-4 space-y-1 text-xs">
                   <div className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
-                    Feynman Root Cause
+                    Root Cause
                   </div>
                   <p className="text-neutral-300 leading-relaxed font-normal">
                     {pf.rootCause}
@@ -146,7 +146,7 @@ export const TroubleshootingCard: React.FC<TroubleshootingCardProps> = ({
                 <div className="md:col-span-4 space-y-1 text-xs">
                   <div className="text-[11px] font-medium text-neutral-400 uppercase tracking-wider flex items-center gap-1">
                     <CheckCircle className="w-3.5 h-3.5 text-neutral-400" />
-                    <span>Immediate Corrective Action</span>
+                    <span>Corrective Action</span>
                   </div>
                   <p className="text-neutral-200 leading-relaxed font-normal">
                     {pf.immediateFix}

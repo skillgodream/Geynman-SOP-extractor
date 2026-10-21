@@ -120,10 +120,8 @@ export const ProcessStepsCard: React.FC<ProcessStepsCardProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center mb-6">
           {/* Left Column: Step Instruction & Underlying Feynman Physics (7 cols) */}
           <div className="lg:col-span-7 space-y-4">
-            <div className="flex items-center gap-2 text-xs font-bold text-neutral-400">
-              <span className="text-white">STEP {activeStep.stepNumber || activeStepIndex + 1} OF {steps.length}</span>
-              <span aria-hidden="true" className="text-neutral-600">·</span>
-              <span className="text-neutral-300">{activeStep.title}</span>
+            <div className="text-xs font-bold uppercase tracking-wider text-neutral-400">
+              {activeStep.title}
             </div>
 
             <div className="font-bold text-amber-300 text-base sm:text-xl leading-snug flex items-center justify-between gap-3">
@@ -163,18 +161,15 @@ export const ProcessStepsCard: React.FC<ProcessStepsCardProps> = ({
                 disabled={activeStepIndex === 0}
                 className="min-h-[40px] px-3 py-1.5 text-neutral-400 hover:text-white disabled:opacity-30 font-medium transition-colors cursor-pointer"
               >
-                ← Previous Step
+                ← Previous
               </button>
-              <div className="text-neutral-500 font-mono text-[11px]">
-                {activeStepIndex + 1} / {steps.length}
-              </div>
               <button
                 type="button"
                 onClick={() => setActiveStepIndex((prev) => Math.min(steps.length - 1, prev + 1))}
                 disabled={activeStepIndex === steps.length - 1}
                 className="min-h-[40px] px-3 py-1.5 text-white font-medium hover:underline disabled:opacity-30 disabled:no-underline transition-colors cursor-pointer"
               >
-                Next Step →
+                Next →
               </button>
             </div>
           </div>

@@ -117,10 +117,6 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({
             <div className="bg-[#18181b]/95 backdrop-blur-2xl border border-white/[0.1] rounded-3xl p-8 sm:p-12 shadow-[0_30px_90px_rgba(0,0,0,0.8)] relative overflow-hidden">
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                 <div className="lg:col-span-7 space-y-5">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-800/80 border border-white/10 text-[11px] font-mono font-medium text-neutral-300">
-                    KEYNOTE OVERVIEW SLIDE
-                  </div>
-
                   <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-white leading-[1.15]">
                     {deck.title}
                   </h1>

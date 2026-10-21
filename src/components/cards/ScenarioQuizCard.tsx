@@ -134,7 +134,7 @@ export const ScenarioQuizCard: React.FC<ScenarioQuizCardProps> = ({
               {/* Scenario setup */}
               <div className="border-l-2 border-white/30 pl-3.5 space-y-1">
                 <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">
-                  The Field Scenario:
+                  Scenario:
                 </div>
                 <p className="text-xs sm:text-sm text-neutral-200 leading-relaxed font-normal">
                   {quiz.scenario}

@@ -100,7 +100,7 @@ export const HeroCard: React.FC<HeroCardProps> = ({ deck, onUpdateDeck }) => {
           <div className="pt-4 border-t border-white/[0.08] space-y-2">
             <div className="flex items-center gap-2 text-xs font-bold text-neutral-400 uppercase tracking-wider">
               <Lightbulb className="w-4 h-4 text-neutral-300" />
-              <span>Core Feynman Mental Model</span>
+              <span>Core Mental Model</span>
             </div>
 
             <div className="text-base sm:text-lg font-bold text-white">
@@ -112,7 +112,7 @@ export const HeroCard: React.FC<HeroCardProps> = ({ deck, onUpdateDeck }) => {
             </blockquote>
 
             <p className="text-xs text-neutral-400 pt-1">
-              <strong className="text-neutral-200 font-semibold">Real-World Application:</strong>{' '}
+              <strong className="text-neutral-200 font-semibold">Application:</strong>{' '}
               {deck.feynmanCoreConcept.centralAnalogy.howItMapsToSOP}
             </p>
           </div>

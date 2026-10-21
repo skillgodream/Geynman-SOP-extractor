@@ -45,7 +45,7 @@ export const QuickReferenceCard: React.FC<QuickReferenceCardProps> = ({
     <div className="rounded-3xl border border-white/[0.08] bg-neutral-950 shadow-2xl p-6 sm:p-10 transition-colors">
       <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">
         <Bookmark className="w-3.5 h-3.5 text-neutral-300" />
-        <span>{card.badgeText || 'High-Yield Pocket Reference'}</span>
+        <span>{card.badgeText || 'Quick Reference'}</span>
       </div>
 
       {isEditing ? (
