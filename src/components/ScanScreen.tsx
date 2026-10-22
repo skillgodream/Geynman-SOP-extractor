@@ -93,14 +93,26 @@ export const ScanScreen: React.FC<ScanScreenProps> = ({
         body: JSON.stringify({
           pdfBase64: base64Data,
           mimeType: mimeMatch ? mimeMatch[1] : 'image/jpeg',
+          fileName: 'Scanned_SOP_Document.jpg',
           targetAudience: learnerLevel,
           instructionalFocus: instructionalFocus,
         }),
       });
 
       if (!res.ok) {
-        const errJson = await res.json().catch(() => ({}));
-        throw new Error(errJson.error || 'Could not analyze scanned document image.');
+        let errorDetail = '';
+        try {
+          const errJson = await res.json();
+          errorDetail = errJson.error || '';
+        } catch {
+          const text = await res.text().catch(() => '');
+          if (res.status === 404) {
+            errorDetail = 'Backend API route returned 404. If deploying on Vercel, please trigger a redeploy so Vercel provisions the new serverless function in /api/index.ts.';
+          } else {
+            errorDetail = `Server error (${res.status}): ${text.slice(0, 100)}`;
+          }
+        }
+        throw new Error(errorDetail || 'Could not analyze scanned document image.');
       }
 
       const resData = await res.json();

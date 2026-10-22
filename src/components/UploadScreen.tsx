@@ -68,6 +68,19 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
     }
   };
 
+  // Fast chunked buffer to base64 converter
+  const arrayBufferToBase64 = (buffer: ArrayBuffer): string => {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    const len = bytes.byteLength;
+    const chunkSize = 8192;
+    for (let i = 0; i < len; i += chunkSize) {
+      const chunk = bytes.subarray(i, Math.min(i + chunkSize, len));
+      binary += String.fromCharCode.apply(null, chunk as unknown as number[]);
+    }
+    return btoa(binary);
+  };
+
   const handleGenerate = async () => {
     if (mode === 'file' && !file) {
       setErrorMsg('Please select a PDF or document file to convert.');
@@ -83,21 +96,26 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
     setErrorMsg(null);
 
     try {
+      const storedKey = (() => {
+        try {
+          return localStorage.getItem('user_gemini_api_key') || '';
+        } catch {
+          return '';
+        }
+      })();
+
       const bodyData: any = {
         instructionalStyle: 'feynman',
         targetAudience: learnerLevel,
         instructionalFocus: instructionalFocus,
+        apiKey: storedKey || undefined,
       };
 
       if (mode === 'file' && file) {
+        bodyData.fileName = file.name;
         if (file.type === 'application/pdf') {
           const arrayBuffer = await file.arrayBuffer();
-          const bytes = new Uint8Array(arrayBuffer);
-          let binary = '';
-          for (let i = 0; i < bytes.byteLength; i++) {
-            binary += String.fromCharCode(bytes[i]);
-          }
-          bodyData.pdfBase64 = btoa(binary);
+          bodyData.pdfBase64 = arrayBufferToBase64(arrayBuffer);
           bodyData.mimeType = 'application/pdf';
         } else {
           const text = await file.text();
@@ -105,17 +123,34 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
         }
       } else {
         bodyData.documentText = pastedText;
+        bodyData.fileName = 'Pasted_Standard_Operating_Procedure';
       }
 
       const res = await fetch('/api/deck/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(storedKey ? { 'x-api-key': storedKey } : {}),
+        },
         body: JSON.stringify(bodyData),
       });
 
       if (!res.ok) {
-        const errJson = await res.json().catch(() => ({}));
-        throw new Error(errJson.error || 'Failed to synthesize Feynman training deck.');
+        let errorDetail = '';
+        try {
+          const errJson = await res.json();
+          errorDetail = errJson.error || '';
+        } catch {
+          const text = await res.text().catch(() => '');
+          if (res.status === 404) {
+            errorDetail = 'Backend API route returned 404. If deploying on Vercel, please trigger a redeploy so Vercel deploys the new serverless function in /api/index.ts.';
+          } else if (res.status === 504) {
+            errorDetail = 'Request timed out (504). Please try with a smaller document or paste text.';
+          } else {
+            errorDetail = `Server error (${res.status}): ${text.slice(0, 120)}`;
+          }
+        }
+        throw new Error(errorDetail || 'Failed to synthesize Feynman training deck.');
       }
 
       const resData = await res.json();

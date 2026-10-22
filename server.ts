@@ -1,5 +1,4 @@
 import express, { Request, Response } from 'express';
-import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -17,15 +16,21 @@ const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 app.use(express.json({ limit: '60mb' }));
 app.use(express.urlencoded({ extended: true, limit: '60mb' }));
 
-// Shared Gemini Client
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-  httpOptions: {
-    headers: {
-      'User-Agent': 'aistudio-build',
+// Helper to lazily get a Gemini Client using environment variable or custom request key
+function getAiClient(customKey?: string) {
+  const key = (customKey || process.env.GEMINI_API_KEY || '').trim();
+  if (!key) {
+    throw new Error('GEMINI_API_KEY is not configured in the environment.');
+  }
+  return new GoogleGenAI({
+    apiKey: key,
+    httpOptions: {
+      headers: {
+        'User-Agent': 'aistudio-build',
+      },
     },
-  },
-});
+  });
+}
 
 const FEYNMAN_SYSTEM_INSTRUCTION = `You are a world-class Instructional Designer and Master Educator specializing in the Feynman Technique.
 Your goal is to transform dense, bureaucratic, difficult-to-digest Standard Operating Procedures (SOPs), manuals, and policy docs into an engaging, intuitive, highly memorable interactive training deck (modeled after Gamma AI decks).
@@ -46,13 +51,15 @@ const RESILIENT_MODELS = ['gemini-3.8-flash', 'gemini-2.5-flash', 'gemini-3.5-fl
 async function generateContentWithResilience(params: {
   contents: any;
   config?: any;
+  apiKey?: string;
 }) {
+  const client = getAiClient(params.apiKey);
   let lastError: any = null;
 
   for (const model of RESILIENT_MODELS) {
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
-        const response = await ai.models.generateContent({
+        const response = await client.models.generateContent({
           model,
           contents: params.contents,
           config: params.config,
@@ -86,20 +93,31 @@ async function generateContentWithResilience(params: {
   throw lastError;
 }
 
-// Fallback Feynman generator in case all cloud API endpoints are temporarily unavailable during peak traffic
+// Fallback Feynman generator in case cloud API is temporarily unreachable
 function createFallbackFeynmanDeck(
   rawText: string,
-  targetAudience: string,
-  focusArea: string
+  targetAudience?: string,
+  _focusArea?: string,
+  fileName?: string
 ) {
-  const lines = rawText
-    .split('\n')
-    .map((l) => l.trim())
-    .filter((l) => l.length > 0);
+  let titleGuess = 'Operational Standard Operating Procedure';
 
-  const titleGuess =
-    lines.find((l) => l.length > 5 && l.length < 90 && !l.startsWith('#')) ||
-    'Standard Operating Procedure';
+  if (fileName) {
+    const cleanName = fileName
+      .replace(/\.pdf$/i, '')
+      .replace(/[-_]+/g, ' ')
+      .trim();
+    if (cleanName.length > 3) {
+      titleGuess = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+    }
+  } else if (rawText && rawText.length > 5) {
+    const lines = rawText
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0);
+    const candidate = lines.find((l) => l.length > 5 && l.length < 90 && !l.startsWith('#'));
+    if (candidate) titleGuess = candidate;
+  }
 
   return {
     id: `deck-${Date.now()}`,
@@ -179,58 +197,58 @@ function createFallbackFeynmanDeck(
           },
           {
             stepNumber: 2,
-            title: 'Controlled Execution & Rate Limiting',
-            action: 'Engage process steadily according to specified tolerances without rushing.',
-            whyItMatters: 'Thermal and mechanical stability requires controlled ramp rates.',
-            criticalWatchout: 'Monitor pressure differential throughout ramp.',
+            title: 'Execution & Real-Time Monitoring',
+            action: 'Proceed through operational stages while continuously verifying nominal bounds.',
+            whyItMatters: 'Catching drift early prevents cascade stoppage.',
+            criticalWatchout: 'Never leave workstation unattended during live cycle.',
           },
           {
             stepNumber: 3,
-            title: 'Verification, Handover & Documentation',
-            action: 'Record final metrics, sign off the batch record, and brief the incoming operator.',
-            whyItMatters: 'Traceability protects product safety and compliance integrity.',
-            criticalWatchout: 'Unrecorded deviations are treated as regulatory non-compliance.',
+            title: 'Post-Execution Verification & Handshake',
+            action: 'Record final batch metrics, sign shift ledger, and complete checklist.',
+            whyItMatters: 'Guarantees end-to-end traceability for compliance audits.',
+            criticalWatchout: 'Do not release output before QA confirmation.',
           },
         ],
       },
       {
         id: 'card-4',
         title: 'Common Traps & Field Recovery',
-        subtitle: 'Symptom diagnosis and rapid counter-measures',
+        subtitle: 'Symptom diagnosis and immediate remediation',
         cardType: 'pitfalls_troubleshooting' as const,
-        badgeText: 'Field Recovery',
+        badgeText: 'Troubleshooting',
         feynmanExplanation:
-          'When things go wrong on shift, follow these direct remediation protocols.',
+          'Recognize subtle failure warning signals before they compound into critical incidents.',
         pitfalls: [
           {
-            symptomOrMistake: 'Readings drifting outside operational boundary by >5%',
-            rootCause: 'Sensor fouling or inlet pressure fluctuation',
-            immediateFix: 'Hold cycle immediately, isolate line, and purge sensor before restarting.',
+            symptomOrMistake: 'Parameter reading fluctuates near threshold limit',
+            rootCause: 'Dirty probe sensor or loose connection bracket.',
+            immediateFix: 'Clean sensor head with approved solvent and reseat bracket firmly.',
           },
           {
-            symptomOrMistake: 'Operator fatigue causing missed verification signoff',
-            rootCause: 'Cognitive overload during late-shift execution',
-            immediateFix: 'Institute mandatory physical checklist touchpoint with secondary team member.',
+            symptomOrMistake: 'Operator rushes verification step under volume rush',
+            rootCause: 'Shift quota pressure overriding safety invariants.',
+            immediateFix: 'Invoke Stop-Work Authority and perform mandatory checklist validation.',
           },
         ],
       },
       {
         id: 'card-5',
         title: 'Shift Dilemma: Scenario Knowledge Check',
-        subtitle: 'Test your decision-making under real shift conditions',
+        subtitle: 'Test your intuition in a high-pressure scenario',
         cardType: 'scenario_quiz' as const,
         badgeText: 'Active Recall',
         feynmanExplanation:
-          'Apply the Feynman principles to this realistic 3 AM operational dilemma.',
+          'Apply the Feynman principles to this realistic 3:00 AM shift dilemma.',
         quiz: {
           scenario:
-            'You are 20 minutes from shift completion when a sensor reading momentarily spikes 10% past the allowable threshold and then returns to normal.',
-          question: 'What is the correct protocol response?',
+            'You are halfway through execution. A parameter trips a transient warning light for 3 seconds, then clears. Shift deadline is in 10 minutes.',
+          question: 'What is the required standard operating response?',
           options: [
-            'Log the transient spike, pause line, and notify shift lead before proceeding',
-            'Ignore it since it returned to normal range within 10 seconds',
-            'Manually adjust sensor calibration down by 10% to prevent alarms',
-            'Leave a note for the morning crew without logging in the active record',
+            'Pause, log the transient error, and perform verification check before continuing.',
+            'Ignore it because the light cleared itself and the deadline is pressing.',
+            'Manually recalibrate the indicator to prevent the warning from tripping again.',
+            'Finish the run quickly and leave an informal note for the next shift.',
           ],
           correctAnswerIndex: 0,
           feynmanFeedback:
@@ -302,7 +320,7 @@ function assignContextualDeckImages(deck: any) {
       url: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80',
     },
     {
-      keywords: ['pick', 'pack', 'warehouse', 'barcode', 'rf scanner', 'order fulfillment', 'inventory', 'bin'],
+      keywords: ['pick', 'pack', 'warehouse', 'barcode', 'rf scanner', 'order fulfillment', 'inventory', 'bin', 'packer', 'dark store'],
       url: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80',
     },
     {
@@ -352,10 +370,24 @@ function assignContextualDeckImages(deck: any) {
   }
 }
 
+// Dedicated API Router — mounted on both /api and / so it works seamlessly on Vercel Serverless and standalone
+const apiRouter = express.Router();
+
+// Health Check Endpoint (useful for verifying Vercel deployment status and GEMINI_API_KEY presence)
+apiRouter.get('/health', (_req: Request, res: Response) => {
+  res.json({
+    status: 'ok',
+    hasGeminiKey: !!process.env.GEMINI_API_KEY,
+    environment: process.env.VERCEL ? 'vercel-serverless' : 'standalone-node',
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // API endpoint: Generate full Feynman Training Deck from SOP (Text or PDF)
-app.post('/api/deck/generate', async (req: Request, res: Response) => {
+apiRouter.post('/deck/generate', async (req: Request, res: Response) => {
   try {
-    const { documentText, pdfBase64, mimeType, targetAudience, instructionalFocus } = req.body;
+    const { documentText, pdfBase64, mimeType, fileName, targetAudience, instructionalFocus, apiKey } = req.body;
+    const effectiveKey = (apiKey || req.headers['x-api-key'] || process.env.GEMINI_API_KEY || '').toString().trim();
 
     if (!documentText && !pdfBase64) {
       return res.status(400).json({
@@ -509,6 +541,7 @@ Ensure the deck contains 5 to 7 high-quality cards. Output STRICT JSON only.`;
     try {
       const response = await generateContentWithResilience({
         contents: { parts },
+        apiKey: effectiveKey,
         config: {
           responseMimeType: 'application/json',
           systemInstruction: FEYNMAN_SYSTEM_INSTRUCTION,
@@ -528,13 +561,14 @@ Ensure the deck contains 5 to 7 high-quality cards. Output STRICT JSON only.`;
         }
       }
     } catch (apiErr: any) {
-      console.warn('Gemini API temporarily unavailable, using offline Feynman synthesizer:', apiErr?.message);
-      // If cloud model is unavailable (503/429/network), synthesize high-yield deck
-      const sampleContent = documentText || 'Operational Standard Operating Procedure';
+      console.warn('Gemini API call note, engaging resilient synthesis:', apiErr?.message);
+      // If cloud model is unavailable or rate limited, synthesize structured Feynman deck
+      const sampleContent = documentText || fileName || 'Operational Standard Operating Procedure';
       deckData = createFallbackFeynmanDeck(
         sampleContent,
         targetAudience,
-        instructionalFocus
+        instructionalFocus,
+        fileName
       );
     }
 
@@ -554,9 +588,10 @@ Ensure the deck contains 5 to 7 high-quality cards. Output STRICT JSON only.`;
 });
 
 // API endpoint: Refine a single card using Feynman techniques
-app.post('/api/deck/refine-card', async (req: Request, res: Response) => {
+apiRouter.post('/deck/refine-card', async (req: Request, res: Response) => {
   try {
-    const { card, deckTitle, instructionType, customInstruction } = req.body;
+    const { card, deckTitle, instructionType, customInstruction, apiKey } = req.body;
+    const effectiveKey = (apiKey || req.headers['x-api-key'] || process.env.GEMINI_API_KEY || '').toString().trim();
 
     if (!card) {
       return res.status(400).json({ error: 'Card data is required.' });
@@ -583,6 +618,7 @@ Return ONLY the updated card JSON object with the same ID "${card.id}" maintaini
 
     const response = await generateContentWithResilience({
       contents: prompt,
+      apiKey: effectiveKey,
       config: {
         responseMimeType: 'application/json',
         systemInstruction: FEYNMAN_SYSTEM_INSTRUCTION,
@@ -599,9 +635,10 @@ Return ONLY the updated card JSON object with the same ID "${card.id}" maintaini
 });
 
 // API endpoint: Interactive Feynman Tutor / Question explanation for learners
-app.post('/api/deck/ask-feynman', async (req: Request, res: Response) => {
+apiRouter.post('/deck/ask-feynman', async (req: Request, res: Response) => {
   try {
-    const { question, cardContext, deckContext } = req.body;
+    const { question, cardContext, deckContext, apiKey } = req.body;
+    const effectiveKey = (apiKey || req.headers['x-api-key'] || process.env.GEMINI_API_KEY || '').toString().trim();
 
     const cardsDetail = deckContext?.cards
       ?.map((c: any, idx: number) => {
@@ -627,30 +664,34 @@ DECK TITLE: ${deckContext?.title || 'Training Deck'}
 DECK SUMMARY: ${deckContext?.summary || ''}
 CENTRAL ANALOGY: ${deckContext?.feynmanCoreConcept?.centralAnalogy?.title || ''} - ${deckContext?.feynmanCoreConcept?.centralAnalogy?.analogyText || ''}
 
-FULL DECK CONTENT & CARDS:
-${cardsDetail}
-
-CURRENT ACTIVE CARD STUDYING:
-Title: ${cardContext?.title || 'Deck Overview'}
+CURRENT FOCUSED CARD:
+Title: ${cardContext?.title || ''}
+Type: ${cardContext?.cardType || ''}
 Explanation: ${cardContext?.feynmanExplanation || ''}
+${cardContext?.analogy ? `Analogy: ${cardContext.analogy.metaphor} (${cardContext.analogy.takeaway})` : ''}
+
+ALL CARDS IN THIS SOP:
+${cardsDetail}
 `;
 
-    const prompt = `You are KOYA, the expert Frontline Trainer & Mentor for this specific training deck.
+    const prompt = `You are KOYA, a friendly, ultra-practical frontline mentor and educator who explains concepts using the Feynman Technique.
+A learner is studying this Standard Operating Procedure and asked this question:
 
-Here is the EXACT content, rules, and steps of the training deck you are teaching:
+"${question || 'How does this procedure work in simple terms?'}"
+
+Operational Context:
 ${fullContext}
 
-Learner Question: "${question}"
-
-Provide a friendly, highly accurate response strictly grounded in the training deck's content above:
-1. Direct, clear answer directly answering their question based on the deck's specific rules, steps, and analogies.
-2. If applicable, reference the specific card or rule from this deck.
+Instructions:
+1. Explain the answer in plain English using the "12-Year-Old Test" (no corporate/bureaucratic jargon).
+2. Reference the central analogy or practical scenario in the card where appropriate.
 3. Keep it crystal clear, concise (100-150 words), and encouraging without corporate jargon.`;
 
     let answerText = '';
     try {
       const response = await generateContentWithResilience({
         contents: prompt,
+        apiKey: effectiveKey,
         config: {
           systemInstruction: 'You are KOYA, an expert Frontline Trainer and intuitive Mentor. Always answer using the specific content, rules, and steps of the provided deck.',
           temperature: 0.3,
@@ -662,12 +703,10 @@ Provide a friendly, highly accurate response strictly grounded in the training d
     }
 
     if (!answerText) {
-      // Synthesize answer strictly grounded in deckContext cards
       const qLower = (question || '').toLowerCase();
       const deckTitle = deckContext?.title || 'this SOP procedure';
       const cards = deckContext?.cards || [];
 
-      // Find matching card
       const matchedCard = cards.find((c: any) => {
         const text = `${c.title} ${c.feynmanExplanation || ''} ${JSON.stringify(c.criticalRules || [])} ${JSON.stringify(c.steps || [])} ${JSON.stringify(c.pitfalls || [])} ${JSON.stringify(c.analogy || {})}`.toLowerCase();
         return qLower.split(' ').some((word: string) => word.length > 3 && text.includes(word));
@@ -708,7 +747,7 @@ Provide a friendly, highly accurate response strictly grounded in the training d
 });
 
 // API endpoint: AI Text-to-Image Generation (Gemini / Imagen 3 / OpenAI DALL-E / Pollinations AI)
-app.post('/api/generate-image', async (req: Request, res: Response) => {
+apiRouter.post('/generate-image', async (req: Request, res: Response) => {
   try {
     const { prompt, aspectRatio = '16:9', apiKey } = req.body;
     const providedKey = (apiKey || req.headers['x-api-key'] || '').toString().trim();
@@ -749,7 +788,7 @@ app.post('/api/generate-image', async (req: Request, res: Response) => {
     const effectiveGeminiKey = providedKey.startsWith('AIza') ? providedKey : process.env.GEMINI_API_KEY;
     if (effectiveGeminiKey) {
       try {
-        const genClient = effectiveGeminiKey === process.env.GEMINI_API_KEY ? ai : new GoogleGenAI({ apiKey: effectiveGeminiKey });
+        const genClient = new GoogleGenAI({ apiKey: effectiveGeminiKey });
         const response = await genClient.models.generateImages({
           model: 'imagen-3.0-generate-002',
           prompt: `High-resolution photorealistic 4K operational workplace diagram image: ${prompt}. Clean lighting, professional, clear instructional context.`,
@@ -789,7 +828,11 @@ app.post('/api/generate-image', async (req: Request, res: Response) => {
   }
 });
 
-// Setup Vite Dev or Static Production Serving
+// Mount the router on both '/api' and '/' for compatibility across Vercel Serverless and Express
+app.use('/api', apiRouter);
+app.use('/', apiRouter);
+
+// Setup Vite Dev or Static Production Serving for Standalone Node environments
 async function startServer() {
   if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.resolve(__dirname, 'dist')));
@@ -797,6 +840,7 @@ async function startServer() {
       res.sendFile(path.resolve(__dirname, 'dist', 'index.html'));
     });
   } else {
+    const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
@@ -809,4 +853,10 @@ async function startServer() {
   });
 }
 
-startServer();
+// Only launch standalone web server when not running in serverless environments like Vercel
+if (!process.env.VERCEL && process.env.NODE_ENV !== 'test') {
+  startServer();
+}
+
+export default app;
+export { app };
