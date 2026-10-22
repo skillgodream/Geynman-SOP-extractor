@@ -85,11 +85,17 @@ async function generateContentWithResilience(params: {
   for (const model of RESILIENT_MODELS) {
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
-        const response = await client.models.generateContent({
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Gemini API request timeout (12s limit exceeded)')), 12000)
+        );
+
+        const generatePromise = client.models.generateContent({
           model,
           contents: params.contents,
           config: params.config,
         });
+
+        const response: any = await Promise.race([generatePromise, timeoutPromise]);
 
         if (response && response.text) {
           return response;
@@ -102,15 +108,14 @@ async function generateContentWithResilience(params: {
           msg.includes('UNAVAILABLE') ||
           msg.includes('high demand') ||
           msg.includes('429') ||
-          msg.includes('RESOURCE_EXHAUSTED');
+          msg.includes('RESOURCE_EXHAUSTED') ||
+          msg.includes('timeout');
 
         if (isTemporary && attempt === 0) {
-          // Wait 1.2s before retrying this model
-          await new Promise((resolve) => setTimeout(resolve, 1200));
+          await new Promise((resolve) => setTimeout(resolve, 800));
           continue;
         }
 
-        // Try next fallback model
         break;
       }
     }

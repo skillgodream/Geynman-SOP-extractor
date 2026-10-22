@@ -115,7 +115,12 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
         bodyData.fileName = file.name;
         if (file.type === 'application/pdf') {
           const arrayBuffer = await file.arrayBuffer();
-          bodyData.pdfBase64 = arrayBufferToBase64(arrayBuffer);
+          let base64 = arrayBufferToBase64(arrayBuffer);
+          // Safely cap base64 size to 3.5MB max length to stay well under serverless request limits
+          if (base64.length > 3500000) {
+            base64 = base64.slice(0, 3500000);
+          }
+          bodyData.pdfBase64 = base64;
           bodyData.mimeType = 'application/pdf';
         } else {
           const text = await file.text();

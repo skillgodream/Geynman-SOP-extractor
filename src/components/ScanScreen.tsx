@@ -60,12 +60,49 @@ export const ScanScreen: React.FC<ScanScreenProps> = ({
     return () => clearInterval(interval);
   }, [isGenerating]);
 
+// Compress and downscale camera photos to max 1600px canvas JPEG so payloads remain under serverless limits (~350KB)
+const compressImage = (dataUrl: string): Promise<string> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const maxDim = 1600;
+      let width = img.width;
+      let height = img.height;
+
+      if (width > maxDim || height > maxDim) {
+        if (width > height) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        } else {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.82));
+      } else {
+        resolve(dataUrl);
+      }
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+};
+
   const handleCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = () => {
-        setScannedImage(reader.result as string);
+      reader.onload = async () => {
+        const rawResult = reader.result as string;
+        const compressed = await compressImage(rawResult);
+        setScannedImage(compressed);
         setScannedFilename(file.name);
         setErrorMsg(null);
       };
