@@ -245,46 +245,101 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
 
           {/* Upload Dropzone */}
           {mode === 'file' ? (
-            <div className="border border-dashed border-white/20 bg-neutral-900/30 rounded-2xl p-8 sm:p-10 flex flex-col items-center justify-center text-center transition-colors hover:border-white/30">
-              {/* Only the upload icon in the big card is colored blue */}
-              <div className="w-14 h-14 rounded-2xl bg-neutral-900/90 border border-blue-500/30 flex items-center justify-center text-blue-400 mb-4 shadow-inner">
+            <div
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const droppedFile = e.dataTransfer.files?.[0];
+                if (droppedFile) {
+                  setFile(droppedFile);
+                  setErrorMsg(null);
+                }
+              }}
+              className="border border-dashed border-white/20 bg-neutral-900/30 rounded-2xl p-8 sm:p-10 flex flex-col items-center justify-center text-center transition-colors hover:border-white/30"
+            >
+              {/* Blue upload icon */}
+              <div
+                onClick={() => !file && fileInputRef.current?.click()}
+                className={`w-14 h-14 rounded-2xl bg-neutral-900/90 border border-blue-500/30 flex items-center justify-center text-blue-400 mb-4 shadow-inner ${
+                  !file ? 'cursor-pointer hover:scale-105 transition-transform' : ''
+                }`}
+              >
                 <Upload className="w-6 h-6 text-blue-400" />
               </div>
 
               {file ? (
-                <div className="space-y-3">
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-900 border border-white/10 text-xs font-medium text-white">
-                    <FileText className="w-4 h-4 text-neutral-400" />
-                    <span>{file.name}</span>
+                <div className="space-y-4 w-full flex flex-col items-center">
+                  <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-neutral-900 border border-white/15 text-xs font-medium text-white shadow-md">
+                    <FileText className="w-4 h-4 text-blue-400" />
+                    <span className="max-w-[200px] sm:max-w-[320px] truncate">{file.name}</span>
                     <button
                       type="button"
                       onClick={() => setFile(null)}
-                      className="text-neutral-500 hover:text-white ml-1 cursor-pointer"
+                      className="text-neutral-400 hover:text-white p-0.5 rounded-full hover:bg-neutral-800 transition-colors ml-1 cursor-pointer"
+                      title="Remove file"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
-                  <div className="text-[11px] text-neutral-500 font-mono">
-                    {(file.size / 1024).toFixed(1)} KB · Ready to convert
+
+                  <div className="text-[11px] text-neutral-400 font-mono">
+                    {(file.size / 1024).toFixed(1)} KB · File uploaded & ready
                   </div>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <h3 className="text-sm sm:text-base font-semibold text-white">
-                    Tap or drag document PDF here
-                  </h3>
-                  <p className="text-xs text-neutral-400 max-w-sm mx-auto">
-                    Operating procedures, safety runbooks, checklists, or engineering manuals
-                  </p>
+
+                  {/* Active & Clickable Generate Pill Button */}
                   <div className="pt-2">
                     <button
                       type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="min-h-[44px] px-6 py-2.5 bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-semibold rounded-full border border-white/10 shadow-sm transition-all active:scale-95 cursor-pointer"
+                      onClick={handleGenerate}
+                      disabled={isGenerating}
+                      className="min-h-[44px] px-8 py-2.5 bg-white hover:bg-neutral-200 text-black text-xs sm:text-sm font-semibold rounded-full shadow-2xl transition-all active:scale-95 cursor-pointer flex items-center gap-2"
                     >
-                      Browse Files
+                      <Sparkles className="w-4 h-4 text-black" />
+                      <span>Generate</span>
                     </button>
                   </div>
+                </div>
+              ) : (
+                <div className="space-y-3 w-full flex flex-col items-center">
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="cursor-pointer group space-y-1"
+                  >
+                    <h3 className="text-sm sm:text-base font-semibold text-white group-hover:text-blue-400 transition-colors">
+                      Tap or drag document PDF here
+                    </h3>
+                    <p className="text-xs text-neutral-400 max-w-sm mx-auto">
+                      Operating procedures, safety runbooks, checklists, or engineering manuals
+                    </p>
+                  </div>
+
+                  <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="text-xs font-medium text-blue-400 hover:text-blue-300 underline underline-offset-4 cursor-pointer"
+                    >
+                      Select PDF File
+                    </button>
+
+                    {/* Disabled Generate pill button (clickable only AFTER uploading file) */}
+                    <button
+                      type="button"
+                      disabled={true}
+                      className="min-h-[44px] px-8 py-2.5 bg-neutral-900 border border-white/10 text-neutral-500 text-xs sm:text-sm font-semibold rounded-full shadow-sm opacity-50 cursor-not-allowed flex items-center gap-2"
+                      title="Please upload a PDF file first"
+                    >
+                      <Sparkles className="w-4 h-4 text-neutral-500" />
+                      <span>Generate</span>
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-neutral-500 font-mono">
+                    Upload a file above to enable Generate
+                  </p>
                 </div>
               )}
 
@@ -388,11 +443,15 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
             <button
               type="button"
               onClick={handleGenerate}
-              disabled={isGenerating}
-              className="min-h-[48px] px-7 py-3 bg-white hover:bg-neutral-200 disabled:opacity-40 text-black text-xs sm:text-sm font-semibold rounded-full flex items-center justify-center gap-2 shadow-2xl transition-all active:scale-95 cursor-pointer"
+              disabled={isGenerating || (mode === 'file' ? !file : !pastedText.trim())}
+              className={`min-h-[48px] px-8 py-3 text-xs sm:text-sm font-semibold rounded-full flex items-center justify-center gap-2 transition-all ${
+                (mode === 'file' ? file : pastedText.trim()) && !isGenerating
+                  ? 'bg-white hover:bg-neutral-200 text-black shadow-2xl active:scale-95 cursor-pointer'
+                  : 'bg-neutral-900 border border-white/10 text-neutral-500 opacity-40 cursor-not-allowed'
+              }`}
             >
               <Sparkles className="w-4 h-4" />
-              <span>Generate Feynman Deck</span>
+              <span>Generate</span>
             </button>
           </div>
         </div>

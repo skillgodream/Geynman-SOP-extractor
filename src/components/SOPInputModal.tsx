@@ -313,7 +313,7 @@ export const SOPInputModal: React.FC<SOPInputModalProps> = ({
                       Clinical SOPs, safety runbooks, checklists, or engineering manuals
                     </div>
                     <div className="mt-3 min-h-[44px] px-4 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg shadow-sm flex items-center">
-                      Browse Files
+                      Select File
                     </div>
                   </div>
                 )}
