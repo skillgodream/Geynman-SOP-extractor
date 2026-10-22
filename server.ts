@@ -16,6 +16,32 @@ const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 app.use(express.json({ limit: '60mb' }));
 app.use(express.urlencoded({ extended: true, limit: '60mb' }));
 
+// Global request path normalizer for Vercel Serverless Functions & local environments
+app.use((req: Request, _res: Response, next) => {
+  const orig = req.originalUrl || req.url || '';
+  const xForwarded = (req.headers['x-forwarded-uri'] || req.headers['x-original-url'] || '').toString();
+  const matchedPath = (req.headers['x-matched-path'] || '').toString();
+  const rawPath = `${orig} ${xForwarded} ${matchedPath} ${req.url}`.toLowerCase();
+
+  if (rawPath.includes('health')) {
+    req.url = '/api/health';
+  } else if (rawPath.includes('refine-card')) {
+    req.url = '/api/deck/refine-card';
+  } else if (rawPath.includes('ask-feynman')) {
+    req.url = '/api/deck/ask-feynman';
+  } else if (
+    rawPath.includes('deck/generate') ||
+    rawPath.includes('generate-deck') ||
+    (req.body && typeof req.body === 'object' && (req.body.documentText || req.body.pdfBase64))
+  ) {
+    req.url = '/api/deck/generate';
+  } else if (rawPath.includes('generate-image')) {
+    req.url = '/api/generate-image';
+  }
+
+  next();
+});
+
 // Helper to lazily get a Gemini Client using environment variable or custom request key
 function getAiClient(customKey?: string) {
   const key = (customKey || process.env.GEMINI_API_KEY || '').trim();
@@ -45,8 +71,8 @@ Principles of the Feynman Instructional Design Method:
 
 Output STRICT JSON only matching the schema requested.`;
 
-// List of fallback models when primary endpoint experiences high demand spikes
-const RESILIENT_MODELS = ['gemini-3.8-flash', 'gemini-2.5-flash', 'gemini-3.5-flash-lite'];
+// List of resilient models matching official @google/genai guidelines
+const RESILIENT_MODELS = ['gemini-3.8-flash', 'gemini-3.1-flash-lite'];
 
 async function generateContentWithResilience(params: {
   contents: any;
@@ -374,7 +400,7 @@ function assignContextualDeckImages(deck: any) {
 const apiRouter = express.Router();
 
 // Health Check Endpoint (useful for verifying Vercel deployment status and GEMINI_API_KEY presence)
-apiRouter.get('/health', (_req: Request, res: Response) => {
+apiRouter.get(['/health', '/api/health'], (_req: Request, res: Response) => {
   res.json({
     status: 'ok',
     hasGeminiKey: !!process.env.GEMINI_API_KEY,
@@ -384,7 +410,7 @@ apiRouter.get('/health', (_req: Request, res: Response) => {
 });
 
 // API endpoint: Generate full Feynman Training Deck from SOP (Text or PDF)
-apiRouter.post('/deck/generate', async (req: Request, res: Response) => {
+apiRouter.post(['/deck/generate', '/api/deck/generate', '/generate', '/'], async (req: Request, res: Response) => {
   try {
     const { documentText, pdfBase64, mimeType, fileName, targetAudience, instructionalFocus, apiKey } = req.body;
     const effectiveKey = (apiKey || req.headers['x-api-key'] || process.env.GEMINI_API_KEY || '').toString().trim();
@@ -588,7 +614,7 @@ Ensure the deck contains 5 to 7 high-quality cards. Output STRICT JSON only.`;
 });
 
 // API endpoint: Refine a single card using Feynman techniques
-apiRouter.post('/deck/refine-card', async (req: Request, res: Response) => {
+apiRouter.post(['/deck/refine-card', '/api/deck/refine-card', '/refine-card'], async (req: Request, res: Response) => {
   try {
     const { card, deckTitle, instructionType, customInstruction, apiKey } = req.body;
     const effectiveKey = (apiKey || req.headers['x-api-key'] || process.env.GEMINI_API_KEY || '').toString().trim();
@@ -635,7 +661,7 @@ Return ONLY the updated card JSON object with the same ID "${card.id}" maintaini
 });
 
 // API endpoint: Interactive Feynman Tutor / Question explanation for learners
-apiRouter.post('/deck/ask-feynman', async (req: Request, res: Response) => {
+apiRouter.post(['/deck/ask-feynman', '/api/deck/ask-feynman', '/ask-feynman'], async (req: Request, res: Response) => {
   try {
     const { question, cardContext, deckContext, apiKey } = req.body;
     const effectiveKey = (apiKey || req.headers['x-api-key'] || process.env.GEMINI_API_KEY || '').toString().trim();
@@ -747,7 +773,7 @@ Instructions:
 });
 
 // API endpoint: AI Text-to-Image Generation (Gemini / Imagen 3 / OpenAI DALL-E / Pollinations AI)
-apiRouter.post('/generate-image', async (req: Request, res: Response) => {
+apiRouter.post(['/generate-image', '/api/generate-image'], async (req: Request, res: Response) => {
   try {
     const { prompt, aspectRatio = '16:9', apiKey } = req.body;
     const providedKey = (apiKey || req.headers['x-api-key'] || '').toString().trim();
