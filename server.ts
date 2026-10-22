@@ -246,6 +246,112 @@ function createFallbackFeynmanDeck(
   };
 }
 
+function assignContextualDeckImages(deck: any) {
+  if (!deck) return;
+  const deckTitle = (deck.title || '').toLowerCase();
+  const deckSummary = (deck.summary || '').toLowerCase();
+  const deckContext = `${deckTitle} ${deckSummary} ${deck.targetAudience || ''}`;
+
+  const CURATED_OPERATIONAL_VISUALS = [
+    {
+      keywords: ['fridge', 'refrigerat', 'temperature', 'cold chain', '2°c', '8°c', 'thermal', 'sensor', 'datalogger', 'probe'],
+      url: 'https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?auto=format&fit=crop&w=1200&q=80',
+    },
+    {
+      keywords: ['cooler', 'insulated', 'cold pack', 'ice pack', 'transfer container', 'dry ice', 'secondary containment'],
+      url: 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?auto=format&fit=crop&w=1200&q=80',
+    },
+    {
+      keywords: ['vaccine', 'biologic', 'vial', 'pharma', 'medication', 'protein', 'denatur', 'molecular'],
+      url: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=1200&q=80',
+    },
+    {
+      keywords: ['quarantine', 'biohazard', 'isolation', 'isolate', 'do not dispense', 'tag', 'red line', 'lockout'],
+      url: 'https://images.unsplash.com/photo-1583912267550-d44d9c9a29d6?auto=format&fit=crop&w=1200&q=80',
+    },
+    {
+      keywords: ['sev-1', 'incident', 'outage', 'triage', 'monitoring', 'grafana', 'datadog', 'dashboard', 'latency'],
+      url: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80',
+    },
+    {
+      keywords: ['war room', 'incident commander', 'communication', 'slack', 'bridge', 'collaborat', 'lead'],
+      url: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80',
+    },
+    {
+      keywords: ['server', 'cluster', 'datacenter', 'canary', 'rollback', 'kubernetes', 'database', 'infrastructure'],
+      url: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80',
+    },
+    {
+      keywords: ['metrics', 'telemetry', 'analytics', 'chart', 'uptime', 'sla', 'post-mortem'],
+      url: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80',
+    },
+    {
+      keywords: ['cleanroom', 'airlock', 'sticky mat', 'ante-room', 'decontamination', 'gown', 'iso class', 'interlock'],
+      url: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=80',
+    },
+    {
+      keywords: ['sterile', 'nitrile gloves', 'glove', 'sanitize', 'isopropyl', 'disinfect'],
+      url: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=1200&q=80',
+    },
+    {
+      keywords: ['bunny suit', 'coverall', 'hood', 'crossover bench', 'boot covers', 'particles', 'hepa'],
+      url: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80',
+    },
+    {
+      keywords: ['differential pressure', 'manometer', 'pascal', 'airflow', 'pressure gauge', 'ventilation'],
+      url: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80',
+    },
+    {
+      keywords: ['pick', 'pack', 'warehouse', 'barcode', 'rf scanner', 'order fulfillment', 'inventory', 'bin'],
+      url: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80',
+    },
+    {
+      keywords: ['forklift', 'pallet', 'racking', 'loading dock', 'freight', 'cargo', 'high-bay'],
+      url: 'https://images.unsplash.com/photo-1553413077-190dd305871c?auto=format&fit=crop&w=1200&q=80',
+    },
+    {
+      keywords: ['sign-off', 'checklist', 'verification', 'audit', 'compliance', 'ledger', 'signature', 'quality'],
+      url: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80',
+    },
+    {
+      keywords: ['pitfall', 'troubleshoot', 'anomaly', 'symptom', 'fault', 'error', 'root cause', 'diagnostic'],
+      url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80',
+    },
+    {
+      keywords: ['dilemma', 'decision', 'scenario', 'quiz', 'emergency', 'alarm', '2 am', 'critical'],
+      url: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1200&q=80',
+    },
+  ];
+
+  function matchPhoto(context: string, fallbackPrompt: string): string {
+    const lower = context.toLowerCase();
+    for (const item of CURATED_OPERATIONAL_VISUALS) {
+      if (item.keywords.some((kw) => lower.includes(kw))) {
+        return item.url;
+      }
+    }
+    const safePrompt = encodeURIComponent(fallbackPrompt.slice(0, 100));
+    return `https://image.pollinations.ai/prompt/${safePrompt}?width=1024&height=576&nologo=true`;
+  }
+
+  // Ensure hero image has URL
+  if (!deck.heroImage) deck.heroImage = {};
+  if (!deck.heroImage.url) {
+    deck.heroImage.url = matchPhoto(deckContext, `${deck.title} operational overview`);
+  }
+
+  // Assign images to cards
+  if (Array.isArray(deck.cards)) {
+    deck.cards.forEach((card: any, idx: number) => {
+      if (!card.image) card.image = {};
+      if (!card.image.url) {
+        const cardContext = `${card.title || ''} ${card.subtitle || ''} ${card.badgeText || ''} ${card.feynmanExplanation || ''} ${deckContext}`;
+        card.image.url = matchPhoto(cardContext, `${deck.title} ${card.title || 'Step ' + (idx + 1)}`);
+      }
+    });
+  }
+}
+
 // API endpoint: Generate full Feynman Training Deck from SOP (Text or PDF)
 app.post('/api/deck/generate', async (req: Request, res: Response) => {
   try {
@@ -436,6 +542,8 @@ Ensure the deck contains 5 to 7 high-quality cards. Output STRICT JSON only.`;
       deckData.id = `deck-${Date.now()}`;
     }
 
+    assignContextualDeckImages(deckData);
+
     return res.json({ success: true, deck: deckData });
   } catch (error: any) {
     console.error('Error generating Feynman Deck:', error);
@@ -599,42 +707,82 @@ Provide a friendly, highly accurate response strictly grounded in the training d
   }
 });
 
-// API endpoint: AI Text-to-Image Generation (Gemini / Imagen 3)
+// API endpoint: AI Text-to-Image Generation (Gemini / Imagen 3 / OpenAI DALL-E / Pollinations AI)
 app.post('/api/generate-image', async (req: Request, res: Response) => {
   try {
-    const { prompt, aspectRatio = '16:9' } = req.body;
+    const { prompt, aspectRatio = '16:9', apiKey } = req.body;
+    const providedKey = (apiKey || req.headers['x-api-key'] || '').toString().trim();
 
     if (!prompt) {
       return res.status(400).json({ error: 'Prompt text is required for AI image generation.' });
     }
 
-    try {
-      // Primary: Imagen 3 model via @google/genai SDK
-      const response = await ai.models.generateImages({
-        model: 'imagen-3.0-generate-002',
-        prompt: `High-resolution photorealistic 4K operational workplace diagram image: ${prompt}. Clean lighting, professional, clear instructional context.`,
-        config: {
-          numberOfImages: 1,
-          outputMimeType: 'image/jpeg',
-          aspectRatio: aspectRatio || '16:9',
-        },
-      });
+    // Tier 1: User-supplied OpenAI API key (DALL-E 3)
+    if (providedKey.startsWith('sk-')) {
+      try {
+        const openaiRes = await fetch('https://api.openai.com/v1/images/generations', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${providedKey}`,
+          },
+          body: JSON.stringify({
+            model: 'dall-e-3',
+            prompt: `High-resolution photorealistic operational workplace diagram: ${prompt}. Clean lighting, professional, clear instructional context.`,
+            n: 1,
+            size: '1024x1024',
+          }),
+        });
 
-      const firstImage = response?.generatedImages?.[0];
-      if (firstImage?.image?.imageBytes) {
-        const base64Bytes = firstImage.image.imageBytes;
-        const imageUrl = `data:image/jpeg;base64,${base64Bytes}`;
-        return res.json({ success: true, imageUrl });
+        const data = await openaiRes.json();
+        if (data?.data?.[0]?.url) {
+          return res.json({ success: true, imageUrl: data.data[0].url, provider: 'OpenAI DALL-E 3' });
+        } else if (data?.error?.message) {
+          console.warn('OpenAI DALL-E error:', data.error.message);
+        }
+      } catch (err: any) {
+        console.warn('OpenAI request failed:', err.message);
       }
-    } catch (imagenErr: any) {
-      console.warn('Imagen 3 direct API unavailable, using high-yield visual synthesis fallback:', imagenErr?.message);
     }
 
-    // High-yield fallback: High-res AI visual synthesis URL
-    const encodedQuery = encodeURIComponent(prompt.trim() || 'industrial workplace standard operating procedure');
-    const fallbackUrl = `https://image.pollinations.ai/prompt/${encodedQuery}?width=1024&height=576&seed=${Date.now()}&nologo=true`;
+    // Tier 2: Gemini Imagen 3 (using custom key if provided, or default SDK)
+    const effectiveGeminiKey = providedKey.startsWith('AIza') ? providedKey : process.env.GEMINI_API_KEY;
+    if (effectiveGeminiKey) {
+      try {
+        const genClient = effectiveGeminiKey === process.env.GEMINI_API_KEY ? ai : new GoogleGenAI({ apiKey: effectiveGeminiKey });
+        const response = await genClient.models.generateImages({
+          model: 'imagen-3.0-generate-002',
+          prompt: `High-resolution photorealistic 4K operational workplace diagram image: ${prompt}. Clean lighting, professional, clear instructional context.`,
+          config: {
+            numberOfImages: 1,
+            outputMimeType: 'image/jpeg',
+            aspectRatio: aspectRatio || '16:9',
+          },
+        });
 
-    return res.json({ success: true, imageUrl: fallbackUrl });
+        const firstImage = response?.generatedImages?.[0];
+        if (firstImage?.image?.imageBytes) {
+          const base64Bytes = firstImage.image.imageBytes;
+          const imageUrl = `data:image/jpeg;base64,${base64Bytes}`;
+          return res.json({ success: true, imageUrl, provider: 'Google Imagen 3' });
+        }
+      } catch (imagenErr: any) {
+        console.warn('Imagen 3 API note (quota or enterprise restriction):', imagenErr?.message);
+      }
+    }
+
+    // Tier 3: Zero-Cost Free Dynamic AI Synthesis (Pollinations AI - verified, instant, no key required)
+    const cleanPrompt = encodeURIComponent(
+      `cinematic photorealistic 8k operational workplace: ${prompt.trim()}`
+    );
+    const fallbackUrl = `https://image.pollinations.ai/prompt/${cleanPrompt}?width=1024&height=576&seed=${Date.now()}&nologo=true`;
+
+    return res.json({
+      success: true,
+      imageUrl: fallbackUrl,
+      provider: 'Pollinations AI (Free Tier)',
+      note: 'Generated using high-resolution free AI synthesis. To use DALL-E 3 or Imagen 3, provide an external API key in the image modal.',
+    });
   } catch (error: any) {
     console.error('Error generating AI image:', error);
     return res.status(500).json({ error: error.message || 'Failed to generate image.' });

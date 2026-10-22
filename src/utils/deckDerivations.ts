@@ -4,87 +4,114 @@ import { FeynmanDeck, VideoScene, GuideScenario, AssessmentQuestion, CardImage }
  * Resolves an accurate, domain-aligned photo URL based on the actual SOP contents.
  * Prevents topic mismatches (e.g. warehouse picking showing an IT server dashboard).
  */
-export function resolveContextualPhoto(deck: FeynmanDeck, specificImage?: CardImage): string {
+/**
+ * Comprehensive dictionary of high-resolution, operational photography
+ * mapped to specific workplace workflows, safety protocols, and technical procedures.
+ */
+const CURATED_OPERATIONAL_VISUALS = [
+  // Cold Chain, Vaccines, Temperature Controls, Pharma
+  {
+    keywords: ['fridge', 'refrigerat', 'temperature', 'cold chain', '2°c', '8°c', 'thermal', 'sensor', 'datalogger', 'probe'],
+    url: 'https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    keywords: ['cooler', 'insulated', 'cold pack', 'ice pack', 'transfer container', 'dry ice', 'secondary containment'],
+    url: 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    keywords: ['vaccine', 'biologic', 'vial', 'pharma', 'medication', 'protein', 'denatur', 'molecular'],
+    url: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    keywords: ['quarantine', 'biohazard', 'isolation', 'isolate', 'do not dispense', 'tag', 'red line', 'lockout'],
+    url: 'https://images.unsplash.com/photo-1583912267550-d44d9c9a29d6?auto=format&fit=crop&w=1200&q=80',
+  },
+  // Incident Triage, SRE, DevOps, Server Infrastructure
+  {
+    keywords: ['sev-1', 'incident', 'outage', 'triage', 'monitoring', 'grafana', 'datadog', 'dashboard', 'latency'],
+    url: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    keywords: ['war room', 'incident commander', 'communication', 'slack', 'bridge', 'collaborat', 'lead'],
+    url: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    keywords: ['server', 'cluster', 'datacenter', 'canary', 'rollback', 'kubernetes', 'database', 'infrastructure'],
+    url: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    keywords: ['metrics', 'telemetry', 'analytics', 'chart', 'uptime', 'sla', 'post-mortem'],
+    url: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80',
+  },
+  // Cleanroom, Gowning, Sterilization, ISO Class
+  {
+    keywords: ['cleanroom', 'airlock', 'sticky mat', 'ante-room', 'decontamination', 'gown', 'iso class', 'interlock'],
+    url: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    keywords: ['sterile', 'nitrile gloves', 'glove', 'sanitize', 'isopropyl', 'disinfect'],
+    url: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    keywords: ['bunny suit', 'coverall', 'hood', 'crossover bench', 'boot covers', 'particles', 'hepa'],
+    url: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    keywords: ['differential pressure', 'manometer', 'pascal', 'airflow', 'pressure gauge', 'ventilation'],
+    url: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80',
+  },
+  // Warehouse Logistics, Order Fulfillment, Inventory, Terminals
+  {
+    keywords: ['pick', 'pack', 'warehouse', 'barcode', 'rf scanner', 'order fulfillment', 'inventory', 'bin'],
+    url: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    keywords: ['forklift', 'pallet', 'racking', 'loading dock', 'freight', 'cargo', 'high-bay'],
+    url: 'https://images.unsplash.com/photo-1553413077-190dd305871c?auto=format&fit=crop&w=1200&q=80',
+  },
+  // Quality Verification, Checklists, Audits, Sign-off
+  {
+    keywords: ['sign-off', 'checklist', 'verification', 'audit', 'compliance', 'ledger', 'signature', 'quality'],
+    url: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80',
+  },
+  // Troubleshooting, Anomalies, Error Diagnostics
+  {
+    keywords: ['pitfall', 'troubleshoot', 'anomaly', 'symptom', 'fault', 'error', 'root cause', 'diagnostic', 'investigat'],
+    url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80',
+  },
+  // Active Recall, High-Stakes Dilemma, Emergency Decision
+  {
+    keywords: ['dilemma', 'decision', 'scenario', 'quiz', 'emergency', 'alarm', '2 am', 'critical'],
+    url: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1200&q=80',
+  },
+];
+
+/**
+ * Resolves an accurate, domain-aligned photo URL based on the actual SOP contents and specific context.
+ * Uses exact keyword scoring across curated high-res operational photography.
+ * Falls back to dynamic visual synthesis if no static category matches.
+ */
+export function resolveContextualPhoto(
+  deck: FeynmanDeck,
+  specificImage?: CardImage,
+  contextQuery?: string
+): string {
   if (specificImage?.url) return specificImage.url;
+
+  const combinedSearch = `${contextQuery || ''} ${deck.title || ''} ${deck.summary || ''} ${deck.targetAudience || ''}`.toLowerCase();
+
+  for (const item of CURATED_OPERATIONAL_VISUALS) {
+    if (item.keywords.some((kw) => combinedSearch.includes(kw))) {
+      return item.url;
+    }
+  }
+
+  // Fallback to deck hero image if present
   if (deck.heroImage?.url) return deck.heroImage.url;
 
-  const text = `${deck.title} ${deck.summary} ${deck.targetAudience} ${deck.originalDocType || ''}`.toLowerCase();
-
-  // Warehouse / Logistics / Picking / Putaway / Pallets / Order Fulfillment
-  if (
-    text.includes('pick') ||
-    text.includes('pack') ||
-    text.includes('warehouse') ||
-    text.includes('pallet') ||
-    text.includes('inventory') ||
-    text.includes('forklift') ||
-    text.includes('terminal') ||
-    text.includes('outbound') ||
-    text.includes('inbound') ||
-    text.includes('commerce') ||
-    text.includes('order')
-  ) {
-    return 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80';
-  }
-
-  // Cold Chain / Vaccine / Temperature / Fridge / Excursion / Biologics
-  if (
-    text.includes('cold') ||
-    text.includes('temperature') ||
-    text.includes('vaccine') ||
-    text.includes('biologic') ||
-    text.includes('refrigerat') ||
-    text.includes('excursion') ||
-    text.includes('pharma') ||
-    text.includes('probe')
-  ) {
-    return 'https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?auto=format&fit=crop&w=1200&q=80';
-  }
-
-  // IT Incidents / SRE / DevOps / Servers / Triage / System Outage
-  if (
-    text.includes('incident') ||
-    text.includes('sev-1') ||
-    text.includes('outage') ||
-    text.includes('triage') ||
-    text.includes('server') ||
-    text.includes('devops') ||
-    text.includes('cloud') ||
-    text.includes('commander') ||
-    text.includes('microservice')
-  ) {
-    return 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80';
-  }
-
-  // Cleanroom / Gowning / Contamination / Sterilization / Differential Pressure
-  if (
-    text.includes('cleanroom') ||
-    text.includes('gown') ||
-    text.includes('steril') ||
-    text.includes('contamination') ||
-    text.includes('airlock') ||
-    text.includes('pressure limit') ||
-    text.includes('iso class')
-  ) {
-    return 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=80';
-  }
-
-  // Industrial Machinery / Equipment Operation / Safety Hardware
-  if (
-    text.includes('machine') ||
-    text.includes('equipment') ||
-    text.includes('device') ||
-    text.includes('manufactur') ||
-    text.includes('assembly') ||
-    text.includes('factory') ||
-    text.includes('battery') ||
-    text.includes('scanner')
-  ) {
-    return 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80';
-  }
-
-  // Default standard operational SOP photography
-  return 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80';
+  // Dynamic high-yield AI visual synthesis URL
+  const promptClean = encodeURIComponent(`${contextQuery || deck.title || 'operational standard operating procedure'}`);
+  return `https://image.pollinations.ai/prompt/${promptClean}?width=1024&height=576&nologo=true`;
 }
 
 export function deriveVideoScenes(deck: FeynmanDeck): VideoScene[] {
@@ -93,7 +120,7 @@ export function deriveVideoScenes(deck: FeynmanDeck): VideoScene[] {
   }
 
   const scenes: VideoScene[] = [];
-  const contextualImg = resolveContextualPhoto(deck);
+  const introPhoto = resolveContextualPhoto(deck, deck.heroImage, `${deck.title} mental model introduction`);
 
   // Scene 1: Introduction & Mental Model Hook
   scenes.push({
@@ -105,15 +132,22 @@ export function deriveVideoScenes(deck: FeynmanDeck): VideoScene[] {
     narrationScript: `Welcome to the ${deck.title}. Before jumping into steps, understand the core intuition: ${deck.feynmanCoreConcept.centralAnalogy.analogyText}`,
     visualPrompt: `Cinematic wide angle representation of ${deck.feynmanCoreConcept.centralAnalogy.title}, technical operational setting.`,
     diagramType: deck.heroImage?.diagramType || 'flowchart',
-    imageUrl: contextualImg,
+    imageUrl: introPhoto,
     keyAction: 'Internalize the fundamental mental model before touching equipment.',
     criticalWatchout: 'Never treat this SOP as mere paperwork; it governs operational safety.',
   });
 
-  // Extract from process steps or cards
+  // Extract from process steps or cards with scene-specific photography
   const stepsCard = deck.cards.find((c) => c.cardType === 'process_steps');
   if (stepsCard && stepsCard.steps && stepsCard.steps.length > 0) {
     stepsCard.steps.forEach((st, idx) => {
+      // Find scene-specific visual
+      const sceneVisual = resolveContextualPhoto(
+        deck,
+        undefined,
+        `${st.title} ${st.action} ${st.whyItMatters}`
+      );
+
       scenes.push({
         id: `${deck.id}-scene-step-${st.stepNumber}`,
         sceneNumber: idx + 2,
@@ -123,7 +157,7 @@ export function deriveVideoScenes(deck: FeynmanDeck): VideoScene[] {
         narrationScript: `Step ${st.stepNumber}: ${st.action}. Why this matters: ${st.whyItMatters}. Keep in mind: ${st.criticalWatchout || 'Adhere strictly to protocol.'}`,
         visualPrompt: `Technical close-up showing operator executing ${st.action}, precise execution.`,
         diagramType: 'flowchart',
-        imageUrl: contextualImg,
+        imageUrl: sceneVisual,
         keyAction: st.action,
         criticalWatchout: st.criticalWatchout,
       });
@@ -131,6 +165,12 @@ export function deriveVideoScenes(deck: FeynmanDeck): VideoScene[] {
   } else {
     // Fallback scenes strictly derived from deck cards
     deck.cards.slice(0, 3).forEach((card, idx) => {
+      const cardVisual = resolveContextualPhoto(
+        deck,
+        card.image,
+        `${card.title} ${card.feynmanExplanation}`
+      );
+
       scenes.push({
         id: `${deck.id}-scene-${idx + 2}`,
         sceneNumber: idx + 2,
@@ -140,7 +180,7 @@ export function deriveVideoScenes(deck: FeynmanDeck): VideoScene[] {
         narrationScript: `${card.title}. ${card.feynmanExplanation}`,
         visualPrompt: `Operational context illustrating ${card.title}.`,
         diagramType: card.image?.diagramType || 'flowchart',
-        imageUrl: resolveContextualPhoto(deck, card.image),
+        imageUrl: cardVisual,
         keyAction: card.feynmanExplanation.slice(0, 100),
       });
     });
@@ -149,6 +189,12 @@ export function deriveVideoScenes(deck: FeynmanDeck): VideoScene[] {
   // Final Scene: Golden Rules & Verification Sign-Off
   const rulesCard = deck.cards.find((c) => c.cardType === 'critical_rules');
   const mainRule = rulesCard?.criticalRules?.[0];
+  const signoffPhoto = resolveContextualPhoto(
+    deck,
+    rulesCard?.image,
+    `verification checklist quality sign-off ${mainRule?.verificationCheck || ''}`
+  );
+
   scenes.push({
     id: `${deck.id}-scene-summary`,
     sceneNumber: scenes.length + 1,
@@ -160,7 +206,7 @@ export function deriveVideoScenes(deck: FeynmanDeck): VideoScene[] {
       : 'Always execute the final verification check before completing shift or releasing product.',
     visualPrompt: 'Verification sign-off checklist and operational sign-off interface.',
     diagramType: 'flowchart',
-    imageUrl: contextualImg,
+    imageUrl: signoffPhoto,
     keyAction: 'Log timestamps and record verification sign-off.',
     criticalWatchout: mainRule ? mainRule.consequenceOfFailure : 'Never skip sign-off.',
   });
@@ -174,12 +220,17 @@ export function deriveGuideScenarios(deck: FeynmanDeck): GuideScenario[] {
   }
 
   const scenarios: GuideScenario[] = [];
-  const defaultPhoto = resolveContextualPhoto(deck);
 
   // Scenario 1: Derived from Quiz card or Step 1 dilemma
   const quizCard = deck.cards.find((c) => c.cardType === 'scenario_quiz');
   if (quizCard?.quiz) {
     const q = quizCard.quiz;
+    const quizPhoto = resolveContextualPhoto(
+      deck,
+      quizCard.image,
+      `${quizCard.title || ''} ${q.scenario} dilemma emergency active recall`
+    );
+
     scenarios.push({
       id: `${deck.id}-guide-1`,
       title: quizCard.title || 'Operational Decision Check',
@@ -202,7 +253,7 @@ export function deriveGuideScenarios(deck: FeynmanDeck): GuideScenario[] {
       })),
       feynmanRuleLearned: q.feynmanFeedback,
       diagramType: quizCard.image?.diagramType || 'flowchart',
-      imageUrl: resolveContextualPhoto(deck, quizCard.image),
+      imageUrl: quizPhoto,
       codeBadge: 'Code: STEP-1',
     });
   } else {
@@ -214,6 +265,12 @@ export function deriveGuideScenarios(deck: FeynmanDeck): GuideScenario[] {
       action: 'Verify operational readiness before commencing procedure.',
       whyItMatters: 'Guarantees preconditions are met.',
     };
+
+    const s1Photo = resolveContextualPhoto(
+      deck,
+      undefined,
+      `${s1.title} ${s1.action} operational verification readiness`
+    );
 
     scenarios.push({
       id: `${deck.id}-guide-1`,
@@ -246,7 +303,7 @@ export function deriveGuideScenarios(deck: FeynmanDeck): GuideScenario[] {
       ],
       feynmanRuleLearned: s1.whyItMatters,
       diagramType: 'flowchart',
-      imageUrl: defaultPhoto,
+      imageUrl: s1Photo,
       codeBadge: 'Code: STEP-1',
     });
   }
@@ -258,6 +315,12 @@ export function deriveGuideScenarios(deck: FeynmanDeck): GuideScenario[] {
     consequenceOfFailure: 'Compromises compliance and invalidates operational integrity.',
     verificationCheck: 'Log exact timestamps and parameter readings in the official register.',
   };
+
+  const rulePhoto = resolveContextualPhoto(
+    deck,
+    rulesCard?.image,
+    `safety red line non-negotiable ${criticalRule.rule} ${criticalRule.consequenceOfFailure}`
+  );
 
   scenarios.push({
     id: `${deck.id}-guide-2`,
@@ -290,7 +353,7 @@ export function deriveGuideScenarios(deck: FeynmanDeck): GuideScenario[] {
     ],
     feynmanRuleLearned: `Non-negotiable rule: ${criticalRule.rule}. Always verify: ${criticalRule.verificationCheck}.`,
     diagramType: rulesCard?.image?.diagramType || 'flowchart',
-    imageUrl: resolveContextualPhoto(deck, rulesCard?.image),
+    imageUrl: rulePhoto,
     codeBadge: 'Code: MUST-DO',
   });
 
@@ -298,6 +361,12 @@ export function deriveGuideScenarios(deck: FeynmanDeck): GuideScenario[] {
   const pitfallCard = deck.cards.find((c) => c.cardType === 'pitfalls_troubleshooting');
   const mainPitfall = pitfallCard?.pitfalls?.[0];
   if (mainPitfall) {
+    const anomalyPhoto = resolveContextualPhoto(
+      deck,
+      pitfallCard?.image,
+      `anomaly troubleshooting error diagnosis ${mainPitfall.symptomOrMistake} ${mainPitfall.rootCause}`
+    );
+
     scenarios.push({
       id: `${deck.id}-guide-3`,
       title: 'Field Anomaly Diagnosis',
@@ -329,7 +398,7 @@ export function deriveGuideScenarios(deck: FeynmanDeck): GuideScenario[] {
       ],
       feynmanRuleLearned: `Root cause: ${mainPitfall.rootCause}. Action: ${mainPitfall.immediateFix}.`,
       diagramType: pitfallCard?.image?.diagramType || 'flowchart',
-      imageUrl: resolveContextualPhoto(deck, pitfallCard?.image),
+      imageUrl: anomalyPhoto,
       codeBadge: 'Code: REMEDY',
     });
   }

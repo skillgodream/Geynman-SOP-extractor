@@ -59,7 +59,7 @@ export const CardToolbar: React.FC<CardToolbarProps> = ({
   };
 
   return (
-    <div className="pt-3 mt-4 border-t border-white/[0.08] space-y-2">
+    <div className="pt-3 mt-4 border-t border-white/[0.08] space-y-2 card-toolbar">
       {/* Apple-style minimalist tool buttons */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none text-xs">
         <button

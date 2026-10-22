@@ -10,6 +10,7 @@ export const SAMPLE_DECKS: FeynmanDeck[] = [
     originalDocType: 'Standard Operating Procedure SOP-CLIN-408',
     heroImage: {
       diagramType: 'cold_chain',
+      url: 'https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?auto=format&fit=crop&w=1200&q=80',
       caption: 'Calibrated digital probe monitoring: 2.0°C to 8.0°C target boundary',
     },
     feynmanCoreConcept: {
@@ -30,6 +31,7 @@ export const SAMPLE_DECKS: FeynmanDeck[] = [
         badgeText: 'The 12-Year-Old Test',
         image: {
           diagramType: 'protein_origami',
+          url: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=1200&q=80',
           caption: 'Figure 1: Intact receptor key vs denatured non-functional protein chain',
         },
         analogy: {
@@ -74,6 +76,7 @@ export const SAMPLE_DECKS: FeynmanDeck[] = [
         badgeText: 'Execution Sequence',
         image: {
           diagramType: 'flowchart',
+          url: 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?auto=format&fit=crop&w=1200&q=80',
           caption: 'Protocol Sequence: Door Seal -> Cooler Prep -> Quarantine Sign -> QA Log',
         },
         steps: [
@@ -141,6 +144,7 @@ export const SAMPLE_DECKS: FeynmanDeck[] = [
         badgeText: 'Active Recall',
         image: {
           diagramType: 'cold_chain',
+          url: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1200&q=80',
           caption: 'Scenario Context: Sensor displays 9.4°C at 02:15 AM following power flicker',
         },
         quiz: {
@@ -202,6 +206,7 @@ export const SAMPLE_DECKS: FeynmanDeck[] = [
     originalDocType: 'Engineering Operational Runbook ENG-SOP-09',
     heroImage: {
       diagramType: 'incident_triage',
+      url: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80',
       caption: 'Incident Bridge Command: IC, Operations Lead, and Comms Liaison topology',
     },
     feynmanCoreConcept: {
@@ -222,6 +227,7 @@ export const SAMPLE_DECKS: FeynmanDeck[] = [
         badgeText: 'Cognitive Model',
         image: {
           diagramType: 'incident_triage',
+          url: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80',
           caption: 'Role Isolation: IC manages direction, Ops Lead executes, Comms Lead shields from external queries',
         },
         analogy: {
@@ -266,6 +272,7 @@ export const SAMPLE_DECKS: FeynmanDeck[] = [
         badgeText: 'Runbook Steps',
         image: {
           diagramType: 'flowchart',
+          url: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80',
           caption: 'Execution Sequence: Declare -> Assign 3 Roles -> Fast Mitigation -> All-Clear Check',
         },
         steps: [
@@ -333,6 +340,7 @@ export const SAMPLE_DECKS: FeynmanDeck[] = [
         badgeText: 'Scenario Quiz',
         image: {
           diagramType: 'incident_triage',
+          url: 'https://images.unsplash.com/photo-1504639725590-34d0984388bd?auto=format&fit=crop&w=1200&q=80',
           caption: 'Dilemma: Executive pressure on the active bridge while revenue losses mount',
         },
         quiz: {
@@ -394,6 +402,7 @@ export const SAMPLE_DECKS: FeynmanDeck[] = [
     originalDocType: 'GMP Standard Operating Procedure SOP-MFG-002',
     heroImage: {
       diagramType: 'cleanroom',
+      url: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80',
       caption: 'Airlock Demarcation Bench: Dirty (CNC) side to Sterile (ISO 5) side transition',
     },
     feynmanCoreConcept: {
@@ -414,6 +423,7 @@ export const SAMPLE_DECKS: FeynmanDeck[] = [
         badgeText: 'Core Intuition',
         image: {
           diagramType: 'cleanroom',
+          url: 'https://images.unsplash.com/photo-1584744982491-665216d95f8b?auto=format&fit=crop&w=1200&q=80',
           caption: 'Demarcation line: Boundary between unclassified airlock and positive-pressure sterile cleanroom',
         },
         analogy: {
@@ -458,6 +468,7 @@ export const SAMPLE_DECKS: FeynmanDeck[] = [
         badgeText: 'Execution Flow',
         image: {
           diagramType: 'flowchart',
+          url: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=80',
           caption: 'Top-to-Bottom Gravity Sequence: Bouffant -> Pre-Wash -> Hood -> Coverall -> Bench Leg Swing',
         },
         steps: [
@@ -532,6 +543,7 @@ export const SAMPLE_DECKS: FeynmanDeck[] = [
         badgeText: 'Scenario Quiz',
         image: {
           diagramType: 'cleanroom',
+          url: 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=1200&q=80',
           caption: 'Demarcation Bench crossing: Heel brush incident on entry side',
         },
         quiz: {

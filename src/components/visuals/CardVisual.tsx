@@ -45,8 +45,17 @@ export const CardVisual: React.FC<CardVisualProps> = ({
 
   // AI Text-to-Image State
   const [aiPrompt, setAiPrompt] = useState(titleContext || '');
+  const [apiKeyInput, setApiKeyInput] = useState(() => {
+    try {
+      return localStorage.getItem('user_image_api_key') || '';
+    } catch {
+      return '';
+    }
+  });
+  const [showApiKeyField, setShowApiKeyField] = useState(false);
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [providerTag, setProviderTag] = useState<string | null>(null);
 
   const activeDiagram = image?.diagramType || defaultDiagram;
 
@@ -54,17 +63,27 @@ export const CardVisual: React.FC<CardVisualProps> = ({
     const promptText = aiPrompt.trim() || titleContext || 'Operational SOP procedure visual';
     setIsGeneratingAi(true);
     setAiError(null);
+    setProviderTag(null);
 
     try {
       const res = await fetch('/api/generate-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: promptText }),
+        body: JSON.stringify({
+          prompt: promptText,
+          apiKey: apiKeyInput.trim() || undefined,
+        }),
       });
 
       const data = await res.json();
       if (data.success && data.imageUrl) {
         setUrlInput(data.imageUrl);
+        if (data.provider) setProviderTag(data.provider);
+        if (apiKeyInput.trim()) {
+          try {
+            localStorage.setItem('user_image_api_key', apiKeyInput.trim());
+          } catch {}
+        }
         if (!captionInput) setCaptionInput(`AI Generated: ${promptText}`);
       } else {
         setAiError(data.error || 'Could not generate AI image.');
@@ -98,19 +117,61 @@ export const CardVisual: React.FC<CardVisualProps> = ({
     }
   };
 
-  // Default professional photographic images corresponding to each domain type instead of neon vector drawings
-  const defaultPhotoMap: Record<string, string> = {
-    cold_chain: 'https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?auto=format&fit=crop&w=1200&q=80',
-    protein_origami: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=1200&q=80',
-    cleanroom: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=80',
-    incident_triage: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80',
-    warehouse: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80',
-    flowchart: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80'
+  // Comprehensive contextual topic matching for cards without an explicit URL
+  const resolveFallbackPhoto = (): string => {
+    const query = `${titleContext} ${activeDiagram} ${defaultDiagram}`.toLowerCase();
+
+    if (query.includes('cold') || query.includes('refrigerat') || query.includes('temperature') || query.includes('probe')) {
+      return 'https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?auto=format&fit=crop&w=1200&q=80';
+    }
+    if (query.includes('protein') || query.includes('vaccine') || query.includes('vial') || query.includes('pharma')) {
+      return 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=1200&q=80';
+    }
+    if (query.includes('cooler') || query.includes('insulated') || query.includes('pack') || query.includes('dry ice')) {
+      return 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?auto=format&fit=crop&w=1200&q=80';
+    }
+    if (query.includes('quarantine') || query.includes('red line') || query.includes('isolate') || query.includes('lockout')) {
+      return 'https://images.unsplash.com/photo-1583912267550-d44d9c9a29d6?auto=format&fit=crop&w=1200&q=80';
+    }
+    if (query.includes('incident') || query.includes('triage') || query.includes('sev-1') || query.includes('outage')) {
+      return 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80';
+    }
+    if (query.includes('war room') || query.includes('bridge') || query.includes('communication') || query.includes('commander')) {
+      return 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80';
+    }
+    if (query.includes('server') || query.includes('cluster') || query.includes('datacenter') || query.includes('cloud')) {
+      return 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80';
+    }
+    if (query.includes('cleanroom') || query.includes('airlock') || query.includes('sticky mat') || query.includes('gown')) {
+      return 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=80';
+    }
+    if (query.includes('glove') || query.includes('sterile') || query.includes('sanitize') || query.includes('disinfect')) {
+      return 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=1200&q=80';
+    }
+    if (query.includes('bunny suit') || query.includes('coverall') || query.includes('bench') || query.includes('boot')) {
+      return 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80';
+    }
+    if (query.includes('pressure') || query.includes('manometer') || query.includes('pascal') || query.includes('airflow')) {
+      return 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80';
+    }
+    if (query.includes('warehouse') || query.includes('pick') || query.includes('pack') || query.includes('scanner') || query.includes('barcode')) {
+      return 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80';
+    }
+    if (query.includes('forklift') || query.includes('pallet') || query.includes('dock') || query.includes('cargo')) {
+      return 'https://images.unsplash.com/photo-1553413077-190dd305871c?auto=format&fit=crop&w=1200&q=80';
+    }
+    if (query.includes('checklist') || query.includes('sign-off') || query.includes('audit') || query.includes('ledger')) {
+      return 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80';
+    }
+    if (query.includes('dilemma') || query.includes('quiz') || query.includes('decision') || query.includes('alarm')) {
+      return 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1200&q=80';
+    }
+
+    return 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80';
   };
 
-  // Prioritize custom user image URL, then domain-specific photo mapping, then generic flowchart photo
-  const activePhotoUrl =
-    image?.url || defaultPhotoMap[activeDiagram] || defaultPhotoMap[defaultDiagram] || defaultPhotoMap.flowchart;
+  // Prioritize custom user image URL, then contextual photo resolution
+  const activePhotoUrl = image?.url || resolveFallbackPhoto();
 
   return (
     <div className="relative group w-full overflow-hidden rounded-2xl bg-neutral-950 border border-white/[0.08] transition-all flex flex-col justify-between">
@@ -168,20 +229,20 @@ export const CardVisual: React.FC<CardVisualProps> = ({
             </div>
 
             <div className="space-y-4 text-xs">
-              {/* Option A: ✨ AI Text-to-Image Generation (Imagen 3) */}
-              <div className="p-3.5 rounded-2xl bg-blue-950/40 border border-blue-500/30 space-y-2">
+              {/* Option A: ✨ AI Text-to-Image Generation (Imagen 3 / DALL-E / Pollinations) */}
+              <div className="p-3.5 rounded-2xl bg-blue-950/40 border border-blue-500/30 space-y-2.5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 font-bold text-blue-400 text-xs">
                     <Sparkles className="w-4 h-4 text-blue-400" />
-                    <span>Generate AI Image from Text Prompt (Imagen)</span>
+                    <span>AI Image Synthesis for SOP Context</span>
                   </div>
                   <span className="text-[10px] font-mono bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full">
-                    Gemini AI
+                    {providerTag || 'Free Tier AI'}
                   </span>
                 </div>
 
                 <p className="text-[11px] text-neutral-400">
-                  Describe any workplace scene, equipment, or SOP action to generate a custom visual.
+                  Generates an instructional visual strictly mapped to this SOP card's operational action.
                 </p>
 
                 <div className="flex items-center gap-2">
@@ -206,11 +267,59 @@ export const CardVisual: React.FC<CardVisualProps> = ({
                     ) : (
                       <>
                         <Sparkles className="w-3.5 h-3.5" />
-                        <span>Generate AI Image</span>
+                        <span>Generate Image</span>
                       </>
                     )}
                   </button>
                 </div>
+
+                {/* API Key Toggle for external models (OpenAI DALL-E or custom Gemini key) */}
+                <div className="pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowApiKeyField(!showApiKeyField)}
+                    className="text-[11px] text-blue-400/80 hover:text-blue-300 underline cursor-pointer"
+                  >
+                    {showApiKeyField ? 'Hide External API Key Settings' : 'Use External API Key (OpenAI DALL-E or Custom Gemini)?'}
+                  </button>
+
+                  {showApiKeyField && (
+                    <div className="mt-2 p-2.5 rounded-xl bg-neutral-900/90 border border-white/10 space-y-1.5">
+                      <div className="flex items-center justify-between text-[11px] text-neutral-300">
+                        <span>External Key (sk-... for OpenAI DALL-E 3, or AIza... for Gemini):</span>
+                        {apiKeyInput && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setApiKeyInput('');
+                              try { localStorage.removeItem('user_image_api_key'); } catch {}
+                            }}
+                            className="text-rose-400 hover:text-rose-300 text-[10px]"
+                          >
+                            Clear
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="password"
+                        value={apiKeyInput}
+                        onChange={(e) => setApiKeyInput(e.target.value)}
+                        placeholder="sk-... or AIzaSy..."
+                        className="w-full p-2 bg-neutral-950 border border-white/10 rounded-lg text-xs text-white placeholder-neutral-600 font-mono focus:outline-none focus:border-blue-400"
+                      />
+                      <p className="text-[10px] text-neutral-400">
+                        Leave blank to use the free-tier high-resolution AI synthesis generator (no sign-up or billing needed).
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {providerTag && (
+                  <p className="text-[11px] text-emerald-400 flex items-center gap-1">
+                    <Check className="w-3 h-3" />
+                    <span>Rendered using {providerTag}</span>
+                  </p>
+                )}
 
                 {aiError && <p className="text-[11px] text-rose-400">{aiError}</p>}
               </div>

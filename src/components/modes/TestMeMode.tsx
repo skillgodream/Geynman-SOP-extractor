@@ -121,9 +121,9 @@ export const TestMeMode: React.FC<TestMeModeProps> = ({ deck, onExit, onSwitchTo
         </div>
       )}
 
-      {/* Main Assessment Container */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 flex items-center justify-center">
-        <div className="w-full max-w-3xl bg-neutral-950 border border-white/[0.08] rounded-3xl p-6 sm:p-10 shadow-2xl flex flex-col">
+      {/* Main Assessment Container (Header-safe scroll alignment) */}
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 flex flex-col items-center">
+        <div className="w-full max-w-3xl my-auto bg-neutral-950 border border-white/[0.08] rounded-3xl p-6 sm:p-10 shadow-2xl flex flex-col">
           {!isSubmitted ? (
             /* Active Assessment Flow */
             <div>

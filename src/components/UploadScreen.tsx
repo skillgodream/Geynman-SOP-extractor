@@ -152,10 +152,10 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
         </div>
       </header>
 
-      {/* Main Form */}
-      <main className="flex-1 max-w-2xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-12 flex flex-col justify-center">
+      {/* Main Form (Header-safe scroll alignment) */}
+      <main className="flex-1 max-w-2xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-10 flex flex-col">
         {/* Main Card (Apple Black Theme matching Screenshot 1) */}
-        <div className="border border-white/[0.08] bg-neutral-950 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden">
+        <div className="my-auto border border-white/[0.08] bg-neutral-950 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
           {/* Title Header — Changed text to 'Choose Your Ingestion Source' */}

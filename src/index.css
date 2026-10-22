@@ -77,6 +77,15 @@
   padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px);
 }
 
+/* Presentation Mode: Clean Apple Keynote Canvas without editing toolbars */
+.presentation-slide .card-toolbar {
+  display: none !important;
+}
+
+.presentation-slide {
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 /* Print styling for PDF study guides */
 @media print {
   header,
