@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layers, Film, HelpCircle, Award, Compass } from 'lucide-react';
+import { SquareStack, Video, Compass, CheckCircle2, BookOpen } from 'lucide-react';
 import { AppViewMode } from '../types/deck';
 
 interface MobileBottomNavProps {
@@ -29,7 +29,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           }`}
           aria-label="Deck Flow"
         >
-          <Layers className="w-5 h-5" />
+          <SquareStack className="w-5 h-5 stroke-[2]" />
           <span className="text-[10px] tracking-tight mt-0.5">Flow</span>
         </button>
 
@@ -44,7 +44,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           }`}
           aria-label="Show Me Video"
         >
-          <Film className={`w-5 h-5 ${activeView === 'show_me' ? 'text-sky-300' : 'text-sky-300/70'}`} />
+          <Video className={`w-5 h-5 stroke-[2] ${activeView === 'show_me' ? 'text-sky-400' : 'text-sky-400/70'}`} />
           <span className="text-[10px] tracking-tight mt-0.5">Show Me</span>
         </button>
 
@@ -59,7 +59,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           }`}
           aria-label="Guide Me Practice"
         >
-          <HelpCircle className={`w-5 h-5 ${activeView === 'guide_me' ? 'text-amber-300' : 'text-amber-300/70'}`} />
+          <Compass className={`w-5 h-5 stroke-[2] ${activeView === 'guide_me' ? 'text-purple-400' : 'text-purple-400/70'}`} />
           <span className="text-[10px] tracking-tight mt-0.5">Guide Me</span>
         </button>
 
@@ -74,7 +74,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           }`}
           aria-label="Test Me Assessment"
         >
-          <Award className={`w-5 h-5 ${activeView === 'test_me' ? 'text-emerald-300' : 'text-emerald-300/70'}`} />
+          <CheckCircle2 className={`w-5 h-5 stroke-[2] ${activeView === 'test_me' ? 'text-emerald-400' : 'text-emerald-400/70'}`} />
           <span className="text-[10px] tracking-tight mt-0.5">Test Me</span>
         </button>
 
@@ -85,10 +85,11 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           className="min-h-[48px] flex flex-col items-center justify-center text-neutral-500 hover:text-white transition-colors cursor-pointer"
           aria-label="Return to Card Outline"
         >
-          <Compass className="w-5 h-5" />
+          <BookOpen className="w-5 h-5 stroke-[2]" />
           <span className="text-[10px] tracking-tight mt-0.5">Outline</span>
         </button>
       </div>
     </nav>
   );
 };
+

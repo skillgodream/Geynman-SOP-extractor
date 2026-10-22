@@ -47,10 +47,17 @@ export const ProcessStepsCard: React.FC<ProcessStepsCardProps> = ({
   const activeStep = steps[activeStepIndex] || steps[0];
 
   return (
-    <div className="rounded-3xl border border-white/[0.08] bg-neutral-950 shadow-2xl p-6 sm:p-10 transition-colors">
-      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">
-        <Layers className="w-3.5 h-3.5 text-neutral-300" />
-        <span>{card.badgeText || 'Chunked Workflow Steps'}</span>
+    <div className="relative rounded-[2rem] border border-white/[0.12] bg-gradient-to-b from-sky-500/[0.08] via-neutral-950 to-neutral-950 shadow-[0_25px_80px_rgba(0,0,0,0.9)] p-6 sm:p-10 transition-all overflow-hidden">
+      {/* Top Training Card Header */}
+      <div className="flex items-center justify-between border-b border-white/[0.08] pb-4 mb-6">
+        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-300 text-xs font-semibold">
+          <Layers className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+          <span>{card.badgeText || 'Chunked Workflow Steps'}</span>
+        </div>
+
+        <span className="text-[10px] font-mono tracking-widest text-neutral-400 font-bold uppercase">
+          TRAINING CARD
+        </span>
       </div>
 
       {isEditing ? (
@@ -83,7 +90,7 @@ export const ProcessStepsCard: React.FC<ProcessStepsCardProps> = ({
         </div>
       ) : (
         <div className="mb-6">
-          <h2 className="text-xl sm:text-3xl font-bold tracking-tight text-white mb-1.5">
+          <h2 className="text-xl sm:text-3xl font-extrabold tracking-tight text-white mb-1.5 leading-tight">
             {card.title}
           </h2>
           {card.subtitle && (
@@ -97,17 +104,17 @@ export const ProcessStepsCard: React.FC<ProcessStepsCardProps> = ({
         </div>
       )}
 
-      {/* Step Selector Pills in Apple Segmented Style (All 4 in single view: P1, P2, P3, P4) */}
-      <div className="flex items-center gap-1.5 p-1 bg-neutral-900/90 border border-white/[0.08] rounded-full mb-6 w-full">
+      {/* Step Selector Pills in iOS Segmented Style */}
+      <div className="flex items-center gap-1.5 p-1 bg-black/60 border border-white/10 rounded-2xl mb-6 w-full backdrop-blur-md">
         {steps.map((st, idx) => (
           <button
             key={idx}
             type="button"
             onClick={() => setActiveStepIndex(idx)}
-            className={`min-h-[38px] flex-1 py-1.5 px-2 text-xs sm:text-sm font-bold tracking-wide rounded-full transition-all flex items-center justify-center cursor-pointer ${
+            className={`min-h-[38px] flex-1 py-1.5 px-2 text-xs sm:text-sm font-bold tracking-wide rounded-xl transition-all flex items-center justify-center cursor-pointer ${
               activeStepIndex === idx
-                ? 'bg-white text-black shadow-sm'
-                : 'text-neutral-400 hover:text-white hover:bg-neutral-800/50'
+                ? 'bg-white text-black shadow-md'
+                : 'text-neutral-400 hover:text-white hover:bg-white/5'
             }`}
           >
             <span>P{st.stepNumber || idx + 1}</span>
@@ -115,38 +122,38 @@ export const ProcessStepsCard: React.FC<ProcessStepsCardProps> = ({
         ))}
       </div>
 
-      {/* 2-Column Split: Active Step Detail + Step Visual Diagram (NO nested bordered boxes) */}
+      {/* 2-Column Split: Active Step Detail + Step Visual Diagram */}
       {activeStep && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center mb-6">
-          {/* Left Column: Step Instruction & Underlying Feynman Physics (7 cols) */}
+          {/* Left Column */}
           <div className="lg:col-span-7 space-y-4">
-            <div className="text-xs font-bold uppercase tracking-wider text-neutral-400">
+            <div className="text-xs font-bold uppercase tracking-wider text-sky-400">
               {activeStep.title}
             </div>
 
-            <div className="font-bold text-amber-300 text-base sm:text-xl leading-snug flex items-center justify-between gap-3">
+            <div className="font-bold text-sky-200 text-base sm:text-xl leading-snug flex items-center justify-between gap-3">
               <span>{activeStep.action}</span>
-              <ArrowRight className="w-5 h-5 text-amber-400 shrink-0" />
+              <ArrowRight className="w-5 h-5 text-sky-400 shrink-0" />
             </div>
 
             <div className="pt-3 border-t border-white/[0.08] space-y-3">
               <div className="space-y-1">
-                <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <HelpCircle className="w-3.5 h-3.5 text-neutral-400" />
+                <div className="text-[11px] font-bold text-sky-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <HelpCircle className="w-3.5 h-3.5 text-sky-400" />
                   <span>Operational Rationale</span>
                 </div>
-                <p className="text-xs sm:text-sm text-neutral-200 leading-relaxed pl-3 border-l-2 border-white/30 font-normal">
+                <p className="text-xs sm:text-sm text-neutral-200 leading-relaxed pl-3 border-l-2 border-sky-400/50 font-normal">
                   {activeStep.whyItMatters}
                 </p>
               </div>
 
               {activeStep.criticalWatchout && (
                 <div className="space-y-1">
-                  <div className="text-[11px] font-bold text-red-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
+                  <div className="text-[11px] font-bold text-rose-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
                     <span>Watchout</span>
                   </div>
-                  <p className="text-xs sm:text-sm text-red-300 leading-relaxed pl-3 border-l-2 border-red-500/50 font-normal">
+                  <p className="text-xs sm:text-sm text-rose-300 leading-relaxed pl-3 border-l-2 border-rose-500/50 font-normal">
                     {activeStep.criticalWatchout}
                   </p>
                 </div>
@@ -161,7 +168,7 @@ export const ProcessStepsCard: React.FC<ProcessStepsCardProps> = ({
                 disabled={activeStepIndex === 0}
                 className="min-h-[40px] px-3 py-1.5 text-neutral-400 hover:text-white disabled:opacity-30 font-medium transition-colors cursor-pointer"
               >
-                ← Previous
+                ← Previous Step
               </button>
               <button
                 type="button"
@@ -169,12 +176,12 @@ export const ProcessStepsCard: React.FC<ProcessStepsCardProps> = ({
                 disabled={activeStepIndex === steps.length - 1}
                 className="min-h-[40px] px-3 py-1.5 text-white font-medium hover:underline disabled:opacity-30 disabled:no-underline transition-colors cursor-pointer"
               >
-                Next →
+                Next Step →
               </button>
             </div>
           </div>
 
-          {/* Right Column: Visual Diagram / Flowchart (5 cols) */}
+          {/* Right Column: Visual Diagram */}
           <div className="lg:col-span-5 w-full">
             <CardVisual
               image={card.image}
@@ -198,3 +205,4 @@ export const ProcessStepsCard: React.FC<ProcessStepsCardProps> = ({
     </div>
   );
 };
+

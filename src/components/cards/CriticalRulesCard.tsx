@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { ShieldAlert, CheckSquare, XCircle, CheckCircle2 } from 'lucide-react';
+import { ShieldAlert, CheckSquare, XCircle, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { DeckCard, CriticalRule, CardImage } from '../../types/deck';
 import { CardToolbar } from '../CardToolbar';
-import { CardVisual } from '../visuals/CardVisual';
 
 interface CriticalRulesCardProps {
   card: DeckCard;
@@ -36,13 +35,6 @@ export const CriticalRulesCard: React.FC<CriticalRulesCardProps> = ({
     });
   };
 
-  const handleUpdateImage = (newImage: CardImage) => {
-    onUpdateCard({
-      ...card,
-      image: newImage,
-    });
-  };
-
   const handleRuleChange = (index: number, field: keyof CriticalRule, val: string) => {
     const updated = [...rules];
     updated[index] = { ...updated[index], [field]: val };
@@ -50,10 +42,17 @@ export const CriticalRulesCard: React.FC<CriticalRulesCardProps> = ({
   };
 
   return (
-    <div className="rounded-3xl border border-white/[0.08] bg-neutral-950 shadow-2xl p-6 sm:p-10 transition-colors">
-      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">
-        <ShieldAlert className="w-3.5 h-3.5 text-neutral-300" />
-        <span>{card.badgeText || 'Critical Red Lines & Invariants'}</span>
+    <div className="relative rounded-[2rem] border border-white/[0.12] bg-gradient-to-b from-rose-500/[0.08] via-neutral-950 to-neutral-950 shadow-[0_25px_80px_rgba(0,0,0,0.9)] p-6 sm:p-10 transition-all overflow-hidden">
+      {/* Top Training Card Header */}
+      <div className="flex items-center justify-between border-b border-white/[0.08] pb-4 mb-6">
+        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs font-semibold">
+          <ShieldAlert className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+          <span>{card.badgeText || 'Critical Red Lines & Invariants'}</span>
+        </div>
+
+        <span className="text-[10px] font-mono tracking-widest text-neutral-400 font-bold uppercase">
+          TRAINING CARD
+        </span>
       </div>
 
       {isEditing ? (
@@ -86,7 +85,7 @@ export const CriticalRulesCard: React.FC<CriticalRulesCardProps> = ({
         </div>
       ) : (
         <div className="mb-6">
-          <h2 className="text-xl sm:text-3xl font-bold tracking-tight text-white mb-1.5">
+          <h2 className="text-xl sm:text-3xl font-extrabold tracking-tight text-white mb-1.5 leading-tight">
             {card.title}
           </h2>
           {card.subtitle && (
@@ -100,7 +99,7 @@ export const CriticalRulesCard: React.FC<CriticalRulesCardProps> = ({
         </div>
       )}
 
-      {/* Ultra-Premium Open Tabular List (NO nested bordered boxes) */}
+      {/* Tabular Rule List */}
       <div className="divide-y divide-white/[0.08] mb-6">
         {rules.map((rule, idx) => {
           const isNever = rule.type === 'never_do';
@@ -144,19 +143,22 @@ export const CriticalRulesCard: React.FC<CriticalRulesCardProps> = ({
                 </div>
               ) : (
                 <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-3 sm:gap-6">
-                  {/* Left: Unboxed Type Label (Strict Zero-Pill Discipline) */}
+                  {/* Left: Rule Type Tag */}
                   <div className="shrink-0 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
                     {isNever ? (
-                      <span className="text-red-400 flex items-center gap-1">
-                        <span aria-hidden="true">●</span> NEVER DO
+                      <span className="text-rose-400 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-500/10 border border-rose-500/20">
+                        <XCircle className="w-3.5 h-3.5 text-rose-400" />
+                        <span>NEVER DO</span>
                       </span>
                     ) : isMust ? (
-                      <span className="text-emerald-400 flex items-center gap-1">
-                        <span aria-hidden="true">●</span> MUST DO
+                      <span className="text-emerald-400 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>MUST DO</span>
                       </span>
                     ) : (
-                      <span className="text-neutral-400 flex items-center gap-1">
-                        <span aria-hidden="true">▲</span> CRITICAL
+                      <span className="text-amber-400 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20">
+                        <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+                        <span>CRITICAL</span>
                       </span>
                     )}
                   </div>
@@ -167,14 +169,14 @@ export const CriticalRulesCard: React.FC<CriticalRulesCardProps> = ({
                       {rule.rule}
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-                      <div className="text-red-300 leading-relaxed font-normal">
-                        <strong className="font-semibold text-red-200">Failure Risk:</strong> {rule.consequenceOfFailure}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs pt-1">
+                      <div className="text-rose-300 leading-relaxed font-normal bg-rose-500/5 p-2 rounded-xl border border-rose-500/10">
+                        <strong className="font-semibold text-rose-200">Failure Risk:</strong> {rule.consequenceOfFailure}
                       </div>
-                      <div className="text-neutral-400 leading-relaxed flex items-baseline gap-1 font-normal">
-                        <CheckSquare className="w-3.5 h-3.5 text-neutral-500 shrink-0 translate-y-0.5" />
+                      <div className="text-neutral-300 leading-relaxed flex items-baseline gap-1.5 font-normal bg-white/[0.03] p-2 rounded-xl border border-white/[0.08]">
+                        <CheckSquare className="w-3.5 h-3.5 text-neutral-400 shrink-0 translate-y-0.5" />
                         <span>
-                          <strong className="text-neutral-200 font-semibold">Verification Check:</strong>{' '}
+                          <strong className="text-white font-semibold">Verification Check:</strong>{' '}
                           {rule.verificationCheck}
                         </span>
                       </div>
@@ -199,3 +201,4 @@ export const CriticalRulesCard: React.FC<CriticalRulesCardProps> = ({
     </div>
   );
 };
+

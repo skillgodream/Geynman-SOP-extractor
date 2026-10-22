@@ -119,13 +119,21 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({
         <div className="w-full max-w-5xl my-auto transition-all duration-300 presentation-slide py-2 sm:py-4">
           {currentSlideIndex === 0 ? (
             /* Slide 0: Cover / Overview Slide in Apple Keynote Style */
-            <div className="bg-neutral-950 border border-white/[0.08] rounded-3xl p-6 sm:p-10 md:p-12 shadow-[0_30px_90px_rgba(0,0,0,0.95)] relative overflow-hidden">
+            <div className="relative rounded-[2rem] border border-white/[0.12] bg-gradient-to-b from-blue-500/[0.08] via-neutral-950 to-neutral-950 p-6 sm:p-10 md:p-12 shadow-[0_30px_90px_rgba(0,0,0,0.95)] overflow-hidden">
+              {/* Top Cover Header */}
+              <div className="flex items-center justify-between border-b border-white/[0.08] pb-4 mb-6">
+                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs font-semibold">
+                  <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+                  <span>{deck.originalDocType ? deck.originalDocType.toUpperCase() : 'OPERATIONAL MASTERCLASS'}</span>
+                </div>
+
+                <span className="text-[10px] font-mono tracking-widest text-neutral-400 font-bold uppercase">
+                  MASTER TRAINING DECK
+                </span>
+              </div>
+
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                 <div className="lg:col-span-7 space-y-4">
-                  <div className="text-[11px] font-mono tracking-[0.2em] uppercase text-neutral-400 font-bold">
-                    {deck.originalDocType ? deck.originalDocType.toUpperCase() : 'OPERATIONAL MASTERCLASS'}
-                  </div>
-
                   <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white leading-tight">
                     {deck.title}
                   </h1>
@@ -135,11 +143,11 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({
                   </p>
 
                   <div className="pt-4 border-t border-white/[0.08] space-y-2">
-                    <div className="text-xs font-semibold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
-                      <Lightbulb className="w-4 h-4 text-neutral-300" />
+                    <div className="text-xs font-semibold text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+                      <Lightbulb className="w-4 h-4 text-amber-400" />
                       <span>Core Mental Model</span>
                     </div>
-                    <blockquote className="text-xs sm:text-sm text-neutral-200 leading-relaxed italic border-l-2 border-white/40 pl-3">
+                    <blockquote className="text-xs sm:text-sm text-neutral-200 leading-relaxed italic border-l-2 border-amber-400/60 pl-3">
                       "{deck.feynmanCoreConcept.centralAnalogy.analogyText}"
                     </blockquote>
                     <p className="text-xs text-neutral-400 pt-1">

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Lightbulb, ArrowRight, BookOpen } from 'lucide-react';
+import { Lightbulb, ArrowRight, BookOpen, Sparkles } from 'lucide-react';
 import { DeckCard, CardImage } from '../../types/deck';
 import { CardToolbar } from '../CardToolbar';
 import { CardVisual } from '../visuals/CardVisual';
@@ -55,11 +55,17 @@ export const ConceptAnalogyCard: React.FC<ConceptAnalogyCardProps> = ({
       : 'flowchart';
 
   return (
-    <div className="rounded-3xl border border-white/[0.08] bg-neutral-950 shadow-2xl p-6 sm:p-10 transition-colors">
-      {/* Category header */}
-      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">
-        <Lightbulb className="w-3.5 h-3.5 text-neutral-300" />
-        <span>{card.badgeText || 'Intuition & Mental Model'}</span>
+    <div className="relative rounded-[2rem] border border-white/[0.12] bg-gradient-to-b from-amber-500/[0.06] via-neutral-950 to-neutral-950 shadow-[0_25px_80px_rgba(0,0,0,0.9)] p-6 sm:p-10 transition-all overflow-hidden">
+      {/* Top Training Card Header */}
+      <div className="flex items-center justify-between border-b border-white/[0.08] pb-4 mb-6">
+        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-semibold">
+          <Lightbulb className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+          <span>{card.badgeText || 'Intuition & Mental Model'}</span>
+        </div>
+
+        <span className="text-[10px] font-mono tracking-widest text-neutral-400 font-bold uppercase">
+          TRAINING CARD
+        </span>
       </div>
 
       {isEditing ? (
@@ -107,9 +113,9 @@ export const ConceptAnalogyCard: React.FC<ConceptAnalogyCardProps> = ({
           </button>
         </div>
       ) : (
-        /* Ultra-Premium 2-Column Split: Picture / Diagram + Editorial Text (Zero cards-in-cards) */
+        /* 2-Column Split Layout */
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center mb-6">
-          {/* Visual Column (5 cols) */}
+          {/* Visual Column */}
           <div className="lg:col-span-5 w-full order-2 lg:order-1">
             <CardVisual
               image={card.image}
@@ -119,10 +125,10 @@ export const ConceptAnalogyCard: React.FC<ConceptAnalogyCardProps> = ({
             />
           </div>
 
-          {/* Text Content Column (7 cols) - Clean Editorial, NO cards in cards */}
+          {/* Text Content Column */}
           <div className="lg:col-span-7 space-y-4 order-1 lg:order-2">
             <div>
-              <h2 className="text-xl sm:text-3xl font-bold tracking-tight text-white mb-1.5">
+              <h2 className="text-xl sm:text-3xl font-extrabold tracking-tight text-white mb-1.5 leading-tight">
                 {card.title}
               </h2>
               {card.subtitle && (
@@ -136,25 +142,25 @@ export const ConceptAnalogyCard: React.FC<ConceptAnalogyCardProps> = ({
               {card.feynmanExplanation}
             </p>
 
-            {/* Metaphor & Takeaway (Pure Typography & Hairlines, NO nested boxes) */}
+            {/* Metaphor & Takeaway */}
             {card.analogy && (
-              <div className="pt-3 border-t border-white/[0.08] space-y-3">
+              <div className="pt-4 border-t border-white/[0.08] space-y-3">
                 <div className="space-y-1">
-                  <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <BookOpen className="w-3.5 h-3.5 text-neutral-400" />
+                  <div className="text-[11px] font-bold text-amber-300/90 uppercase tracking-wider flex items-center gap-1.5">
+                    <BookOpen className="w-3.5 h-3.5 text-amber-400" />
                     <span>Everyday Metaphor</span>
                   </div>
-                  <blockquote className="text-xs sm:text-sm text-neutral-200 italic border-l-2 border-white/30 pl-3 leading-relaxed">
+                  <blockquote className="text-xs sm:text-sm text-neutral-200 italic border-l-2 border-amber-400/60 pl-3 leading-relaxed">
                     "{card.analogy.metaphor}"
                   </blockquote>
                 </div>
 
                 <div className="space-y-1">
-                  <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <ArrowRight className="w-3.5 h-3.5 text-neutral-400" />
+                  <div className="text-[11px] font-bold text-amber-300/90 uppercase tracking-wider flex items-center gap-1.5">
+                    <ArrowRight className="w-3.5 h-3.5 text-amber-400" />
                     <span>Operational Takeaway</span>
                   </div>
-                  <p className="text-xs sm:text-sm text-white font-medium pl-3">
+                  <p className="text-xs sm:text-sm text-amber-100 font-semibold pl-3 border-l-2 border-amber-400/30">
                     {card.analogy.takeaway}
                   </p>
                 </div>
@@ -176,3 +182,4 @@ export const ConceptAnalogyCard: React.FC<ConceptAnalogyCardProps> = ({
     </div>
   );
 };
+

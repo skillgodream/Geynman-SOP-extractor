@@ -80,10 +80,17 @@ export const ScenarioQuizCard: React.FC<ScenarioQuizCardProps> = ({
   const isCorrect = selectedOption === quiz.correctAnswerIndex;
 
   return (
-    <div className="rounded-3xl border border-white/[0.08] bg-neutral-950 shadow-2xl p-6 sm:p-10 transition-colors">
-      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">
-        <HelpCircle className="w-3.5 h-3.5 text-neutral-300" />
-        <span>{card.badgeText || 'Active Recall Dilemma'}</span>
+    <div className="relative rounded-[2rem] border border-white/[0.12] bg-gradient-to-b from-emerald-500/[0.08] via-neutral-950 to-neutral-950 shadow-[0_25px_80px_rgba(0,0,0,0.9)] p-6 sm:p-10 transition-all overflow-hidden">
+      {/* Top Training Card Header */}
+      <div className="flex items-center justify-between border-b border-white/[0.08] pb-4 mb-6">
+        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-semibold">
+          <HelpCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+          <span>{card.badgeText || 'Active Recall Dilemma'}</span>
+        </div>
+
+        <span className="text-[10px] font-mono tracking-widest text-neutral-400 font-bold uppercase">
+          TRAINING CARD
+        </span>
       </div>
 
       {isEditing ? (
@@ -118,7 +125,7 @@ export const ScenarioQuizCard: React.FC<ScenarioQuizCardProps> = ({
         </div>
       ) : (
         <div className="mb-6">
-          <h2 className="text-xl sm:text-3xl font-bold tracking-tight text-white mb-1.5">
+          <h2 className="text-xl sm:text-3xl font-extrabold tracking-tight text-white mb-1.5 leading-tight">
             {card.title}
           </h2>
           {card.subtitle && (
@@ -127,13 +134,13 @@ export const ScenarioQuizCard: React.FC<ScenarioQuizCardProps> = ({
             </p>
           )}
 
-          {/* 2-Column Split: Dilemma Scenario & Questions + Visual Scenario Diagram */}
+          {/* 2-Column Split */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-4">
-            {/* Left Column: The Scenario & Options (7 cols) - Clean Editorial, NO cards in cards */}
+            {/* Left Column */}
             <div className="lg:col-span-7 space-y-4">
               {/* Scenario setup */}
-              <div className="border-l-2 border-white/30 pl-3.5 space-y-1">
-                <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">
+              <div className="border-l-2 border-emerald-400/50 pl-3.5 space-y-1">
+                <div className="text-[11px] font-bold text-emerald-300 uppercase tracking-wider">
                   Scenario:
                 </div>
                 <p className="text-xs sm:text-sm text-neutral-200 leading-relaxed font-normal">
@@ -153,15 +160,15 @@ export const ScenarioQuizCard: React.FC<ScenarioQuizCardProps> = ({
                   const isTargetCorrect = quiz.correctAnswerIndex === idx;
 
                   let btnStyle =
-                    'border-white/[0.08] bg-neutral-900/60 hover:border-white/20 text-neutral-200';
+                    'border-white/10 bg-black/50 hover:border-white/20 text-neutral-200';
 
                   if (hasAnswered) {
                     if (isTargetCorrect) {
                       btnStyle =
-                        'border-emerald-500 bg-emerald-950/40 text-emerald-100 font-semibold ring-1 ring-emerald-500';
+                        'border-emerald-500 bg-emerald-950/60 text-emerald-100 font-semibold ring-1 ring-emerald-500';
                     } else if (isSelected && !isTargetCorrect) {
                       btnStyle =
-                        'border-red-500/80 bg-red-950/40 text-red-200 line-through opacity-80';
+                        'border-rose-500/80 bg-rose-950/60 text-rose-200 line-through opacity-80';
                     } else {
                       btnStyle = 'border-white/5 opacity-40';
                     }
@@ -173,14 +180,14 @@ export const ScenarioQuizCard: React.FC<ScenarioQuizCardProps> = ({
                       type="button"
                       onClick={() => handleSelectOption(idx)}
                       disabled={hasAnswered}
-                      className={`w-full min-h-[48px] text-left p-3.5 rounded-xl border text-xs sm:text-sm transition-all flex items-start gap-3 active:scale-[0.99] cursor-pointer ${btnStyle}`}
+                      className={`w-full min-h-[48px] text-left p-3.5 rounded-2xl border text-xs sm:text-sm transition-all flex items-start gap-3 active:scale-[0.99] cursor-pointer ${btnStyle}`}
                     >
                       <div
                         className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold ${
                           hasAnswered && isTargetCorrect
                             ? 'border-emerald-500 bg-emerald-500 text-white'
                             : hasAnswered && isSelected && !isTargetCorrect
-                            ? 'border-red-500 bg-red-500 text-white'
+                            ? 'border-rose-500 bg-rose-500 text-white'
                             : 'border-neutral-700 text-neutral-400'
                         }`}
                       >
@@ -230,14 +237,14 @@ export const ScenarioQuizCard: React.FC<ScenarioQuizCardProps> = ({
                     </button>
                   </div>
 
-                  <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed font-normal">
+                  <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed font-normal bg-white/[0.03] p-3 rounded-xl border border-white/[0.08]">
                     {quiz.feynmanFeedback}
                   </p>
                 </div>
               )}
             </div>
 
-            {/* Right Column: Scenario Visual / Diagram (5 cols) */}
+            {/* Right Column: Scenario Visual */}
             <div className="lg:col-span-5 w-full">
               <CardVisual
                 image={card.image}
@@ -262,3 +269,4 @@ export const ScenarioQuizCard: React.FC<ScenarioQuizCardProps> = ({
     </div>
   );
 };
+

@@ -42,10 +42,17 @@ export const QuickReferenceCard: React.FC<QuickReferenceCardProps> = ({
   };
 
   return (
-    <div className="rounded-3xl border border-white/[0.08] bg-neutral-950 shadow-2xl p-6 sm:p-10 transition-colors">
-      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">
-        <Bookmark className="w-3.5 h-3.5 text-neutral-300" />
-        <span>{card.badgeText || 'Quick Reference'}</span>
+    <div className="relative rounded-[2rem] border border-white/[0.12] bg-gradient-to-b from-cyan-500/[0.08] via-neutral-950 to-neutral-950 shadow-[0_25px_80px_rgba(0,0,0,0.9)] p-6 sm:p-10 transition-all overflow-hidden">
+      {/* Top Training Card Header */}
+      <div className="flex items-center justify-between border-b border-white/[0.08] pb-4 mb-6">
+        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-semibold">
+          <Bookmark className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+          <span>{card.badgeText || 'Quick Reference Guide'}</span>
+        </div>
+
+        <span className="text-[10px] font-mono tracking-widest text-neutral-400 font-bold uppercase">
+          TRAINING CARD
+        </span>
       </div>
 
       {isEditing ? (
@@ -78,7 +85,7 @@ export const QuickReferenceCard: React.FC<QuickReferenceCardProps> = ({
         </div>
       ) : (
         <div className="mb-6">
-          <h2 className="text-xl sm:text-3xl font-bold tracking-tight text-white mb-1.5">
+          <h2 className="text-xl sm:text-3xl font-extrabold tracking-tight text-white mb-1.5 leading-tight">
             {card.title}
           </h2>
           {card.subtitle && (
@@ -92,7 +99,7 @@ export const QuickReferenceCard: React.FC<QuickReferenceCardProps> = ({
         </div>
       )}
 
-      {/* Clean Tabular Hairline List (NO nested bordered cards) */}
+      {/* Clean Tabular Reference List */}
       <div className="divide-y divide-white/[0.08] mb-6">
         {items.map((item, idx) => (
           <div
@@ -122,15 +129,15 @@ export const QuickReferenceCard: React.FC<QuickReferenceCardProps> = ({
               </div>
             ) : (
               <>
-                <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-neutral-400" />
-                  <span className="text-xs sm:text-sm font-medium text-neutral-300">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                  <span className="text-xs sm:text-sm font-semibold text-neutral-200">
                     {item.label}
                   </span>
                 </div>
 
                 <div className="flex items-baseline gap-3 text-right">
-                  <span className="text-xs sm:text-sm font-mono font-bold text-white">
+                  <span className="text-xs sm:text-sm font-mono font-bold text-cyan-300 bg-cyan-500/10 px-2.5 py-1 rounded-lg border border-cyan-500/20">
                     {item.value}
                   </span>
                   <span className="text-xs text-neutral-400 font-normal">
@@ -155,3 +162,4 @@ export const QuickReferenceCard: React.FC<QuickReferenceCardProps> = ({
     </div>
   );
 };
+
