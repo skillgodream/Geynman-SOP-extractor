@@ -95,11 +95,6 @@ export const DemoDecksScreen: React.FC<DemoDecksScreenProps> = ({
                       {deck.title}
                     </h2>
 
-                    {/* Subtitle Snippet — 2 full readable lines */}
-                    <p className="text-xs text-neutral-400 font-normal leading-relaxed line-clamp-2">
-                      {deck.summary || deck.feynmanCoreConcept?.centralAnalogy?.title || 'Standard Operating Procedure execution guide'}
-                    </p>
-
                     {/* Mode Pills (2-column layout, without Slide View) */}
                     <ModePills
                       allowedModes={['outline', 'show_me', 'guide_me', 'test_me']}
