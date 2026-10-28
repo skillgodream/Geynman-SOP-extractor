@@ -99,7 +99,7 @@ export const GuideMeMode: React.FC<GuideMeModeProps> = ({ deck, onExit, onSwitch
       {/* Main Guided Practice Stage */}
       <div className="flex-1 flex flex-col p-4 sm:p-6 md:p-8 overflow-y-auto items-center">
         <div className="w-full max-w-2xl flex flex-col gap-6 pb-12">
-          {/* Top Situation Picture Banner (Matching User Reference App Layout) */}
+          {/* Top Situation Picture Banner */}
           <div className="relative w-full h-48 sm:h-60 rounded-3xl overflow-hidden border border-white/[0.08] bg-neutral-900 shadow-2xl shrink-0">
             <img
               src={
@@ -113,23 +113,10 @@ export const GuideMeMode: React.FC<GuideMeModeProps> = ({ deck, onExit, onSwitch
             />
             {/* Subtle Gradient Vignette */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
-
-            {/* Code Badge Overlay (Matching Reference App: Code: STEP-1 / Code: PICKING) */}
-            <div className="absolute bottom-4 left-4 z-10">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-neutral-950/85 backdrop-blur-md border border-white/15 text-xs font-mono font-bold text-neutral-200 tracking-wider shadow-lg">
-                <span className="text-white uppercase">{currentScenario.codeBadge || `Code: STEP-${activeScenarioIndex + 1}`}</span>
-              </span>
-            </div>
           </div>
 
           {/* Question & Options Stack */}
           <div className="space-y-6">
-            {/* Metadata / Context Tag */}
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-neutral-500">
-              <span className="text-white">{currentScenario.context || 'OPERATIONAL DILEMMA'}</span>
-              <span className="text-neutral-700">·</span>
-              <span className="text-neutral-500">FIELD DILEMMA SITUATION {activeScenarioIndex + 1}</span>
-            </div>
 
             {/* Heading / Question with Animated Typing / Fade-In */}
             <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-white leading-tight animate-fadeIn">
