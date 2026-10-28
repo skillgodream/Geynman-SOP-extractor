@@ -18,7 +18,9 @@ import { FeynmanMethodModal } from './components/FeynmanMethodModal';
 import { FloatingAskTutorButton } from './components/FloatingAskTutorButton';
 import { FeynmanTutorDrawer } from './components/FeynmanTutorDrawer';
 
-type AppScreen = 'home' | 'explore' | 'scan' | 'upload' | 'demo' | 'deck';
+import { LearnerPortalScreen } from './components/LearnerPortalScreen';
+
+type AppScreen = 'home' | 'explore' | 'scan' | 'upload' | 'demo' | 'deck' | 'learner_portal';
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<AppScreen>('home');
@@ -30,6 +32,29 @@ export default function App() {
   const [isMobileOutlineOpen, setIsMobileOutlineOpen] = useState(false);
   const [isTutorOpen, setIsTutorOpen] = useState(false);
   const [activeTutorCard, setActiveTutorCard] = useState<DeckCard | null>(null);
+
+  const [sharedLearnerName, setSharedLearnerName] = useState('Frontline Operator');
+
+  // Check URL search parameters on mount for shared learner links (?shareId=xyz&learnerName=...)
+  React.useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const shareId = params.get('shareId') || params.get('share');
+      const name = params.get('learnerName');
+
+      if (name) setSharedLearnerName(name);
+
+      if (shareId) {
+        const matched = SAMPLE_DECKS.find((d) => d.id === shareId);
+        if (matched) {
+          setCurrentDeck(matched);
+          setCurrentScreen('learner_portal');
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   // Transition from Home -> Explore Selection (Only Scan, Upload, Demo)
   const handleStartExplore = () => {
@@ -209,6 +234,21 @@ export default function App() {
         onBackToExplore={() => setCurrentScreen('explore')}
         onOpenUpload={() => setCurrentScreen('upload')}
         onSelectDeck={handleSelectDeck}
+      />
+    );
+  }
+
+  // SCREEN 5B: FOCUSED LEARNER PORTAL SCREEN (Opened via Shared SOP Module Link)
+  if (currentScreen === 'learner_portal') {
+    return (
+      <LearnerPortalScreen
+        deck={currentDeck}
+        learnerName={sharedLearnerName}
+        onOpenMode={(mode) => {
+          setActiveView(mode);
+          setCurrentScreen('deck');
+        }}
+        onExitPortal={() => setCurrentScreen('demo')}
       />
     );
   }

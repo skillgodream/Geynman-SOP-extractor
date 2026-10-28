@@ -50,9 +50,15 @@ export const TroubleshootingCard: React.FC<TroubleshootingCardProps> = ({
           <span>{card.badgeText || 'Field Traps & Troubleshooting'}</span>
         </div>
 
-        <span className="text-[10px] font-mono tracking-widest text-neutral-400 font-bold uppercase">
-          TRAINING CARD
-        </span>
+        {card.levelNumber !== undefined ? (
+          <span className="text-[10px] font-mono tracking-widest text-purple-400 font-bold uppercase px-2.5 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20">
+            LEVEL {card.levelNumber} · DEBUGGING
+          </span>
+        ) : (
+          <span className="text-[10px] font-mono tracking-widest text-neutral-400 font-bold uppercase">
+            TRAINING CARD
+          </span>
+        )}
       </div>
 
       {isEditing ? (
@@ -93,9 +99,54 @@ export const TroubleshootingCard: React.FC<TroubleshootingCardProps> = ({
               {card.subtitle}
             </p>
           )}
-          <p className="text-sm sm:text-base text-neutral-300 leading-relaxed max-w-3xl font-normal">
+          <p className="text-sm sm:text-base text-neutral-300 leading-relaxed max-w-3xl font-normal mb-3">
             {card.feynmanExplanation}
           </p>
+
+          {/* Stop Work Trigger Badge */}
+          {card.stopWorkTrigger && (
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs font-semibold my-2">
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+              <span>Stop-Work Trigger: {card.stopWorkTrigger}</span>
+            </div>
+          )}
+
+          {/* Split Pass / Fail Visual Contrast Block */}
+          {(card.image?.layout === 'split_pass_fail' || card.image?.passFailComparison) && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-4 p-4 rounded-2xl bg-neutral-900/80 border border-white/10">
+              {/* Passed Visual Box */}
+              <div className="p-3.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 space-y-1.5">
+                <div className="flex items-center justify-between text-xs font-bold text-emerald-400">
+                  <span className="flex items-center gap-1.5">
+                    <CheckCircle className="w-4 h-4 text-emerald-400" />
+                    <span>PASSED / CORRECT</span>
+                  </span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
+                    ACCEPTABLE
+                  </span>
+                </div>
+                <p className="text-xs text-emerald-100 font-medium leading-relaxed">
+                  {card.image?.passFailComparison?.passText || card.image?.passCaption || 'Visual threshold met: zero defect alignment.'}
+                </p>
+              </div>
+
+              {/* Failed / Defective Visual Box */}
+              <div className="p-3.5 rounded-xl bg-red-950/40 border border-red-500/30 space-y-1.5">
+                <div className="flex items-center justify-between text-xs font-bold text-red-400">
+                  <span className="flex items-center gap-1.5">
+                    <AlertCircle className="w-4 h-4 text-red-400" />
+                    <span>DEFECT / REJECTED</span>
+                  </span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-red-500/20 text-red-300">
+                    STOP WORK
+                  </span>
+                </div>
+                <p className="text-xs text-red-100 font-medium leading-relaxed">
+                  {card.image?.passFailComparison?.failText || card.image?.failCaption || 'Misalignment or parameter drift detected. Reject item.'}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

@@ -13,6 +13,7 @@ import {
 import confetti from 'canvas-confetti';
 import { FeynmanDeck, AssessmentQuestion, AppViewMode } from '../../types/deck';
 import { deriveAssessmentQuestions } from '../../utils/deckDerivations';
+import { saveLearnerProgress } from '../../utils/learnerProgress';
 import { ModePills } from '../ModePills';
 
 interface TestMeModeProps {
@@ -54,6 +55,20 @@ export const TestMeMode: React.FC<TestMeModeProps> = ({ deck, onExit, onSwitchTo
     setIsSubmitted(true);
     const score = calculateScore();
     const pct = Math.round((score / questions.length) * 100);
+    const passed = pct >= 80;
+
+    saveLearnerProgress({
+      id: `prog-${deck.id}-active`,
+      deckId: deck.id,
+      learnerName: learnerName || 'Certified Operator',
+      cardsCompleted: true,
+      videoCompleted: true,
+      guideMeCompleted: true,
+      testScore: pct,
+      testPassed: passed,
+      completedAt: new Date().toISOString(),
+      lastActiveAt: new Date().toISOString(),
+    });
 
     if (pct >= 80) {
       try {

@@ -86,26 +86,69 @@
   transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Print styling for PDF study guides */
+/* Print styling for clean PDF export of training decks */
 @media print {
+  @page {
+    size: letter portrait;
+    margin: 12mm 15mm;
+  }
+
+  /* Hide non-printable interactive toolbars, buttons, headers, drawers, sidebars */
   header,
   nav,
   aside,
   button,
-  .no-print {
+  footer,
+  .no-print,
+  .card-toolbar,
+  [role="dialog"],
+  .fixed,
+  .pb-safe {
     display: none !important;
   }
 
+  /* Reset body and container backgrounds for crisp PDF rendering */
+  html,
   body,
   main,
+  #root,
   div {
-    background: white !important;
-    color: black !important;
+    background: #ffffff !important;
+    color: #111111 !important;
+    box-shadow: none !important;
+    border-color: #e5e7eb !important;
+    text-shadow: none !important;
   }
 
-  .scroll-mt-32 {
-    page-break-inside: avoid;
-    break-inside: avoid;
-    margin-bottom: 2rem;
+  /* Force exact color reproduction for badges and status indicators */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Clean page breaks between training cards */
+  .scroll-mt-32,
+  .print-card-break {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    margin-bottom: 2rem !important;
+    padding: 1.5rem !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 12px !important;
+  }
+
+  .presentation-slide {
+    position: static !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  h1, h2, h3, h4 {
+    color: #000000 !important;
+  }
+
+  p, span, li, td {
+    color: #1f2937 !important;
   }
 }

@@ -63,9 +63,15 @@ export const ConceptAnalogyCard: React.FC<ConceptAnalogyCardProps> = ({
           <span>{card.badgeText || 'Intuition & Mental Model'}</span>
         </div>
 
-        <span className="text-[10px] font-mono tracking-widest text-neutral-400 font-bold uppercase">
-          TRAINING CARD
-        </span>
+        {card.levelNumber !== undefined ? (
+          <span className="text-[10px] font-mono tracking-widest text-blue-400 font-bold uppercase px-2.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20">
+            LEVEL {card.levelNumber} · PROCESS MAP
+          </span>
+        ) : (
+          <span className="text-[10px] font-mono tracking-widest text-neutral-400 font-bold uppercase">
+            TRAINING CARD
+          </span>
+        )}
       </div>
 
       {isEditing ? (

@@ -6,9 +6,12 @@ import {
   Minimize2,
   X,
   Clock,
-  Lightbulb
+  Lightbulb,
+  Printer
 } from 'lucide-react';
 import { FeynmanDeck, DeckCard, AppViewMode } from '../types/deck';
+import { printDeckToPdf } from '../utils/printPdf';
+import { PrintPdfModal } from './PrintPdfModal';
 import { ConceptAnalogyCard } from './cards/ConceptAnalogyCard';
 import { CriticalRulesCard } from './cards/CriticalRulesCard';
 import { ProcessStepsCard } from './cards/ProcessStepsCard';
@@ -38,6 +41,7 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({
 }) => {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(initialSlideIndex);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
 
   const totalSlides = deck.cards.length + 1; // Slide 0 is Overview/Hero, Slides 1..N are Deck Cards
 
@@ -96,8 +100,18 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({
         <div className="flex items-center gap-2">
           <button
             type="button"
+            onClick={() => setIsPrintModalOpen(true)}
+            className="min-h-[38px] px-3.5 py-1.5 flex items-center gap-1.5 text-xs font-semibold text-neutral-300 hover:text-white rounded-full bg-neutral-900/60 hover:bg-neutral-800 border border-white/10 transition-colors cursor-pointer no-print z-10"
+            title="Export Slide Deck to PDF"
+            aria-label="Print to PDF"
+          >
+            <Printer className="w-3.5 h-3.5 text-blue-400" />
+            <span className="hidden sm:inline">Print to PDF</span>
+          </button>
+          <button
+            type="button"
             onClick={toggleFullscreen}
-            className="min-h-[38px] min-w-[38px] flex items-center justify-center text-neutral-400 hover:text-white rounded-full bg-neutral-900/60 hover:bg-neutral-800 border border-white/10 transition-colors cursor-pointer"
+            className="min-h-[38px] min-w-[38px] flex items-center justify-center text-neutral-400 hover:text-white rounded-full bg-neutral-900/60 hover:bg-neutral-800 border border-white/10 transition-colors cursor-pointer no-print"
             title="Toggle fullscreen"
             aria-label="Fullscreen"
           >
@@ -106,7 +120,7 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({
           <button
             type="button"
             onClick={onExit}
-            className="min-h-[38px] flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 border border-white/10 rounded-full transition-colors cursor-pointer"
+            className="min-h-[38px] flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 border border-white/10 rounded-full transition-colors cursor-pointer no-print"
           >
             <X className="w-4 h-4" />
             <span className="hidden sm:inline">Exit Slides</span>
@@ -286,6 +300,13 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>
+
+      {/* Interactive Print & Save PDF Export Modal */}
+      <PrintPdfModal
+        isOpen={isPrintModalOpen}
+        onClose={() => setIsPrintModalOpen(false)}
+        deck={deck}
+      />
     </div>
   );
 };

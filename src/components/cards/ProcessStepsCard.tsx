@@ -55,9 +55,15 @@ export const ProcessStepsCard: React.FC<ProcessStepsCardProps> = ({
           <span>{card.badgeText || 'Chunked Workflow Steps'}</span>
         </div>
 
-        <span className="text-[10px] font-mono tracking-widest text-neutral-400 font-bold uppercase">
-          TRAINING CARD
-        </span>
+        {card.levelNumber !== undefined ? (
+          <span className="text-[10px] font-mono tracking-widest text-sky-400 font-bold uppercase px-2.5 py-0.5 rounded-full bg-sky-500/10 border border-sky-500/20">
+            LEVEL {card.levelNumber} · EXECUTION
+          </span>
+        ) : (
+          <span className="text-[10px] font-mono tracking-widest text-neutral-400 font-bold uppercase">
+            TRAINING CARD
+          </span>
+        )}
       </div>
 
       {isEditing ? (

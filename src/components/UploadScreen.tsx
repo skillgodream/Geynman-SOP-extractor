@@ -40,6 +40,7 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
   const [instructionalFocus, setInstructionalFocus] = useState(
     'High-Stakes Safety & Failure Prevention'
   );
+  const [deckType, setDeckType] = useState<'auto' | 'quick' | 'master_visual' | 'master'>('auto');
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationStep, setGenerationStep] = useState(0);
@@ -108,6 +109,7 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
         instructionalStyle: 'feynman',
         targetAudience: learnerLevel,
         instructionalFocus: instructionalFocus,
+        deckType: deckType,
         apiKey: storedKey || undefined,
       };
 
@@ -376,11 +378,11 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
           )}
 
           {/* Configuration Selectors */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
             {/* Target Learner Level */}
             <div className="space-y-1.5">
               <label className="text-[11px] font-medium text-neutral-400">
-                Target Learner Level
+                Learner Level
               </label>
               <select
                 value={learnerLevel}
@@ -388,13 +390,13 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
                 className="w-full text-xs bg-neutral-900 border border-white/10 rounded-xl px-3 py-2.5 text-neutral-200 focus:outline-none focus:border-white/30 transition-colors cursor-pointer"
               >
                 <option value="Operational Staff & New Hires (Maximum Simplification)">
-                  Operational Staff & New Hires
+                  Frontline Staff
                 </option>
                 <option value="Cross-Functional Teams & Supervisors">
-                  Cross-Functional Teams & Supervisors
+                  Supervisors
                 </option>
                 <option value="Auditors & Compliance Officers">
-                  Auditors & Compliance Officers
+                  Compliance Officers
                 </option>
               </select>
             </div>
@@ -410,14 +412,31 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
                 className="w-full text-xs bg-neutral-900 border border-white/10 rounded-xl px-3 py-2.5 text-neutral-200 focus:outline-none focus:border-white/30 transition-colors cursor-pointer"
               >
                 <option value="High-Stakes Safety & Failure Prevention">
-                  High-Stakes Safety & Red Lines
+                  Safety & Red Lines
                 </option>
                 <option value="Core Mental Models & Why-It-Works">
-                  Core Mental Models & Why-It-Works
+                  Mental Models
                 </option>
                 <option value="Troubleshooting & Rapid Recovery">
-                  Troubleshooting & Rapid Recovery
+                  Troubleshooting
                 </option>
+              </select>
+            </div>
+
+            {/* Training Deck Depth */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-medium text-neutral-400">
+                Deck Depth Model
+              </label>
+              <select
+                value={deckType}
+                onChange={(e) => setDeckType(e.target.value as any)}
+                className="w-full text-xs bg-neutral-900 border border-white/10 rounded-xl px-3 py-2.5 text-neutral-200 focus:outline-none focus:border-white/30 transition-colors cursor-pointer font-medium"
+              >
+                <option value="auto">⚡ Auto-Detect (SOP Size)</option>
+                <option value="quick">🚀 Quick 5-Min Summary</option>
+                <option value="master_visual">🎯 Modular Visual Deck (Levels 0-4)</option>
+                <option value="master">📚 Master Deck (Full Detail)</option>
               </select>
             </div>
           </div>

@@ -72,7 +72,7 @@ Principles of the Feynman Instructional Design Method:
 Output STRICT JSON only matching the schema requested.`;
 
 // List of resilient models matching official @google/genai guidelines
-const RESILIENT_MODELS = ['gemini-3.8-flash', 'gemini-3.1-flash-lite'];
+const RESILIENT_MODELS = ['gemini-3.8-flash', 'gemini-flash-latest', 'gemini-3.1-flash-lite'];
 
 async function generateContentWithResilience(params: {
   contents: any;
@@ -86,7 +86,7 @@ async function generateContentWithResilience(params: {
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
         const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Gemini API request timeout (12s limit exceeded)')), 12000)
+          setTimeout(() => reject(new Error('Gemini API request timeout (30s limit exceeded)')), 30000)
         );
 
         const generatePromise = client.models.generateContent({
@@ -109,7 +109,9 @@ async function generateContentWithResilience(params: {
           msg.includes('high demand') ||
           msg.includes('429') ||
           msg.includes('RESOURCE_EXHAUSTED') ||
-          msg.includes('timeout');
+          msg.includes('timeout') ||
+          msg.includes('404') ||
+          msg.includes('NOT_FOUND');
 
         if (isTemporary && attempt === 0) {
           await new Promise((resolve) => setTimeout(resolve, 800));
@@ -124,14 +126,59 @@ async function generateContentWithResilience(params: {
   throw lastError;
 }
 
-// Fallback Feynman generator in case cloud API is temporarily unreachable
+// Structural Section Marker Parser for Deep Dive SOP Processing
+function parseSopStructuralSections(rawText: string): { title: string; lines: string[] }[] {
+  if (!rawText || rawText.length < 50) return [];
+
+  const lines = rawText.split('\n').map((l) => l.trim());
+  const sections: { title: string; lines: string[] }[] = [];
+  let currentSection: { title: string; lines: string[] } | null = null;
+
+  // Structural header patterns: "SECTION 1:", "1.0", "1.1", "PART I", "## Heading", "PRE-OPERATIONAL CHECK:"
+  const headerRegex = /^(?:SECTION|PART|CHAPTER|PHASE|STAGE|MODULE)\s+[0-9IVXLCDM]+[:\.\-]?\s*.*$/i;
+  const decimalHeaderRegex = /^\d+\.\d+(?:\.\d+)?\s+[A-Z0-9].*$/;
+  const markdownHeaderRegex = /^#{1,4}\s+.*$/;
+  const capsHeaderRegex = /^[A-Z0-9\s\-_:]{5,60}:$/;
+
+  for (const line of lines) {
+    if (!line) continue;
+
+    const isHeader =
+      headerRegex.test(line) ||
+      decimalHeaderRegex.test(line) ||
+      markdownHeaderRegex.test(line) ||
+      capsHeaderRegex.test(line);
+
+    if (isHeader) {
+      if (currentSection && currentSection.lines.length > 0) {
+        sections.push(currentSection);
+      }
+      const cleanTitle = line.replace(/^#{1,4}\s+/, '').replace(/:$/, '').trim();
+      currentSection = { title: cleanTitle, lines: [] };
+    } else {
+      if (!currentSection) {
+        currentSection = { title: '1.0 General Purpose & Scope', lines: [] };
+      }
+      currentSection.lines.push(line);
+    }
+  }
+
+  if (currentSection && currentSection.lines.length > 0) {
+    sections.push(currentSection);
+  }
+
+  return sections;
+}
+
+// Dynamic Feynman deck generator that extracts actual document text and topics directly from user uploaded SOP
 function createFallbackFeynmanDeck(
   rawText: string,
   targetAudience?: string,
-  _focusArea?: string,
-  fileName?: string
+  instructionalFocus?: string,
+  fileName?: string,
+  deckType: string = 'quick'
 ) {
-  let titleGuess = 'Operational Standard Operating Procedure';
+  let titleGuess = 'Standard Operating Procedure Execution Guide';
 
   if (fileName) {
     const cleanName = fileName
@@ -146,152 +193,411 @@ function createFallbackFeynmanDeck(
       .split('\n')
       .map((l) => l.trim())
       .filter((l) => l.length > 0);
-    const candidate = lines.find((l) => l.length > 5 && l.length < 90 && !l.startsWith('#'));
+    const candidate = lines.find(
+      (l) => l.length > 5 && l.length < 90 && !l.toLowerCase().includes('sop') && !l.startsWith('#')
+    );
     if (candidate) titleGuess = candidate;
+  }
+
+  // Extract real text lines from the document for contextual synthesis
+  const cleanLines = (rawText || '')
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => l.length > 10 && !l.startsWith('#'));
+
+  const summarySnippet = cleanLines.slice(0, 3).join(' ') ||
+    `Operational procedures and execution standards for ${titleGuess}.`;
+
+  // Filter lines containing safety/must/never rules
+  const ruleLines = cleanLines.filter((l) =>
+    /\b(must|never|do not|warning|caution|critical|prohibited|ensure|verify|always)\b/i.test(l)
+  );
+
+  // Filter lines containing steps or actions
+  const stepLines = cleanLines.filter((l) =>
+    /^\d+[\.\)]|[•\-\*]|\b(step|phase|stage|first|then|next|finally|action)\b/i.test(l)
+  );
+
+  const rule1 = ruleLines[0] || `Always verify baseline operational parameters for ${titleGuess} prior to initiation.`;
+  const rule2 = ruleLines[1] || `Never bypass safety interlocks or skip mandatory verification checks under pressure.`;
+
+  const step1Text = stepLines[0] || cleanLines[1] || `Pre-Operation Checklist & Parameter Verification`;
+  const step2Text = stepLines[1] || cleanLines[2] || `Active Procedure Execution & Real-Time Bounds Monitoring`;
+  const step3Text = stepLines[2] || cleanLines[3] || `Post-Execution Verification, Log Sign-Off & Handoff`;
+
+  const isMasterVisual = deckType === 'master_visual' || deckType === 'master';
+
+  const cardsList = isMasterVisual
+    ? [
+        {
+          id: 'card-0',
+          title: 'Level 0: Prerequisites & Workstation Setup Gate',
+          subtitle: 'Required equipment, PPE compliance, and zero-state calibration',
+          cardType: 'critical_rules' as const,
+          badgeText: 'Level 0 · Setup Gate',
+          levelNumber: 0 as const,
+          responsibleRole: 'Frontline Operator',
+          feynmanExplanation: `Before executing Step 1 of ${titleGuess}, verify all zero-state prerequisites. 30% of field defects occur from uncalibrated baselines or missing PPE.`,
+          criticalRules: [
+            {
+              type: 'must_do' as const,
+              rule: 'Verify workstation cleanliness, inspect PPE, and execute zero-point sensor calibration.',
+              consequenceOfFailure: 'Causes initial execution drift, contamination, or immediate safety breach.',
+              verificationCheck: 'Timestamped calibration log and visual inspection sign-off.',
+            },
+            {
+              type: 'never_do' as const,
+              rule: 'Never begin live cycle with unverified or uncalibrated tooling.',
+              consequenceOfFailure: 'Immediate equipment lockout and quality deviation.',
+              verificationCheck: 'Secondary operator check.',
+            },
+          ],
+        },
+        {
+          id: 'card-1',
+          title: `Level 1: Bird's-Eye Process Swimlane Map`,
+          subtitle: `Macro workflow sequence for ${titleGuess}`,
+          cardType: 'concept_analogy' as const,
+          badgeText: "Level 1 · Process Map",
+          levelNumber: 1 as const,
+          feynmanExplanation: `Understand the macro operational flow from initiation to completion before diving into individual micro-actions.`,
+          image: {
+            caption: `Macro process sequence map for ${titleGuess}`,
+            diagramType: 'flowchart' as const,
+          },
+          analogy: {
+            metaphor: `A Multi-Stage Pressure Airlock System`,
+            takeaway: `Equalize parameters at each gate before unlocking the next operational stage.`,
+          },
+        },
+        {
+          id: 'card-2',
+          title: 'Level 2: Execution Phase A - Setup & Baseline Check',
+          subtitle: 'Initial setup micro-actions and baseline parameters',
+          cardType: 'process_steps' as const,
+          badgeText: 'Level 2 · Execution Phase A',
+          levelNumber: 2 as const,
+          feynmanExplanation: `Execute Phase A setup sequence in strict numerical order.`,
+          steps: [
+            {
+              stepNumber: 1,
+              title: 'Parameter Verification',
+              action: step1Text.length > 120 ? step1Text.slice(0, 117) + '...' : step1Text,
+              whyItMatters: 'Guarantees operational baseline is within strict tolerance before initiating live cycle.',
+              criticalWatchout: 'Halt procedure if baseline parameter fluctuates outside specified limits.',
+            },
+          ],
+        },
+        {
+          id: 'card-3',
+          title: 'Level 2: Execution Phase B - Primary Active Cycle',
+          subtitle: 'Hands-on execution, scanning, and active parameter monitoring',
+          cardType: 'process_steps' as const,
+          badgeText: 'Level 2 · Execution Phase B',
+          levelNumber: 2 as const,
+          feynmanExplanation: `Monitor live cycle parameters in real time without leaving the workstation unmonitored.`,
+          steps: [
+            {
+              stepNumber: 2,
+              title: 'Active Cycle Execution',
+              action: step2Text.length > 120 ? step2Text.slice(0, 117) + '...' : step2Text,
+              whyItMatters: 'Catches thermal or pressure drift early before compounding into failure.',
+              criticalWatchout: 'Do not adjust parameters manually during active cycle without supervisor authorization.',
+            },
+          ],
+        },
+        {
+          id: 'card-4',
+          title: 'Level 2: Execution Phase C - Sign-Off & Shift Handoff',
+          subtitle: 'Post-run verification, audit logging, and clean handoff',
+          cardType: 'process_steps' as const,
+          badgeText: 'Level 2 · Execution Phase C',
+          levelNumber: 2 as const,
+          feynmanExplanation: `Complete post-execution logging to ensure 100% audit compliance.`,
+          steps: [
+            {
+              stepNumber: 3,
+              title: 'Audit Logging & Handoff',
+              action: step3Text.length > 120 ? step3Text.slice(0, 117) + '...' : step3Text,
+              whyItMatters: 'Prevents unmonitored shift handoffs and guarantees full batch traceability.',
+              criticalWatchout: 'Never release batch output prior to secondary sign-off.',
+            },
+          ],
+        },
+        {
+          id: 'card-5',
+          title: 'Level 3: Failure Mode & Visual Pass/Fail Comparison',
+          subtitle: 'Symptom diagnosis, visual threshold checks, and immediate remediation',
+          cardType: 'pitfalls_troubleshooting' as const,
+          badgeText: 'Level 3 · Failure Debugging',
+          levelNumber: 3 as const,
+          stopWorkTrigger: 'Immediate Stop-Work if parameter drift exceeds 5% or visual alignment fails.',
+          image: {
+            layout: 'split_pass_fail' as const,
+            passCaption: 'PASSED: Flush alignment, zero gap, clean parameter reading.',
+            failCaption: 'DEFECTIVE: Misalignment detected, parameter out of bounds.',
+            passFailComparison: {
+              passText: 'Visual check passed: clean seating, uniform seal, zero gap.',
+              failText: 'Visual check failed: fracture, gap, or out-of-tolerance reading.',
+            },
+          },
+          feynmanExplanation: `Recognize defect patterns instantly and execute immediate protocol recovery.`,
+          pitfalls: [
+            {
+              symptomOrMistake: 'Parameter reading fluctuates near upper threshold limit',
+              rootCause: 'Dirty sensor/probe, loose connection, or uncalibrated baseline.',
+              immediateFix: 'Pause cycle, clean sensor heads, reseat connections, and verify against secondary logger.',
+            },
+            {
+              symptomOrMistake: 'Operator rushes verification step under shift deadline pressure',
+              rootCause: 'Quota pressure overriding safety invariants.',
+              immediateFix: 'Invoke Stop-Work authority, verify parameters, and complete mandatory checklist.',
+            },
+          ],
+        },
+        {
+          id: 'card-6',
+          title: 'Level 4: Golden Rules & Metric Thresholds',
+          subtitle: 'Non-negotiable quality gates and key performance metrics',
+          cardType: 'quick_reference' as const,
+          badgeText: 'Level 4 · Golden Rules & Metrics',
+          levelNumber: 4 as const,
+          feynmanExplanation: `Non-negotiable quantitative standards governing this entire operating procedure.`,
+          referenceItems: [
+            {
+              label: 'Golden Metric',
+              value: '100% Parameter Verification',
+              detail: 'Zero exceptions permitted without written QA waiver.',
+            },
+            {
+              label: 'Calibration Frequency',
+              value: 'Every Shift Start (8 Hours)',
+              detail: 'Re-calibrate immediately if workstation experiences temperature shock.',
+            },
+            {
+              label: 'Escalation Time SLA',
+              value: '< 5 Minutes to Supervisor',
+              detail: 'Notify Lead Technician immediately upon any Stop-Work trigger.',
+            },
+          ],
+        },
+        {
+          id: 'card-7',
+          title: 'Shift Dilemma: Active Recall Knowledge Check',
+          subtitle: 'Test your operational intuition in a real-world dilemma',
+          cardType: 'scenario_quiz' as const,
+          badgeText: 'Active Recall Scenario',
+          feynmanExplanation: `Apply the principles of ${titleGuess} to this realistic shift dilemma.`,
+          quiz: {
+            scenario: `You are executing ${titleGuess}. Mid-way through, an indicator trips a transient warning light during a high-volume shift. Shift end is in 10 minutes.`,
+            question: 'What is the required standard operating response?',
+            options: [
+              'Pause, record the transient warning, and perform mandatory parameter verification before continuing.',
+              'Ignore the warning light because it cleared itself and the shift deadline is pressing.',
+              'Bypass the warning sensor to prevent further alarms during the current run.',
+              'Finish the run quickly and leave an informal verbal note for the next shift.',
+            ],
+            correctAnswerIndex: 0,
+            feynmanFeedback: `Correct! In safety-critical SOP execution, transient warnings frequently signal impending component drift or hidden deviation. Pausing and verifying preserves protocol integrity and prevents catastrophic failures.`,
+            distractorExplanations: [
+              'Bypassing alerts violates golden safety boundaries.',
+              'Modifying warning sensors masks systemic faults.',
+              'Delaying handoffs creates unmonitored hazards.',
+            ],
+          },
+        },
+      ]
+    : [
+        {
+          id: 'card-1',
+          title: `Core Intuition & Purpose`,
+          subtitle: `The non-negotiable mission behind ${titleGuess}`,
+          cardType: 'concept_analogy' as const,
+          badgeText: 'Mental Model',
+          feynmanExplanation: `Before performing individual actions in ${titleGuess}, understand why this standard exists: failures happen when operators rely on memory instead of verifying hard parameters.`,
+          analogy: {
+            metaphor: `A Pressure Airlock System`,
+            takeaway: `Equalize and verify baseline conditions before opening the next operational gate.`,
+          },
+        },
+        {
+          id: 'card-2',
+          title: 'Golden Rules & Critical Red Lines',
+          subtitle: 'The 20% of non-negotiable rules that avert 80% of failures',
+          cardType: 'critical_rules' as const,
+          badgeText: 'Safety & Red Lines',
+          feynmanExplanation: `Under operational or deadline pressure, never sacrifice these core boundary rules defined in ${titleGuess}.`,
+          criticalRules: [
+            {
+              type: 'must_do' as const,
+              rule: rule1.length > 120 ? rule1.slice(0, 117) + '...' : rule1,
+              consequenceOfFailure: 'Causes unmonitored operational deviation and protocol breach.',
+              verificationCheck: 'Timestamped log entry and physical verification sign-off.',
+            },
+            {
+              type: 'never_do' as const,
+              rule: rule2.length > 120 ? rule2.slice(0, 117) + '...' : rule2,
+              consequenceOfFailure: 'Immediate safety hazard, equipment lockout, or regulatory non-compliance.',
+              verificationCheck: 'Independent supervisor or secondary operator confirmation.',
+            },
+          ],
+        },
+        {
+          id: 'card-3',
+          title: 'Core Execution Sequence',
+          subtitle: `Step-by-step workflow for ${titleGuess}`,
+          cardType: 'process_steps' as const,
+          badgeText: 'Workflow',
+          feynmanExplanation: `Execute these stages in strict numerical sequence without skipping intermediate gates.`,
+          steps: [
+            {
+              stepNumber: 1,
+              title: 'Pre-Execution Verification',
+              action: step1Text.length > 120 ? step1Text.slice(0, 117) + '...' : step1Text,
+              whyItMatters: 'Guarantees baseline parameters are within tolerance before live cycle starts.',
+              criticalWatchout: 'Do not proceed if calibration or initial check fails.',
+            },
+            {
+              stepNumber: 2,
+              title: 'Primary Operational Cycle',
+              action: step2Text.length > 120 ? step2Text.slice(0, 117) + '...' : step2Text,
+              whyItMatters: 'Active monitoring catches parameter drift early before cascade failures.',
+              criticalWatchout: 'Never leave workstation unmonitored during active phase.',
+            },
+            {
+              stepNumber: 3,
+              title: 'Verification & Handoff Sign-off',
+              action: step3Text.length > 120 ? step3Text.slice(0, 117) + '...' : step3Text,
+              whyItMatters: 'Guarantees complete audit traceability and clean transition between shifts.',
+              criticalWatchout: 'Do not release output prior to formal logging.',
+            },
+          ],
+        },
+        {
+          id: 'card-4',
+          title: 'Common Traps & Field Recovery',
+          subtitle: 'Symptom diagnosis and immediate remediation',
+          cardType: 'pitfalls_troubleshooting' as const,
+          badgeText: 'Troubleshooting',
+          feynmanExplanation: `Recognize subtle warning signals in ${titleGuess} before they compound into critical incidents.`,
+          pitfalls: [
+            {
+              symptomOrMistake: 'Parameter reading fluctuates near threshold limit',
+              rootCause: 'Dirty sensor/probe, loose connection, or uncalibrated baseline.',
+              immediateFix: 'Pause cycle, clean sensor heads, reseat connections, and verify against secondary logger.',
+            },
+            {
+              symptomOrMistake: 'Operator rushes verification step under shift deadline pressure',
+              rootCause: 'Quota pressure overriding safety invariants.',
+              immediateFix: 'Invoke Stop-Work authority, verify parameters, and complete mandatory checklist.',
+            },
+          ],
+        },
+        {
+          id: 'card-5',
+          title: 'Shift Dilemma: Scenario Knowledge Check',
+          subtitle: 'Test your operational intuition in a high-pressure scenario',
+          cardType: 'scenario_quiz' as const,
+          badgeText: 'Active Recall',
+          feynmanExplanation: `Apply the principles of ${titleGuess} to this realistic shift dilemma.`,
+          quiz: {
+            scenario: `You are halfway through executing ${titleGuess}. An indicator trips a transient warning light for 3 seconds during a high-volume shift. Deadline is in 15 minutes.`,
+            question: 'What is the required standard operating response?',
+            options: [
+              'Pause, record the transient warning, and perform mandatory parameter verification before continuing.',
+              'Ignore the warning light because it cleared itself and the shift deadline is pressing.',
+              'Bypass the warning sensor to prevent further alarms during the current run.',
+              'Finish the run quickly and leave an informal verbal note for the next shift.',
+            ],
+            correctAnswerIndex: 0,
+            feynmanFeedback: `Correct! In safety-critical SOP execution, transient warnings frequently signal impending component drift or hidden deviation. Pausing and verifying preserves protocol integrity and prevents catastrophic failures.`,
+            distractorExplanations: [
+              'Bypassing alerts violates golden safety boundaries.',
+              'Modifying warning sensors masks systemic faults.',
+              'Delaying handoffs creates unmonitored hazards.',
+            ],
+          },
+        },
+      ];
+
+  const parsedSections = parseSopStructuralSections(rawText);
+  let modulesList: any[] | undefined = undefined;
+
+  if (isMasterVisual && parsedSections.length >= 2) {
+    modulesList = parsedSections.slice(0, 6).map((sec, idx) => {
+      const secLines = sec.lines;
+      const secRule = secLines.find((l) => /\b(must|never|warning|ensure|verify)\b/i.test(l)) || secLines[0] || `Verify parameters for ${sec.title}`;
+      const secStep = secLines.find((l) => /^\d+|\b(action|step|then|check)\b/i.test(l)) || secLines[1] || `Execute primary operational action for ${sec.title}`;
+
+      return {
+        id: `module-${idx + 1}`,
+        moduleNumber: idx + 1,
+        title: sec.title,
+        summary: secLines.slice(0, 2).join(' ') || `Operational section ${sec.title}`,
+        cards: [
+          {
+            id: `card-mod-${idx + 1}-1`,
+            title: `${sec.title}: Execution Sequence`,
+            subtitle: `Step-by-step workflow for ${sec.title}`,
+            cardType: 'process_steps' as const,
+            badgeText: `Module ${idx + 1} · Workflow`,
+            levelNumber: 2 as const,
+            feynmanExplanation: `Execute the specific protocol actions defined in section ${sec.title}.`,
+            steps: [
+              {
+                stepNumber: 1,
+                title: 'Primary Section Action',
+                action: secStep.length > 120 ? secStep.slice(0, 117) + '...' : secStep,
+                whyItMatters: 'Preserves baseline section compliance and prevents downstream parameter drift.',
+                criticalWatchout: 'Do not bypass section verification.',
+              },
+            ],
+          },
+          {
+            id: `card-mod-${idx + 1}-2`,
+            title: `${sec.title}: Critical Red Lines`,
+            subtitle: `Non-negotiable invariants for ${sec.title}`,
+            cardType: 'critical_rules' as const,
+            badgeText: `Module ${idx + 1} · Red Lines`,
+            levelNumber: 0 as const,
+            feynmanExplanation: `Critical rules and boundary limits governing section ${sec.title}.`,
+            criticalRules: [
+              {
+                type: 'must_do' as const,
+                rule: secRule.length > 120 ? secRule.slice(0, 117) + '...' : secRule,
+                consequenceOfFailure: 'Causes operational deviation and section failure.',
+                verificationCheck: 'Visual inspection sign-off.',
+              },
+            ],
+          },
+        ],
+      };
+    });
   }
 
   return {
     id: `deck-${Date.now()}`,
     title: titleGuess,
-    summary:
-      'A structured, high-impact operational standard operating procedure synthesized into critical mental models, execution sequences, and failure prevention guidelines.',
-    targetAudience: targetAudience || 'Operations Staff & New Hires',
-    estimatedMinutes: 6,
-    originalDocType: 'SOP / Operating Procedure',
+    summary: summarySnippet.length > 250 ? summarySnippet.slice(0, 247) + '...' : summarySnippet,
+    targetAudience: targetAudience || 'Operations Staff & Frontline Personnel',
+    estimatedMinutes: isMasterVisual ? 12 : 6,
+    originalDocType: 'Uploaded SOP Document',
+    deckType: deckType as any,
+    modules: modulesList,
     heroImage: {
-      caption: 'Primary operational system architecture',
+      caption: `Operational overview schematic for ${titleGuess}`,
       diagramType: 'flowchart' as const,
-      alt: 'System overview diagram',
+      alt: `${titleGuess} System Overview`,
     },
     feynmanCoreConcept: {
-      intuitiveExplanation: `The core purpose of this procedure is to guarantee predictable, zero-defect execution by treating protocol adherence as a protective shield rather than paperwork.`,
+      intuitiveExplanation: `The non-negotiable core purpose of ${titleGuess} is to guarantee predictable, zero-defect execution by treating protocol adherence as a protective shield rather than simple paperwork.`,
       centralAnalogy: {
-        title: 'The Aircraft Pre-Flight Handshake',
-        analogyText:
-          'Just like pilots never rely on memory alone before takeoff regardless of flight hours, every high-stakes stage here requires explicit verification before proceeding.',
-        howItMapsToSOP:
-          'Every parameter check acts as a physical safety interlock preventing downstream compound failures.',
+        title: `The ${titleGuess.slice(0, 30)} Safety Interlock Principle`,
+        analogyText: `Think of ${titleGuess} like a high-grade safety interlock: every step must align perfectly before the next stage unlocks, ensuring no hidden errors pass downstream.`,
+        howItMapsToSOP: `Every parameter check and log entry acts as a physical barrier preventing cumulative operational failures.`,
       },
     },
-    cards: [
-      {
-        id: 'card-1',
-        title: 'Core Intuition & Purpose',
-        subtitle: 'The non-negotiable mission behind this procedure',
-        cardType: 'concept_analogy' as const,
-        badgeText: 'Mental Model',
-        feynmanExplanation:
-          'Before executing individual actions, understand the physics of why this standard exists: failures occur when operators assume implicit handoffs instead of verifying hard parameters.',
-        analogy: {
-          metaphor: 'A Submarine Airlock',
-          takeaway: 'Equalize pressure before opening the outer hatch.',
-        },
-      },
-      {
-        id: 'card-2',
-        title: 'The Golden Rules & Red Lines',
-        subtitle: 'The 20% of rules that avert 80% of catastrophic failures',
-        cardType: 'critical_rules' as const,
-        badgeText: 'Safety & Red Lines',
-        feynmanExplanation:
-          'Under operational pressure, never sacrifice these non-negotiable boundaries.',
-        criticalRules: [
-          {
-            type: 'must_do' as const,
-            rule: 'Perform two-person cross-verification on all primary control parameters before actuation.',
-            consequenceOfFailure: 'Single point of failure and uncontained deviation.',
-            verificationCheck: 'Log timestamped verbal and written confirmation in shift record.',
-          },
-          {
-            type: 'never_do' as const,
-            rule: 'Never bypass an interlock or safety alarm threshold during transient state.',
-            consequenceOfFailure: 'Immediate equipment lockout and safety incident.',
-            verificationCheck: 'Independent audit log confirmation.',
-          },
-        ],
-      },
-      {
-        id: 'card-3',
-        title: 'Core Execution Sequence',
-        subtitle: 'Step-by-step chunked execution flow',
-        cardType: 'process_steps' as const,
-        badgeText: 'Workflow',
-        feynmanExplanation:
-          'Execute these phases sequentially without skipping intermediate verification gates.',
-        steps: [
-          {
-            stepNumber: 1,
-            title: 'Pre-Operation Inspection & Calibration',
-            action: 'Verify baseline sensors, inspect tooling integrity, and calibrate instruments.',
-            whyItMatters: 'Faulty baseline readings invalidate the entire execution run.',
-            criticalWatchout: 'Do not proceed if calibration sticker is expired.',
-          },
-          {
-            stepNumber: 2,
-            title: 'Execution & Real-Time Monitoring',
-            action: 'Proceed through operational stages while continuously verifying nominal bounds.',
-            whyItMatters: 'Catching drift early prevents cascade stoppage.',
-            criticalWatchout: 'Never leave workstation unattended during live cycle.',
-          },
-          {
-            stepNumber: 3,
-            title: 'Post-Execution Verification & Handshake',
-            action: 'Record final batch metrics, sign shift ledger, and complete checklist.',
-            whyItMatters: 'Guarantees end-to-end traceability for compliance audits.',
-            criticalWatchout: 'Do not release output before QA confirmation.',
-          },
-        ],
-      },
-      {
-        id: 'card-4',
-        title: 'Common Traps & Field Recovery',
-        subtitle: 'Symptom diagnosis and immediate remediation',
-        cardType: 'pitfalls_troubleshooting' as const,
-        badgeText: 'Troubleshooting',
-        feynmanExplanation:
-          'Recognize subtle failure warning signals before they compound into critical incidents.',
-        pitfalls: [
-          {
-            symptomOrMistake: 'Parameter reading fluctuates near threshold limit',
-            rootCause: 'Dirty probe sensor or loose connection bracket.',
-            immediateFix: 'Clean sensor head with approved solvent and reseat bracket firmly.',
-          },
-          {
-            symptomOrMistake: 'Operator rushes verification step under volume rush',
-            rootCause: 'Shift quota pressure overriding safety invariants.',
-            immediateFix: 'Invoke Stop-Work Authority and perform mandatory checklist validation.',
-          },
-        ],
-      },
-      {
-        id: 'card-5',
-        title: 'Shift Dilemma: Scenario Knowledge Check',
-        subtitle: 'Test your intuition in a high-pressure scenario',
-        cardType: 'scenario_quiz' as const,
-        badgeText: 'Active Recall',
-        feynmanExplanation:
-          'Apply the Feynman principles to this realistic 3:00 AM shift dilemma.',
-        quiz: {
-          scenario:
-            'You are halfway through execution. A parameter trips a transient warning light for 3 seconds, then clears. Shift deadline is in 10 minutes.',
-          question: 'What is the required standard operating response?',
-          options: [
-            'Pause, log the transient error, and perform verification check before continuing.',
-            'Ignore it because the light cleared itself and the deadline is pressing.',
-            'Manually recalibrate the indicator to prevent the warning from tripping again.',
-            'Finish the run quickly and leave an informal note for the next shift.',
-          ],
-          correctAnswerIndex: 0,
-          feynmanFeedback:
-            'Correct! In safety-critical operations, transient spikes frequently signal impending component failure or hidden deviation. Logging and pausing prevents catastrophic failures.',
-          distractorExplanations: [
-            'Bypassing transient alerts violates golden safety rules.',
-            'Artificially recalibrating hides systemic failures.',
-            'Delaying handoff creates unmonitored hazards.',
-          ],
-        },
-      },
-    ],
+    cards: cardsList,
   };
 }
 
@@ -417,7 +723,7 @@ apiRouter.get(['/health', '/api/health'], (_req: Request, res: Response) => {
 // API endpoint: Generate full Feynman Training Deck from SOP (Text or PDF)
 apiRouter.post(['/deck/generate', '/api/deck/generate', '/generate', '/'], async (req: Request, res: Response) => {
   try {
-    const { documentText, pdfBase64, mimeType, fileName, targetAudience, instructionalFocus, apiKey } = req.body;
+    const { documentText, pdfBase64, mimeType, fileName, targetAudience, instructionalFocus, deckType, apiKey } = req.body;
     const effectiveKey = (apiKey || req.headers['x-api-key'] || process.env.GEMINI_API_KEY || '').toString().trim();
 
     if (!documentText && !pdfBase64) {
@@ -426,8 +732,18 @@ apiRouter.post(['/deck/generate', '/api/deck/generate', '/generate', '/'], async
       });
     }
 
-    const promptText = `Analyze the provided Standard Operating Procedure (SOP) or document and convert it into a complete, structured Feynman Training Deck for learners.
+    const isLargeDoc = (documentText && documentText.length > 2500) || pdfBase64 || deckType === 'master' || deckType === 'master_visual';
+    const chosenDeckType = deckType && deckType !== 'auto' ? deckType : isLargeDoc ? 'master_visual' : 'quick';
 
+    const promptText = `Analyze the provided Standard Operating Procedure (SOP) or document and convert it into a complete, structured Feynman Training Deck.
+
+Deck Format Selected: ${
+      chosenDeckType === 'master_visual'
+        ? 'Modular Visual Training Deck (Levels 0-4: Level 0 Prerequisites, Level 1 Bird Eye Map, Level 2 Modular Deep Dives, Level 3 Failure Mode & Debugging with Split Pass/Fail Visuals, Level 4 Golden Rules & Metrics)'
+        : chosenDeckType === 'master'
+        ? 'Master Comprehensive Deck (DO NOT OMIT ANY STEPS OR SAFETY RULES; cover all phases completely)'
+        : 'Quick 5-Min Focused Deck'
+    }
 Target Learner Audience: ${targetAudience || 'Operational Staff & New Hires (Maximum Simplification)'}
 Instructional Focus: ${instructionalFocus || 'High-Stakes Safety & Failure Prevention'}
 
@@ -437,8 +753,9 @@ Structure the response as a JSON object with this exact shape:
   "title": "Concise, engaging title of the training deck",
   "summary": "2-3 sentence overview explaining what this SOP accomplishes and why it matters in plain language",
   "targetAudience": "${targetAudience || 'Operations Staff'}",
-  "estimatedMinutes": 8,
+  "estimatedMinutes": ${chosenDeckType === 'quick' ? 5 : 10},
   "originalDocType": "SOP / Standard Operating Procedure",
+  "deckType": "${chosenDeckType}",
   "heroImage": {
     "caption": "Primary operational context or equipment diagram",
     "diagramType": "cold_chain",
@@ -454,98 +771,104 @@ Structure the response as a JSON object with this exact shape:
   },
   "cards": [
     {
-      "id": "card-1",
-      "title": "Clear Card Title",
-      "subtitle": "Informative subtitle",
-      "cardType": "concept_analogy",
-      "feynmanExplanation": "Engaging explanation of this card's concept",
-      "badgeText": "Intuition & Purpose",
-      "image": {
-        "caption": "Visual mental model or physical mechanism",
-        "diagramType": "protein_origami"
-      },
-      "analogy": {
-        "metaphor": "Brief metaphor or visual comparison",
-        "takeaway": "Key takeaway"
-      }
-    },
-    {
-      "id": "card-2",
-      "title": "The Golden Rules & Critical Red Lines",
-      "subtitle": "Non-negotiable standards that prevent critical failure",
+      "id": "card-0",
+      "title": "Level 0: Prerequisites & Zero-State Gate",
+      "subtitle": "Workstation setup, PPE, and pre-start calibration",
       "cardType": "critical_rules",
-      "feynmanExplanation": "Why these rules exist and what happens if compromised",
-      "badgeText": "Safety & Integrity",
+      "feynmanExplanation": "Non-negotiable conditions required before starting Step 1.",
+      "badgeText": "Level 0 · Setup Gate",
+      "levelNumber": 0,
+      "responsibleRole": "Operator",
       "criticalRules": [
         {
           "type": "must_do",
-          "rule": "Exact clear rule",
-          "consequenceOfFailure": "What goes wrong if ignored",
-          "verificationCheck": "How you verify it was done properly"
+          "rule": "Complete workstation calibration and verify PPE compliance",
+          "consequenceOfFailure": "Prevents initial execution error and contamination",
+          "verificationCheck": "Visual checklist sign-off"
         }
       ]
     },
     {
-      "id": "card-3",
-      "title": "Core Execution Sequence",
-      "subtitle": "Step-by-step chunked workflow",
+      "id": "card-1",
+      "title": "Level 1: Bird's-Eye Process Map",
+      "subtitle": "Macro sequence and end-to-end operational flow",
+      "cardType": "concept_analogy",
+      "feynmanExplanation": "The big-picture workflow from initiation to completion",
+      "badgeText": "Level 1 · Process Map",
+      "levelNumber": 1,
+      "image": {
+        "caption": "Process swimlane diagram",
+        "diagramType": "flowchart"
+      },
+      "analogy": {
+        "metaphor": "Clear real-world system comparison",
+        "takeaway": "Key macro takeaway"
+      }
+    },
+    {
+      "id": "card-2",
+      "title": "Level 2: Execution Deep Dive - Phase A",
+      "subtitle": "Micro-steps and exact execution actions",
       "cardType": "process_steps",
-      "feynmanExplanation": "Walkthrough of the operational stages",
-      "badgeText": "Workflow",
+      "feynmanExplanation": "Exact physical and operational actions required",
+      "badgeText": "Level 2 · Execution",
+      "levelNumber": 2,
       "steps": [
         {
           "stepNumber": 1,
           "title": "Action Title",
           "action": "Precise action to perform",
-          "whyItMatters": "The underlying Feynman rationale (why this step matters)",
+          "whyItMatters": "The underlying Feynman rationale",
           "criticalWatchout": "Common trap or watchout"
         }
       ]
     },
     {
-      "id": "card-4",
-      "title": "Common Traps & Field Recovery",
-      "subtitle": "Symptom diagnosis and immediate remediation",
+      "id": "card-3",
+      "title": "Level 3: Failure Mode & Debugging",
+      "subtitle": "Conditional If-Then exceptions and corrective action",
       "cardType": "pitfalls_troubleshooting",
-      "feynmanExplanation": "Real-world friction points and how to navigate them gracefully",
-      "badgeText": "Troubleshooting",
+      "feynmanExplanation": "Symptom diagnosis, root cause, and immediate protocol fix",
+      "badgeText": "Level 3 · Debugging",
+      "levelNumber": 3,
+      "stopWorkTrigger": "Stop operation if parameter exceeds tolerance",
+      "image": {
+        "layout": "split_pass_fail",
+        "passCaption": "PASSED: Correct assembly and seal threshold",
+        "failCaption": "DEFECTIVE: Improper alignment or leak detected",
+        "passFailComparison": {
+          "passText": "Clean, flush alignment with zero gap",
+          "failText": "Misaligned seal, visible gap or fracture"
+        }
+      },
       "pitfalls": [
         {
-          "symptomOrMistake": "What the issue looks or sounds like",
+          "symptomOrMistake": "What the failure looks or sounds like",
           "rootCause": "Why it happened",
-          "immediateFix": "Immediate corrective protocol"
+          "immediateFix": "Immediate corrective protocol and escalation"
         }
       ]
     },
     {
-      "id": "card-5",
-      "title": "Shift Dilemma: Scenario Knowledge Check",
-      "subtitle": "Test your intuition in a real-world scenario",
-      "cardType": "scenario_quiz",
-      "feynmanExplanation": "Challenge your understanding with a realistic operational dilemma",
-      "badgeText": "Active Recall",
-      "quiz": {
-        "scenario": "A realistic workplace scenario or dilemma",
-        "question": "What is the correct protocol response?",
-        "options": [
-          "Option A",
-          "Option B",
-          "Option C",
-          "Option D"
-        ],
-        "correctAnswerIndex": 0,
-        "feynmanFeedback": "Detailed, intuitive explanation of why the correct option preserves safety and protocol integrity",
-        "distractorExplanations": [
-          "Why option B is flawed",
-          "Why option C is dangerous",
-          "Why option D fails"
-        ]
-      }
+      "id": "card-4",
+      "title": "Level 4: Golden Rules & Metrics",
+      "subtitle": "Non-negotiable standards and quality gates",
+      "cardType": "quick_reference",
+      "feynmanExplanation": "Key quality gates, safety limits, and KPI targets",
+      "badgeText": "Level 4 · Golden Rules",
+      "levelNumber": 4,
+      "referenceItems": [
+        {
+          "label": "Golden Metric",
+          "value": "Non-Negotiable Target",
+          "detail": "Escalation threshold if violated"
+        }
+      ]
     }
   ]
 }
 
-Ensure the deck contains 5 to 7 high-quality cards. Output STRICT JSON only.`;
+Ensure the deck contains 6 to 10 structured cards covering all 4 levels thoroughly without omitting critical steps. Output STRICT JSON only.`;
 
     const parts: any[] = [];
 
@@ -599,7 +922,8 @@ Ensure the deck contains 5 to 7 high-quality cards. Output STRICT JSON only.`;
         sampleContent,
         targetAudience,
         instructionalFocus,
-        fileName
+        fileName,
+        chosenDeckType
       );
     }
 

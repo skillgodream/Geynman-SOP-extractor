@@ -50,9 +50,15 @@ export const CriticalRulesCard: React.FC<CriticalRulesCardProps> = ({
           <span>{card.badgeText || 'Critical Red Lines & Invariants'}</span>
         </div>
 
-        <span className="text-[10px] font-mono tracking-widest text-neutral-400 font-bold uppercase">
-          TRAINING CARD
-        </span>
+        {card.levelNumber !== undefined ? (
+          <span className="text-[10px] font-mono tracking-widest text-blue-400 font-bold uppercase px-2.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20">
+            LEVEL {card.levelNumber} · {card.levelNumber === 0 ? 'PREREQUISITES' : card.levelNumber === 4 ? 'METRICS' : 'SAFETY'}
+          </span>
+        ) : (
+          <span className="text-[10px] font-mono tracking-widest text-neutral-400 font-bold uppercase">
+            TRAINING CARD
+          </span>
+        )}
       </div>
 
       {isEditing ? (

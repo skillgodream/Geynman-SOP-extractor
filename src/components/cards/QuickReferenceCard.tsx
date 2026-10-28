@@ -50,9 +50,15 @@ export const QuickReferenceCard: React.FC<QuickReferenceCardProps> = ({
           <span>{card.badgeText || 'Quick Reference Guide'}</span>
         </div>
 
-        <span className="text-[10px] font-mono tracking-widest text-neutral-400 font-bold uppercase">
-          TRAINING CARD
-        </span>
+        {card.levelNumber !== undefined ? (
+          <span className="text-[10px] font-mono tracking-widest text-cyan-400 font-bold uppercase px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20">
+            LEVEL {card.levelNumber} · METRICS
+          </span>
+        ) : (
+          <span className="text-[10px] font-mono tracking-widest text-neutral-400 font-bold uppercase">
+            TRAINING CARD
+          </span>
+        )}
       </div>
 
       {isEditing ? (

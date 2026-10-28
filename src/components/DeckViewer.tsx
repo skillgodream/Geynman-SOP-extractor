@@ -17,6 +17,7 @@ import {
   Presentation
 } from 'lucide-react';
 import { FeynmanDeck, DeckCard } from '../types/deck';
+import { printDeckToPdf } from '../utils/printPdf';
 import { CardOutlineCard } from './cards/CardOutlineCard';
 import { HeroCard } from './cards/HeroCard';
 import { ConceptAnalogyCard } from './cards/ConceptAnalogyCard';
@@ -27,6 +28,7 @@ import { ScenarioQuizCard } from './cards/ScenarioQuizCard';
 import { QuickReferenceCard } from './cards/QuickReferenceCard';
 import { FeynmanTutorDrawer } from './FeynmanTutorDrawer';
 import { MobileOutlineSheet } from './MobileOutlineSheet';
+import { PrintPdfModal } from './PrintPdfModal';
 
 interface DeckViewerProps {
   deck: FeynmanDeck;
@@ -53,6 +55,7 @@ export const DeckViewer: React.FC<DeckViewerProps> = ({
 }) => {
   const [activeTutorCard, setActiveTutorCard] = useState<DeckCard | null>(null);
   const [isTutorOpen, setIsTutorOpen] = useState(false);
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [copiedNotification, setCopiedNotification] = useState(false);
 
   const effectiveTutorOpen = isTutorOpen || isMobileTutorOpen;
@@ -145,7 +148,7 @@ export const DeckViewer: React.FC<DeckViewerProps> = ({
   };
 
   const handlePrint = () => {
-    window.print();
+    setIsPrintModalOpen(true);
   };
 
   const handleCopyMarkdown = () => {
@@ -212,7 +215,7 @@ export const DeckViewer: React.FC<DeckViewerProps> = ({
   return (
     <div className="min-h-screen bg-black text-white font-sans antialiased pb-28 md:pb-20">
       {/* Sub-header Controls Bar in Apple style Black */}
-      <div className="border-b border-white/[0.08] bg-black/85 backdrop-blur-xl px-4 sm:px-6 lg:px-8 py-2.5 transition-colors">
+      <div className="border-b border-white/[0.08] bg-black/85 backdrop-blur-xl px-4 sm:px-6 lg:px-8 py-2.5 transition-colors no-print">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 overflow-x-auto scrollbar-none">
           {/* Deck Outline Button & Title */}
           <div className="flex items-center gap-2.5 text-xs truncate shrink-0 max-w-[280px] sm:max-w-md">
@@ -232,15 +235,16 @@ export const DeckViewer: React.FC<DeckViewerProps> = ({
 
           {/* Right Tools: Export & Present */}
           <div className="flex items-center gap-1.5 shrink-0">
-            {/* Print button */}
+            {/* Print to PDF button */}
             <button
               type="button"
               onClick={handlePrint}
-              className="min-h-[38px] min-w-[38px] flex items-center justify-center text-neutral-400 hover:text-white rounded-full hover:bg-neutral-900 border border-transparent hover:border-white/10 transition-colors cursor-pointer"
-              title="Print Deck or Save to PDF"
-              aria-label="Print Deck"
+              className="min-h-[38px] px-3 py-1.5 flex items-center gap-1.5 text-neutral-300 hover:text-white rounded-full bg-neutral-900 hover:bg-neutral-800 border border-white/10 text-xs font-medium transition-colors cursor-pointer"
+              title="Print Deck or Save as PDF"
+              aria-label="Print Deck or Save as PDF"
             >
-              <Printer className="w-4 h-4" />
+              <Printer className="w-4 h-4 text-blue-400" />
+              <span className="hidden sm:inline font-semibold">Print to PDF</span>
             </button>
 
             {/* Copy Markdown */}
@@ -502,6 +506,13 @@ export const DeckViewer: React.FC<DeckViewerProps> = ({
         deck={deck}
         onSelectCard={scrollToCard}
         onAddCard={handleAddCard}
+      />
+
+      {/* Interactive Print & Save PDF Export Modal */}
+      <PrintPdfModal
+        isOpen={isPrintModalOpen}
+        onClose={() => setIsPrintModalOpen(false)}
+        deck={deck}
       />
     </div>
   );

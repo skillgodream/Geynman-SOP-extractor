@@ -47,7 +47,15 @@ export interface CardImage {
   caption?: string;
   alt?: string;
   diagramType?: 'cold_chain' | 'protein_origami' | 'cleanroom' | 'incident_triage' | 'warehouse' | 'chemical_neutralization' | 'flowchart' | 'custom';
-  layout?: 'split' | 'hero' | 'inset';
+  layout?: 'split' | 'hero' | 'inset' | 'split_pass_fail';
+  passImageUrl?: string;
+  failImageUrl?: string;
+  passCaption?: string;
+  failCaption?: string;
+  passFailComparison?: {
+    passText: string;
+    failText: string;
+  };
 }
 
 export interface DeckCard {
@@ -57,6 +65,9 @@ export interface DeckCard {
   cardType: CardType;
   feynmanExplanation: string;
   badgeText?: string;
+  levelNumber?: 0 | 1 | 2 | 3 | 4;
+  stopWorkTrigger?: string;
+  responsibleRole?: string;
   image?: CardImage;
   analogy?: {
     metaphor: string;
@@ -113,6 +124,14 @@ export interface AssessmentQuestion {
   feynmanFeedback: string;
 }
 
+export interface DeckModule {
+  id: string;
+  moduleNumber: number;
+  title: string;
+  summary: string;
+  cards: DeckCard[];
+}
+
 export interface FeynmanDeck {
   id: string;
   title: string;
@@ -120,6 +139,8 @@ export interface FeynmanDeck {
   targetAudience: string;
   estimatedMinutes: number;
   originalDocType: string;
+  deckType?: 'quick' | 'master_visual' | 'master';
+  modules?: DeckModule[];
   heroImage?: CardImage;
   feynmanCoreConcept: {
     intuitiveExplanation: string;

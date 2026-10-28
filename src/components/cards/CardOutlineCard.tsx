@@ -72,6 +72,29 @@ export const CardOutlineCard: React.FC<CardOutlineCardProps> = ({
           )}
         </div>
 
+        {/* Structural Sections / Modules Chapter Overview */}
+        {deck.modules && deck.modules.length > 0 && (
+          <div className="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 space-y-2">
+            <div className="text-xs font-bold text-blue-400 uppercase tracking-wider font-mono flex items-center justify-between">
+              <span>Deep Dive Structural Sections ({deck.modules.length} SOP Chapters)</span>
+              <span className="text-[10px] text-blue-300 font-normal">Auto-Parsed</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-1">
+              {deck.modules.map((mod) => (
+                <div
+                  key={mod.id}
+                  className="p-2.5 rounded-xl bg-neutral-900/90 border border-white/10 text-neutral-200 font-medium flex items-center gap-2"
+                >
+                  <span className="w-5 h-5 rounded-md bg-blue-500/20 text-blue-300 text-[10px] font-bold font-mono flex items-center justify-center shrink-0">
+                    {mod.moduleNumber}
+                  </span>
+                  <span className="truncate">{mod.title}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* List of Cards in Apple Theme (Matching Screenshot) */}
         <div className="space-y-3">
           {/* Item 0: Overview & Central Analogy */}
