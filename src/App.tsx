@@ -31,13 +31,29 @@ export default function App() {
     return localStorage.getItem('koya_logged_in') === 'true';
   });
 
-  const [currentScreen, setCurrentScreen] = useState<AppScreen>('home');
+  const [currentScreen, setCurrentScreen] = useState<AppScreen>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('shareId') || params.get('share')) return 'learner_portal';
+    }
+    return 'home';
+  });
 
   // Load account-specific persistent decks from storage across refreshes
   const [allDecks, setAllDecks] = useState<FeynmanDeck[]>(() =>
     loadUserDecks(currentUser.id, SAMPLE_DECKS)
   );
-  const [currentDeck, setCurrentDeck] = useState<FeynmanDeck>(() => allDecks[0] || SAMPLE_DECKS[0]);
+  const [currentDeck, setCurrentDeck] = useState<FeynmanDeck>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const shareId = params.get('shareId') || params.get('share');
+      if (shareId) {
+        const found = SAMPLE_DECKS.find((d) => d.id === shareId);
+        if (found) return found;
+      }
+    }
+    return allDecks[0] || SAMPLE_DECKS[0];
+  });
 
   const [activeView, setActiveView] = useState<AppViewMode>('outline');
   const [presentationSlideIndex, setPresentationSlideIndex] = useState(0);
@@ -46,7 +62,13 @@ export default function App() {
   const [isTutorOpen, setIsTutorOpen] = useState(false);
   const [activeTutorCard, setActiveTutorCard] = useState<DeckCard | null>(null);
 
-  const [sharedLearnerName, setSharedLearnerName] = useState('Frontline Operator');
+  const [sharedLearnerName, setSharedLearnerName] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('learnerName') || 'Frontline Operator';
+    }
+    return 'Frontline Operator';
+  });
 
   // Login handler
   const handleLoginSuccess = (user: UserAccount) => {
@@ -80,7 +102,7 @@ export default function App() {
       if (name) setSharedLearnerName(name);
 
       if (shareId) {
-        const matched = allDecks.find((d) => d.id === shareId) || SAMPLE_DECKS.find((d) => d.id === shareId);
+        const matched = allDecks.find((d) => d.id === shareId) || SAMPLE_DECKS.find((d) => d.id === shareId) || allDecks[0] || SAMPLE_DECKS[0];
         if (matched) {
           setCurrentDeck(matched);
           setCurrentScreen('learner_portal');
@@ -89,7 +111,7 @@ export default function App() {
     } catch {
       // ignore
     }
-  }, []);
+  }, [allDecks]);
 
   // Show LoginScreen if user is not logged in and not accessing a shared learner portal
   if (!isLoggedIn && currentScreen !== 'learner_portal') {

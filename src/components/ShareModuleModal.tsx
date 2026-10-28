@@ -22,7 +22,11 @@ export const ShareModuleModal: React.FC<ShareModuleModalProps> = ({
   if (!isOpen || !deck) return null;
 
   // Build the Share URL with query parameters using active origin
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+  // Replace ais-dev- with ais-pre- so external recipients opening WhatsApp links don't hit 403 Google Cloud dev authorization errors
+  let baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+  if (baseUrl.includes('ais-dev-')) {
+    baseUrl = baseUrl.replace('ais-dev-', 'ais-pre-');
+  }
   const shareUrl = `${baseUrl}/?shareId=${deck.id}&learnerName=${encodeURIComponent(learnerName || 'Learner')}`;
 
   const whatsAppText =
