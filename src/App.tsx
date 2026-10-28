@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SAMPLE_DECKS } from './data/sampleDecks';
 import { FeynmanDeck, DeckCard, AppViewMode, CardType } from './types/deck';
 import { HomeScreen } from './components/HomeScreen';
@@ -17,15 +17,28 @@ import { TestMeMode } from './components/modes/TestMeMode';
 import { FeynmanMethodModal } from './components/FeynmanMethodModal';
 import { FloatingAskTutorButton } from './components/FloatingAskTutorButton';
 import { FeynmanTutorDrawer } from './components/FeynmanTutorDrawer';
-
 import { LearnerPortalScreen } from './components/LearnerPortalScreen';
+import { LoginScreen } from './components/LoginScreen';
+import { UserAccount, PRESET_USERS, getActiveUser, setActiveUser } from './utils/userAuth';
+import { loadUserDecks, saveUserDecks, addUserDeck, deleteUserDeck } from './utils/persistentStorage';
 
 type AppScreen = 'home' | 'explore' | 'scan' | 'upload' | 'demo' | 'deck' | 'learner_portal';
 
 export default function App() {
+  const [currentUser, setCurrentUser] = useState<UserAccount>(() => getActiveUser());
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('koya_logged_in') === 'true';
+  });
+
   const [currentScreen, setCurrentScreen] = useState<AppScreen>('home');
-  const [allDecks, setAllDecks] = useState<FeynmanDeck[]>(SAMPLE_DECKS);
-  const [currentDeck, setCurrentDeck] = useState<FeynmanDeck>(SAMPLE_DECKS[0]);
+
+  // Load account-specific persistent decks from storage across refreshes
+  const [allDecks, setAllDecks] = useState<FeynmanDeck[]>(() =>
+    loadUserDecks(currentUser.id, SAMPLE_DECKS)
+  );
+  const [currentDeck, setCurrentDeck] = useState<FeynmanDeck>(() => allDecks[0] || SAMPLE_DECKS[0]);
+
   const [activeView, setActiveView] = useState<AppViewMode>('outline');
   const [presentationSlideIndex, setPresentationSlideIndex] = useState(0);
   const [isMethodModalOpen, setIsMethodModalOpen] = useState(false);
@@ -35,8 +48,30 @@ export default function App() {
 
   const [sharedLearnerName, setSharedLearnerName] = useState('Frontline Operator');
 
+  // Login handler
+  const handleLoginSuccess = (user: UserAccount) => {
+    setActiveUser(user);
+    setCurrentUser(user);
+    const userDecks = loadUserDecks(user.id, SAMPLE_DECKS);
+    setAllDecks(userDecks);
+    if (userDecks.length > 0) setCurrentDeck(userDecks[0]);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('koya_logged_in', 'true');
+    }
+    setIsLoggedIn(true);
+    setCurrentScreen('home');
+  };
+
+  // Logout handler
+  const handleLogout = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('koya_logged_in', 'false');
+    }
+    setIsLoggedIn(false);
+  };
+
   // Check URL search parameters on mount for shared learner links (?shareId=xyz&learnerName=...)
-  React.useEffect(() => {
+  useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search);
       const shareId = params.get('shareId') || params.get('share');
@@ -45,7 +80,7 @@ export default function App() {
       if (name) setSharedLearnerName(name);
 
       if (shareId) {
-        const matched = SAMPLE_DECKS.find((d) => d.id === shareId);
+        const matched = allDecks.find((d) => d.id === shareId) || SAMPLE_DECKS.find((d) => d.id === shareId);
         if (matched) {
           setCurrentDeck(matched);
           setCurrentScreen('learner_portal');
@@ -55,6 +90,11 @@ export default function App() {
       // ignore
     }
   }, []);
+
+  // Show LoginScreen if user is not logged in and not accessing a shared learner portal
+  if (!isLoggedIn && currentScreen !== 'learner_portal') {
+    return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
+  }
 
   // Transition from Home -> Explore Selection (Only Scan, Upload, Demo)
   const handleStartExplore = () => {
@@ -68,9 +108,10 @@ export default function App() {
     else if (option === 'demo') setCurrentScreen('demo');
   };
 
-  // When AI generates a new deck from upload/scan -> Card Outline is the FIRST page
+  // When AI generates a new deck from upload/scan -> Save persistently under active account
   const handleDeckGenerated = (newDeck: FeynmanDeck) => {
-    setAllDecks((prev) => [newDeck, ...prev]);
+    const updatedDecks = addUserDeck(currentUser.id, newDeck, allDecks);
+    setAllDecks(updatedDecks);
     setCurrentDeck(newDeck);
     setActiveTutorCard(newDeck.cards[0] || null);
     setActiveView('outline');
@@ -91,18 +132,26 @@ export default function App() {
     );
     const updatedDeck = { ...currentDeck, cards: updatedCards };
     setCurrentDeck(updatedDeck);
-    setAllDecks((prev) =>
-      prev.map((d) => (d.id === updatedDeck.id ? updatedDeck : d))
-    );
+    const updatedAll = allDecks.map((d) => (d.id === updatedDeck.id ? updatedDeck : d));
+    setAllDecks(updatedAll);
+    saveUserDecks(currentUser.id, updatedAll);
   };
 
   const handleDeleteCard = (cardId: string) => {
     const updatedCards = currentDeck.cards.filter((c) => c.id !== cardId);
     const updatedDeck = { ...currentDeck, cards: updatedCards };
     setCurrentDeck(updatedDeck);
-    setAllDecks((prev) =>
-      prev.map((d) => (d.id === updatedDeck.id ? updatedDeck : d))
-    );
+    const updatedAll = allDecks.map((d) => (d.id === updatedDeck.id ? updatedDeck : d));
+    setAllDecks(updatedAll);
+    saveUserDecks(currentUser.id, updatedAll);
+  };
+
+  const handleDeleteDeck = (deckId: string) => {
+    const updatedAll = deleteUserDeck(currentUser.id, deckId, allDecks);
+    setAllDecks(updatedAll);
+    if (currentDeck.id === deckId && updatedAll.length > 0) {
+      setCurrentDeck(updatedAll[0]);
+    }
   };
 
   // Add new card chunk directly from Card Outline screen
@@ -170,9 +219,9 @@ export default function App() {
     };
 
     setCurrentDeck(updatedDeck);
-    setAllDecks((prev) =>
-      prev.map((d) => (d.id === updatedDeck.id ? updatedDeck : d))
-    );
+    const updatedAll = allDecks.map((d) => (d.id === updatedDeck.id ? updatedDeck : d));
+    setAllDecks(updatedAll);
+    saveUserDecks(currentUser.id, updatedAll);
   };
 
   // Wrapper for training deck screens to include Floating Ask Tutor icon & Tutor Drawer on EVERY screen
@@ -191,9 +240,9 @@ export default function App() {
     );
   };
 
-  // SCREEN 1: HOME SCREEN (Character + Only ONE button: "Let's Explore")
+  // SCREEN 1: HOME SCREEN (Character + "Tap to explore →" + Logout button)
   if (currentScreen === 'home') {
-    return <HomeScreen onExplore={handleStartExplore} />;
+    return <HomeScreen onExplore={handleStartExplore} onLogout={handleLogout} />;
   }
 
   // SCREEN 2: EXPLORE SELECTION SCREEN (Only 3 Options: Scan, Upload, Demo)
@@ -234,6 +283,7 @@ export default function App() {
         onBackToExplore={() => setCurrentScreen('explore')}
         onOpenUpload={() => setCurrentScreen('upload')}
         onSelectDeck={handleSelectDeck}
+        onDeleteDeck={handleDeleteDeck}
       />
     );
   }

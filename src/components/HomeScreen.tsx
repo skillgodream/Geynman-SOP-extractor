@@ -1,15 +1,31 @@
 import React from 'react';
-import { ArrowRight, Target, Film, Zap, CheckSquare } from 'lucide-react';
+import { ArrowRight, Target, Film, Zap, CheckSquare, LogOut } from 'lucide-react';
 
 interface HomeScreenProps {
   onExplore: () => void;
+  onLogout?: () => void;
 }
 
-export const HomeScreen: React.FC<HomeScreenProps> = ({ onExplore }) => {
+export const HomeScreen: React.FC<HomeScreenProps> = ({ onExplore, onLogout }) => {
   return (
     <div className="h-screen w-full max-h-screen overflow-hidden bg-black text-white flex flex-col justify-between items-center px-4 sm:px-6 py-4 sm:py-6 selection:bg-neutral-800 selection:text-white font-sans select-none">
-      {/* Top Header Bar: Dark grey JANGID Method Engine text */}
-      <header className="w-full max-w-5xl flex items-center justify-end shrink-0 pt-1 px-2">
+      {/* Top Header Bar: Logout icon on Top Left + JANGID Method Engine on Top Right */}
+      <header className="w-full max-w-5xl flex items-center justify-between shrink-0 pt-1 px-2">
+        {onLogout ? (
+          <button
+            type="button"
+            onClick={onLogout}
+            className="p-2 rounded-full bg-neutral-900/80 hover:bg-neutral-800 border border-white/10 text-neutral-400 hover:text-white transition-all cursor-pointer active:scale-95 flex items-center gap-1.5 text-xs font-medium"
+            title="Logout"
+            aria-label="Logout"
+          >
+            <LogOut className="w-4 h-4 text-neutral-300" />
+            <span className="hidden sm:inline text-neutral-300">Logout</span>
+          </button>
+        ) : (
+          <div />
+        )}
+
         <div className="text-xs font-medium text-neutral-700 tracking-widest uppercase">
           JANGID Method Engine
         </div>

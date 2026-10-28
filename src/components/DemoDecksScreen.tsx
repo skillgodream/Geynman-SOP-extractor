@@ -6,6 +6,9 @@ import { ShareModuleModal } from './ShareModuleModal';
 import { ProgressDashboardModal } from './ProgressDashboardModal';
 import { getLearnerProgress } from '../utils/learnerProgress';
 
+import { UserAccount } from '../utils/userAuth';
+import { User, ChevronDown } from 'lucide-react';
+
 interface DemoDecksScreenProps {
   decks: FeynmanDeck[];
   onBackToExplore: () => void;
@@ -65,62 +68,61 @@ export const DemoDecksScreen: React.FC<DemoDecksScreenProps> = ({
                 <div
                   key={deck.id}
                   onClick={() => onSelectDeck(deck, 'outline')}
-                  className="p-4 sm:p-5 hover:bg-neutral-900/60 transition-colors flex items-start sm:items-center justify-between gap-4 group cursor-pointer"
+                  className="p-4 sm:p-5 hover:bg-neutral-900/60 transition-colors flex flex-col gap-3 group cursor-pointer"
                 >
-                  {/* Left Column: Category Badge Tag + Title + Subtitle + Mode Pills */}
-                  <div className="flex-1 min-w-0 space-y-2.5">
-                    {/* Top Row: Category Tag Pill + Sleek Send Button */}
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-[10px] font-mono tracking-wider font-semibold text-neutral-300 bg-neutral-900 border border-white/10 px-2.5 py-0.5 rounded-md uppercase inline-block">
-                        {tagLabel}
-                      </span>
+                  {/* Top Row: Category Tag + Action Cluster (Send + Delete + Chevron) */}
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[10px] font-mono tracking-wider font-semibold text-neutral-300 bg-neutral-900 border border-white/10 px-2.5 py-0.5 rounded-md uppercase inline-block">
+                      {tagLabel}
+                    </span>
 
-                      {/* Clean Un-cramped Send Icon Button */}
+                    <div className="flex items-center gap-2.5 shrink-0">
+                      {/* Clean Send Icon Button */}
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           setActiveShareDeck(deck);
                         }}
-                        className="min-h-[30px] px-3 py-1 rounded-full bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 shrink-0"
+                        className="min-h-[30px] px-3 py-1 rounded-full bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
                         title="Send SOP Module to Learner"
                       >
                         <Send className="w-3.5 h-3.5 text-blue-400" />
                         <span>Send</span>
                       </button>
+
+                      {/* Trash Delete Button */}
+                      {onDeleteDeck && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteDeck(deck.id);
+                          }}
+                          className="p-1.5 rounded-lg bg-neutral-900 hover:bg-red-500/20 text-neutral-400 hover:text-red-400 border border-white/10 hover:border-red-500/30 transition-colors cursor-pointer"
+                          title="Delete Deck"
+                          aria-label="Delete Deck"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+
+                      <ChevronRight className="w-4 h-4 text-neutral-500 group-hover:text-white group-hover:translate-x-0.5 transition-all ml-1" />
                     </div>
+                  </div>
 
-                    {/* Title — Fully visible, no truncate */}
-                    <h2 className="text-sm sm:text-base font-bold text-white group-hover:text-blue-300 transition-colors leading-snug break-words">
-                      {deck.title}
-                    </h2>
+                  {/* Title */}
+                  <h2 className="text-sm sm:text-base font-bold text-white group-hover:text-blue-300 transition-colors leading-snug break-words">
+                    {deck.title}
+                  </h2>
 
-                    {/* Mode Pills (2-column layout, without Slide View) */}
+                  {/* Mode Pills (2-column grid layout with uniform white icons & text) */}
+                  <div className="pt-1">
                     <ModePills
                       allowedModes={['outline', 'show_me', 'guide_me', 'test_me']}
                       gridCols={2}
                       onSelectMode={(mode) => onSelectDeck(deck, mode)}
                     />
-                  </div>
-
-                  {/* Right Column: Actions (Trash + Chevron Right) */}
-                  <div className="flex items-center gap-2 shrink-0 text-neutral-500 group-hover:text-white transition-colors pt-1 sm:pt-0">
-                    {onDeleteDeck && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDeleteDeck(deck.id);
-                        }}
-                        className="p-1.5 hover:text-red-400 transition-colors cursor-pointer rounded-lg hover:bg-white/5"
-                        title="Delete Deck"
-                        aria-label="Delete Deck"
-                      >
-                        <Trash2 className="w-4 h-4 text-neutral-400 hover:text-red-400" />
-                      </button>
-                    )}
-
-                    <ChevronRight className="w-4 h-4 text-neutral-500 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
                   </div>
                 </div>
               );
