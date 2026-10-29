@@ -10,6 +10,7 @@ import {
   X
 } from 'lucide-react';
 import { FeynmanDeck } from '../types/deck';
+import { safeFetchJson } from '../utils/apiClient';
 
 interface UploadScreenProps {
   onBack: () => void;
@@ -133,7 +134,7 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
         bodyData.fileName = 'Pasted_Standard_Operating_Procedure';
       }
 
-      const res = await fetch('/api/deck/generate', {
+      const resData = await safeFetchJson<{ deck?: FeynmanDeck } & FeynmanDeck>('/api/deck/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -142,25 +143,6 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
         body: JSON.stringify(bodyData),
       });
 
-      if (!res.ok) {
-        let errorDetail = '';
-        try {
-          const errJson = await res.json();
-          errorDetail = errJson.error || '';
-        } catch {
-          const text = await res.text().catch(() => '');
-          if (res.status === 404) {
-            errorDetail = 'Backend API route returned 404. If deploying on Vercel, please trigger a redeploy so Vercel deploys the new serverless function in /api/index.ts.';
-          } else if (res.status === 504) {
-            errorDetail = 'Request timed out (504). Please try with a smaller document or paste text.';
-          } else {
-            errorDetail = `Server error (${res.status}): ${text.slice(0, 120)}`;
-          }
-        }
-        throw new Error(errorDetail || 'Failed to synthesize Feynman training deck.');
-      }
-
-      const resData = await res.json();
       const newDeck: FeynmanDeck = resData.deck || resData;
       onDeckGenerated(newDeck);
     } catch (err: any) {

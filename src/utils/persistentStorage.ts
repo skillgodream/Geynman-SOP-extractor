@@ -1,25 +1,27 @@
 import { FeynmanDeck } from '../types/deck';
+import { sanitizeDeck } from './sanitizeDeck';
 
 export function getUserDecksKey(userId: string): string {
   return `koya_decks_user_${userId}`;
 }
 
 export function loadUserDecks(userId: string, defaultDecks: FeynmanDeck[]): FeynmanDeck[] {
-  if (typeof window === 'undefined') return defaultDecks;
+  if (typeof window === 'undefined') return defaultDecks.map(sanitizeDeck);
   try {
     const raw = localStorage.getItem(getUserDecksKey(userId));
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+        return parsed.map(sanitizeDeck);
       }
     }
+    const sanitizedDefaults = defaultDecks.map(sanitizeDeck);
     // Initialize user storage with default decks
-    saveUserDecks(userId, defaultDecks);
-    return defaultDecks;
+    saveUserDecks(userId, sanitizedDefaults);
+    return sanitizedDefaults;
   } catch (err) {
     console.warn('Failed to load user decks from localStorage:', err);
-    return defaultDecks;
+    return defaultDecks.map(sanitizeDeck);
   }
 }
 

@@ -2,6 +2,268 @@ import { FeynmanDeck } from '../types/deck';
 
 export const SAMPLE_DECKS: FeynmanDeck[] = [
   {
+    id: 'deck-vmart-retail',
+    title: 'V-Mart Price Markdown & Discount Management SOP',
+    summary: 'Ensures all price changes and promotions are authorized, accurate, and correctly synchronized between shelf labels and the POS system. Prevents billing errors and ensures inventory records remain precise.',
+    targetAudience: 'Store Managers, IT Supervisors, Pricing Administrators, and Cashier Leads',
+    estimatedMinutes: 8,
+    originalDocType: 'Retail Standard Operating Procedure SOP-VMART-104',
+    heroImage: {
+      diagramType: 'price_markdown',
+      url: 'https://images.unsplash.com/photo-1556742049-0a670f4a4591?auto=format&fit=crop&w=1200&q=80',
+      caption: 'V-Mart Retail Pricing Synchronization: Shelf Tag ₹700 <-> POS Database ₹700',
+    },
+    feynmanCoreConcept: {
+      intuitiveExplanation: 'Think of a retail price tag like a contract signed between the store shelf and the checkout register. If the shelf promises ₹700 but the cash register charges ₹1,000, trust is broken immediately and customer disputes explode.',
+      centralAnalogy: {
+        title: 'The Synchronized Clock Analogy',
+        analogyText: 'If the shelf talker says 30% off (₹1,000 down to ₹700) but the POS scanner has not been updated, it is like two clocks ticking at different speeds. The customer gets caught in the friction between them.',
+        howItMapsToSOP: 'Step 4 (Updating POS) and Step 5 (Replacing Shelf Labels) must happen in tight sequence so no customer scans a price that contradicts the physical label on the floor.'
+      }
+    },
+    cards: [
+      {
+        id: 'vmart-card-0',
+        title: 'Level 0: Setup Gate & Prerequisites',
+        subtitle: 'Authorization and Verification',
+        cardType: 'critical_rules',
+        levelNumber: 0,
+        feynmanExplanation: 'Never change a price based on a verbal request or casual instruction. You must have an approved markdown directive through official company channels.',
+        badgeText: 'Setup Gate',
+        criticalRules: [
+          {
+            type: 'must_do',
+            rule: 'MUST receive approved communication through designated company channels.',
+            consequenceOfFailure: 'Unauthorized price changes, margin loss, and severe inventory audit discrepancies.',
+            verificationCheck: 'Verify corporate directive document ID and official sign-off before printing tags.'
+          },
+          {
+            type: 'never_do',
+            rule: 'NEVER execute price changes based on verbal or unverified phone requests.',
+            consequenceOfFailure: 'Risk of unauthorized discounts and store manager audit write-ups.',
+            verificationCheck: 'Check corporate directive inbox and authorized pricing schedule.'
+          }
+        ]
+      },
+      {
+        id: 'vmart-card-1',
+        title: 'Level 1: Step-by-Step Execution',
+        subtitle: 'Operational Workflow',
+        cardType: 'process_steps',
+        levelNumber: 1,
+        feynmanExplanation: 'Follow these 10 steps to ensure pricing accuracy from corporate instruction to end-of-day reconciliation.',
+        badgeText: 'Process Map',
+        image: {
+          diagramType: 'flowchart',
+          url: 'https://images.unsplash.com/photo-1556740758-90de374c12ad?auto=format&fit=crop&w=1200&q=80',
+          caption: 'Process Sequence: Receive Directive -> Update POS (₹1,000 to ₹700) -> Swap Floor Tags -> Audit Scan 10 Items -> EOD Log',
+        },
+        steps: [
+          {
+            stepNumber: 1,
+            title: 'Step 1: Receive Approved Price Markdown Directive',
+            action: 'Store Manager / Pricing Admin receives official corporate pricing directive via designated company channel.',
+            whyItMatters: 'Role: Store Manager / Pricing Admin. Guarantees only authorized markdowns enter store pipeline.',
+            criticalWatchout: 'Do not proceed without official corporate document signature.'
+          },
+          {
+            stepNumber: 2,
+            title: 'Step 2: Verify Price Authorization & SKU Schedule',
+            action: 'Pricing Admin cross-checks directive SKU list, effective dates, and discount rates against corporate master list.',
+            whyItMatters: 'Role: Pricing Administrator. Prevents applying discounts to non-eligible full-price stock.',
+            criticalWatchout: 'Confirm exact promotional start/end timestamps.'
+          },
+          {
+            stepNumber: 3,
+            title: 'Step 3: Print Updated Shelf Talkers & Barcode Labels',
+            action: 'Printing Lead generates new price labels and shelf talkers from authorized pricing software.',
+            whyItMatters: 'Role: Printing Lead. Ensures physical tags show exact revised pricing and promotional terms.',
+            criticalWatchout: 'Verify print clarity and scannable barcode alignment.'
+          },
+          {
+            stepNumber: 4,
+            title: 'Step 4: Update POS / Pricing System Database',
+            action: 'IT / POS Supervisor updates central checkout database: Original price ₹1,000 to ₹700 (markdown ₹300 or 30%).',
+            whyItMatters: 'Role: IT / POS Supervisor. Data/Math Box: Original ₹1,000 -> Sale ₹700 (₹300 or 30% discount). Aligns register scan with directive.',
+            criticalWatchout: 'Must verify database sync before floor deployment.'
+          },
+          {
+            stepNumber: 5,
+            title: 'Step 5: Replace Shelf Edge Labels on Retail Floor',
+            action: 'Floor Staff replaces old shelf talkers with new ₹700 labels across all designated aisles.',
+            whyItMatters: 'Role: Floor Staff. Synchronizes physical floor pricing with updated POS database.',
+            criticalWatchout: 'Remove ALL old full-price labels immediately.'
+          },
+          {
+            stepNumber: 6,
+            title: 'Step 6: Conduct Audit Scan of First 10 Items',
+            action: 'Pricing Auditor scans 10 random floor items using handheld terminal to verify register matches shelf tag.',
+            whyItMatters: 'Role: Pricing Auditor. Guarantees zero-defect alignment before store doors open.',
+            criticalWatchout: 'Target: 100% scan accuracy across sample.'
+          },
+          {
+            stepNumber: 7,
+            title: 'Step 7: Activate Promotional Discounts at Checkout POS',
+            action: 'POS Lead enables automated promotional discount rules on checkout lanes.',
+            whyItMatters: 'Role: POS Lead. Ensures cashiers scan items smoothly without requiring manual overrides.',
+            criticalWatchout: 'Test scanning on a closed checkout lane first.'
+          },
+          {
+            stepNumber: 8,
+            title: 'Step 8: Manage Customer Price Discrepancies at Checkout',
+            action: 'Customer Desk / Cashier Lead resolves pricing disputes: verify displayed price, refer to manager if unauthorized override requested.',
+            whyItMatters: 'Role: Customer Desk / Cashier Lead. Core Action: Verify displayed price, refer to manager if unauthorized override requested.',
+            criticalWatchout: 'Never promise unauthorized overrides; refer to manager if directive limits are reached.'
+          },
+          {
+            stepNumber: 9,
+            title: 'Step 9: Process Floor & System Exception Vectors',
+            action: 'Floor & System Leads execute specific fix protocols for missing SKUs, old POS prices, wrong labels, expired promos, damaged stock, and unauthorized discount requests.',
+            whyItMatters: 'Role: Floor Supervisor / System Lead. Maintains 100% compliance across all 6 exception modes without inventing unauthorized rules.',
+            criticalWatchout: 'Follow Level 3 Exception Matrix protocols strictly.'
+          },
+          {
+            stepNumber: 10,
+            title: 'Step 10: End-of-Day Markdown Reconciliation & Audit Logging',
+            action: 'Store Manager compiles EOD markdown report, verifying total discount value matches corporate directive.',
+            whyItMatters: 'Role: Store Manager. Completes compliance audit trail and prevents unlogged inventory shrinkage.',
+            criticalWatchout: 'File signed EOD audit log in manager office.'
+          }
+        ]
+      },
+      {
+        id: 'vmart-card-3',
+        title: 'Level 3: Exception Matrix',
+        subtitle: 'Troubleshooting & Escalation',
+        cardType: 'pitfalls_troubleshooting',
+        levelNumber: 3,
+        feynmanExplanation: 'If you see these issues, follow the specific fix protocol immediately. Mapped directly from Step 9 of the V-Mart SOP with 100% data grounding.',
+        badgeText: '6 Failure Vectors',
+        pitfalls: [
+          {
+            symptomOrMistake: 'Missing SKUs on POS System',
+            rootCause: 'Item barcode is not populated or mapped in the active POS master file.',
+            immediateFix: 'Hold merchandise, verify SKU in master file, do not sell at manual unapproved price, contact IT Lead.'
+          },
+          {
+            symptomOrMistake: 'Old POS Prices Active (Scan shows ₹1,000 instead of ₹700)',
+            rootCause: 'POS database sync delayed or update sequence skipped in Step 4.',
+            immediateFix: 'Flag POS discrepancy, apply authorized promotional override code for customer, update POS database immediately.'
+          },
+          {
+            symptomOrMistake: 'Wrong Shelf Labels / Misplaced Signage',
+            rootCause: 'Incorrect tag attached to shelf edge during Step 5 label replacement.',
+            immediateFix: 'Remove misleading shelf talker immediately, honor displayed price if customer witnessed per company policy, print correct label.'
+          },
+          {
+            symptomOrMistake: 'Expired Promotions Still Displayed on Floor',
+            rootCause: 'Old promotional signage left on floor after promotion validity window ended.',
+            immediateFix: 'Pull expired promotional signage from floor immediately, charge active system price, politely explain promotion validity window.'
+          },
+          {
+            symptomOrMistake: 'Damaged Merchandise Discount Requests',
+            rootCause: 'Physical damage or torn packaging on retail floor stock.',
+            immediateFix: 'Route item to floor manager for damaged goods clearance inspection, apply authorized markdown percentage, transfer to clearance rack.'
+          },
+          {
+            symptomOrMistake: 'Unauthorized Discount Requests by Customers',
+            rootCause: 'Customer requests additional verbal or unapproved price drops at checkout.',
+            immediateFix: 'Strictly refuse verbal or unapproved price drops, explain corporate pricing policy, escalate to Store Manager if customer insists.'
+          }
+        ]
+      },
+      {
+        id: 'vmart-card-4',
+        title: 'Level 4: Golden Rules',
+        subtitle: 'Non-Negotiable Standards',
+        cardType: 'critical_rules',
+        levelNumber: 4,
+        feynmanExplanation: 'These are the core principles of V-Mart pricing integrity.',
+        badgeText: 'Non-Negotiable',
+        criticalRules: [
+          {
+            type: 'never_do',
+            rule: 'NEVER execute unapproved price drops or verbal discount requests.',
+            consequenceOfFailure: 'Financial loss, margin erosion, and immediate compliance audit failure.',
+            verificationCheck: 'Cross-reference every POS markdown against corporate directive document.'
+          },
+          {
+            type: 'must_do',
+            rule: 'MUST conduct 10-item audit scan before opening store on markdown days.',
+            consequenceOfFailure: 'Customer price disputes at checkout and shelf-register mismatch.',
+            verificationCheck: 'Signed 10-item audit scan sheet on file in manager office.'
+          },
+          {
+            type: 'must_do',
+            rule: 'MUST reconcile EOD markdown logs against total promotional sales.',
+            consequenceOfFailure: 'Unexplained inventory shrinkage and accounting variances.',
+            verificationCheck: 'Store Manager sign-off on daily POS markdown report.'
+          }
+        ]
+      },
+      {
+        id: 'vmart-card-5',
+        title: 'Scenario Quiz: Managing Checkout Pricing Discrepancies',
+        subtitle: 'Active Recall',
+        cardType: 'scenario_quiz',
+        feynmanExplanation: 'Apply V-Mart pricing policy to a realistic customer checkout scenario.',
+        badgeText: 'Active Recall',
+        image: {
+          diagramType: 'price_markdown',
+          url: 'https://images.unsplash.com/photo-1556742049-0a670f4a4591?auto=format&fit=crop&w=1200&q=80',
+          caption: 'Checkout Lane Dispute: Shelf label shows ₹700, POS scanner reads ₹1,000',
+        },
+        quiz: {
+          scenario: 'A customer brings an item to the checkout register. The shelf edge tag says ₹700 (30% markdown from ₹1,000), but when the cashier scans the barcode, the POS display reads ₹1,000. The customer insists on paying ₹700 and demands an additional 20% verbal discount for the inconvenience.',
+          question: 'According to V-Mart SOP Step 8 and Step 9 Vector 2, what is the exact compliant response?',
+          options: [
+            'Honor the displayed ₹700 shelf price per policy, log the POS discrepancy, and politely refuse the additional unapproved 20% verbal discount.',
+            'Give the customer whatever price they ask for to avoid a manager escalation.',
+            'Force the customer to pay ₹1,000 because the POS system is always right.',
+            'Invent an arbitrary ₹500 override limit on the spot.'
+          ],
+          correctAnswerIndex: 0,
+          feynmanFeedback: 'Spot on! V-Mart SOP mandates honoring legitimate displayed prices (shelf tag ₹700) to protect customer trust while strictly refusing unapproved verbal discounts to prevent audit write-ups and margin erosion.',
+          distractorExplanations: [
+            'Unapproved verbal discounts violate financial controls and result in audit write-ups.',
+            'Forcing ₹1,000 ignores the shelf tag contract and causes checkout disputes.',
+            'Fabricating numeric thresholds (like ₹500 overrides) violates absolute data grounding rules.'
+          ]
+        }
+      },
+      {
+        id: 'vmart-card-6',
+        title: 'V-Mart Pricing Pocket Reference & Metrics',
+        subtitle: 'Verbatim Metrics',
+        cardType: 'quick_reference',
+        feynmanExplanation: 'Key mathematical formulas, sample calculations, and role accountability boundaries.',
+        badgeText: 'Verbatim Metrics',
+        referenceItems: [
+          {
+            label: 'Sample Calculation',
+            value: 'Original ₹1,000 -> Sale ₹700',
+            detail: 'Markdown ₹300 or 30% discount verbatim from Step 4.'
+          },
+          {
+            label: 'Pre-Opening Audit',
+            value: '10 Random Items Scanned',
+            detail: 'Mandatory 100% scan match required in Step 6.'
+          },
+          {
+            label: 'Step 4 Accountable Role',
+            value: 'IT / POS Supervisor',
+            detail: 'Must update POS database before floor tags are deployed.'
+          },
+          {
+            label: 'Step 8 Accountable Role',
+            value: 'Customer Desk / Cashier Lead',
+            detail: 'Resolves price discrepancies without unauthorized overrides.'
+          }
+        ]
+      }
+    ]
+  },
+  {
     id: 'deck-cold-chain',
     title: 'Cold Chain Biologics & Temperature Excursion SOP',
     summary: 'A direct operational guide for maintaining sensitive biologic medications between 2°C and 8°C, and what exact actions to take the second a temperature breach occurs.',

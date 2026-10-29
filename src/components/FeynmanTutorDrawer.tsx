@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Send, Sparkles, MessageSquare, Lightbulb, Loader2 } from 'lucide-react';
 import { DeckCard, FeynmanDeck } from '../types/deck';
+import { safeFetchJson } from '../utils/apiClient';
 
 interface FeynmanTutorDrawerProps {
   isOpen: boolean;
@@ -36,7 +37,7 @@ export const FeynmanTutorDrawer: React.FC<FeynmanTutorDrawerProps> = ({
     setIsLoading(true);
 
     try {
-      const res = await fetch('/api/deck/ask-feynman', {
+      const data = await safeFetchJson<{ success: boolean; answer: string }>('/api/deck/ask-feynman', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -46,7 +47,6 @@ export const FeynmanTutorDrawer: React.FC<FeynmanTutorDrawerProps> = ({
         }),
       });
 
-      const data = await res.json();
       if (data.success && data.answer) {
         setMessages((prev) => [...prev, { sender: 'tutor', text: data.answer }]);
       } else {
@@ -58,12 +58,12 @@ export const FeynmanTutorDrawer: React.FC<FeynmanTutorDrawerProps> = ({
           },
         ]);
       }
-    } catch (err) {
+    } catch (err: any) {
       setMessages((prev) => [
         ...prev,
         {
           sender: 'tutor',
-          text: 'Unable to reach the Feynman Tutor right now. Please check your connection and try again.',
+          text: err?.message || 'Unable to reach the Feynman Tutor right now. Please check your connection and try again.',
         },
       ]);
     } finally {

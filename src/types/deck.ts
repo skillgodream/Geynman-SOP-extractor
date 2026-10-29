@@ -46,7 +46,7 @@ export interface CardImage {
   url?: string;
   caption?: string;
   alt?: string;
-  diagramType?: 'cold_chain' | 'protein_origami' | 'cleanroom' | 'incident_triage' | 'warehouse' | 'chemical_neutralization' | 'flowchart' | 'custom';
+  diagramType?: 'cold_chain' | 'protein_origami' | 'cleanroom' | 'incident_triage' | 'warehouse' | 'chemical_neutralization' | 'flowchart' | 'price_markdown' | 'custom';
   layout?: 'split' | 'hero' | 'inset' | 'split_pass_fail';
   passImageUrl?: string;
   failImageUrl?: string;

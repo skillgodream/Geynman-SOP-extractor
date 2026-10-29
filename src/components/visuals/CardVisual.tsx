@@ -17,6 +17,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { CardImage } from '../../types/deck';
+import { safeFetchJson } from '../../utils/apiClient';
 
 interface CardVisualProps {
   image?: CardImage;
@@ -66,7 +67,7 @@ export const CardVisual: React.FC<CardVisualProps> = ({
     setProviderTag(null);
 
     try {
-      const res = await fetch('/api/generate-image', {
+      const data = await safeFetchJson<{ success: boolean; imageUrl?: string; provider?: string; error?: string }>('/api/generate-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -75,7 +76,6 @@ export const CardVisual: React.FC<CardVisualProps> = ({
         }),
       });
 
-      const data = await res.json();
       if (data.success && data.imageUrl) {
         setUrlInput(data.imageUrl);
         if (data.provider) setProviderTag(data.provider);
@@ -89,7 +89,7 @@ export const CardVisual: React.FC<CardVisualProps> = ({
         setAiError(data.error || 'Could not generate AI image.');
       }
     } catch (err: any) {
-      setAiError('Failed to connect to AI image generator.');
+      setAiError(err?.message || 'Failed to connect to AI image generator.');
     } finally {
       setIsGeneratingAi(false);
     }

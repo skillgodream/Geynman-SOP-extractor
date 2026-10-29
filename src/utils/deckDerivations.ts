@@ -142,23 +142,27 @@ export function deriveVideoScenes(deck: FeynmanDeck): VideoScene[] {
   if (stepsCard && stepsCard.steps && stepsCard.steps.length > 0) {
     stepsCard.steps.forEach((st, idx) => {
       // Find scene-specific visual
+      const stTitle = st.title && st.title !== 'undefined' ? st.title : `Step ${st.stepNumber || idx + 1}`;
+      const stAction = st.action && st.action !== 'undefined' ? st.action : 'Execute step protocol';
+      const stWhy = st.whyItMatters && st.whyItMatters !== 'undefined' ? st.whyItMatters : 'Ensures operational compliance';
+
       const sceneVisual = resolveContextualPhoto(
         deck,
         undefined,
-        `${st.title} ${st.action} ${st.whyItMatters}`
+        `${stTitle} ${stAction} ${stWhy}`
       );
 
       scenes.push({
-        id: `${deck.id}-scene-step-${st.stepNumber}`,
+        id: `${deck.id}-scene-step-${st.stepNumber || idx + 1}`,
         sceneNumber: idx + 2,
-        title: st.title,
-        phaseLabel: `Step ${st.stepNumber}`,
+        title: stTitle,
+        phaseLabel: `Step ${st.stepNumber || idx + 1}`,
         durationSeconds: 18,
-        narrationScript: `Step ${st.stepNumber}: ${st.action}. Why this matters: ${st.whyItMatters}. Keep in mind: ${st.criticalWatchout || 'Adhere strictly to protocol.'}`,
-        visualPrompt: `Technical close-up showing operator executing ${st.action}, precise execution.`,
+        narrationScript: `Step ${st.stepNumber || idx + 1}: ${stAction}. Why this matters: ${stWhy}. Keep in mind: ${st.criticalWatchout || 'Adhere strictly to protocol.'}`,
+        visualPrompt: `Technical close-up showing operator executing ${stAction}, precise execution.`,
         diagramType: 'flowchart',
         imageUrl: sceneVisual,
-        keyAction: st.action,
+        keyAction: stAction,
         criticalWatchout: st.criticalWatchout,
       });
     });

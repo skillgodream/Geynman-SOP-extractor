@@ -12,6 +12,7 @@ import {
   BookOpen
 } from 'lucide-react';
 import { FeynmanDeck } from '../types/deck';
+import { safeFetchJson } from '../utils/apiClient';
 
 interface SOPInputModalProps {
   isOpen: boolean;
@@ -146,20 +147,14 @@ export const SOPInputModal: React.FC<SOPInputModalProps> = ({
         payload.documentText = docText;
       }
 
-      const res = await fetch('/api/deck/generate', {
+      const data = await safeFetchJson<{ success?: boolean; error?: string; deck?: FeynmanDeck } & FeynmanDeck>('/api/deck/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Failed to generate training deck.');
-      }
-
       const deck: FeynmanDeck = {
-        ...data.deck,
+        ...(data.deck || data),
         id: `deck-${Date.now()}`,
       };
 

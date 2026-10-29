@@ -3,6 +3,7 @@ import { GoogleGenAI } from '@google/genai';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { sanitizeDeck } from './src/utils/sanitizeDeck.js';
 
 dotenv.config();
 
@@ -58,18 +59,33 @@ function getAiClient(customKey?: string) {
   });
 }
 
-const FEYNMAN_SYSTEM_INSTRUCTION = `You are a world-class Instructional Designer and Master Educator specializing in the Feynman Technique.
-Your goal is to transform dense, bureaucratic, difficult-to-digest Standard Operating Procedures (SOPs), manuals, and policy docs into an engaging, intuitive, highly memorable interactive training deck (modeled after Gamma AI decks).
+const FEYNMAN_SYSTEM_INSTRUCTION = `ROLE & WORKFLOW DESCRIPTION:
+You are an advanced Instructional Designer, Compliance Systems Auditor, and Document Ingestion Pipeline. Your job is to transform dense, compliance-heavy corporate Standard Operating Procedures (SOPs) into structured, scannable JSON datasets designed specifically to fit modular Card-Based training interfaces.
 
-Principles of the Feynman Instructional Design Method:
-1. The 12-Year-Old Test: Explain the fundamental purpose and core mechanism with zero bureaucratic corporate jargon. If a concept requires a technical term, define it instantly with a visceral real-world metaphor.
-2. Mental Models & Analogies: Build a clear mental model early. Ground abstract steps into a familiar concrete system (e.g., comparing cleanroom gowning to a submarine airlock pressure sequence, or incident escalation to a hospital triage dispatch).
-3. The Critical Red Lines & Golden Rules: Emphasize the high-stakes 20% that causes 80% of failures. Don't hide critical risks in small print.
-4. Action-Oriented Chunking (Miller's Law): Break workflows into 3-5 distinct, digestible steps with clear triggers, exact actions, and verification checks.
-5. Active Recall & Realistic Dilemma Checks: Instead of trivial memorization questions, challenge the learner with realistic "You are on shift at 3 AM" scenarios where they must apply the principle.
-6. High Salience & Scannability: Every card must have a crisp title, punchy subtitle, and well-structured cards.
+CORE EXTRACTION FRAMEWORK & LAWS:
 
-Output STRICT JSON only matching the schema requested.`;
+1. ABSOLUTE OPERATIONAL GROUNDING (ANTI-HALLUCINATION METER)
+- You must extract and output only the factual parameters, values, metrics, thresholds, or sequences present in the source text.
+- If the source text does not specify an exact numeric threshold, currency cap, or execution window, leave that field empty or extract explicit text verbatim. Never fabricate values or placeholders.
+
+2. ZERO DATA TRUNCATION (THE LAZY EXPANSION BLOCK)
+- Output a corresponding object/card for EVERY single phase (e.g. Step 1 to Step 10) without collapsing or dropping steps.
+- Map every single documented failure mode, exception vector, or troubleshooting rule without using lazy tokens like "etc.", "and so on", or "TBD".
+
+3. CANONICAL JSON SCHEMA KEYS
+For process steps, use:
+- stepNumber (integer)
+- title (short concise phase header)
+- action (short, active-voice sentence fragment describing exact physical/system action)
+- whyItMatters (simple, concrete Feynman explanation of why this step exists)
+- criticalWatchout (optional warning or parameter threshold)
+
+For exception matrix / pitfalls troubleshooting, use:
+- symptomOrMistake (the observed issue, trigger, or fault symptom)
+- rootCause (why this fault or variation occurs)
+- immediateFix (mandatory fix protocol and escalation action)
+
+Output STRICT JSON only matching the requested structure.`;
 
 // List of resilient models matching official @google/genai guidelines
 const RESILIENT_MODELS = ['gemini-3.8-flash', 'gemini-flash-latest', 'gemini-3.1-flash-lite'];
@@ -707,6 +723,8 @@ function assignContextualDeckImages(deck: any) {
   }
 }
 
+// Note: sanitizeDeck is imported from ./src/utils/sanitizeDeck.js
+
 // Dedicated API Router — mounted on both /api and / so it works seamlessly on Vercel Serverless and standalone
 const apiRouter = express.Router();
 
@@ -865,10 +883,17 @@ Structure the response as a JSON object with this exact shape:
         }
       ]
     }
+}
   ]
 }
 
-Ensure the deck contains 6 to 10 structured cards covering all 4 levels thoroughly without omitting critical steps. Output STRICT JSON only.`;
+CORE EXTRACTION FRAMEWORK & LAWS:
+1. ABSOLUTE OPERATIONAL GROUNDING: Extract and output ONLY factual parameters, values, metrics, thresholds, or sequences present in the source text. Do NOT fabricate numbers, thresholds, currency caps, or time windows.
+2. ZERO DATA TRUNCATION: Output a corresponding card for EVERY single phase from Step 1 to Step N without skipping or collapsing steps. Map every single exception vector without using "etc.", "and so on", or "TBD".
+3. CARDS-BASED COMPONENT SPLITTING: Structure each card into phaseTag, roleBadge, coreAction (max 15 words per fragment), dataMathBox (verbatim formulas/metrics), and feynmanIntuition (simple explanation of the why without softening legal/compliance boundaries).
+4. EXCEPTION MATRIX LAYOUT: Map all documented faults, exceptions, and friction loops to an array with observedIssue (Trigger) and mandatoryFixProtocol (Action).
+
+Ensure the deck contains structured cards covering all phases thoroughly without omitting critical steps. Output STRICT JSON only.`;
 
     const parts: any[] = [];
 
@@ -932,6 +957,7 @@ Ensure the deck contains 6 to 10 structured cards covering all 4 levels thorough
     }
 
     assignContextualDeckImages(deckData);
+    deckData = sanitizeDeck(deckData);
 
     return res.json({ success: true, deck: deckData });
   } catch (error: any) {
@@ -1186,6 +1212,17 @@ apiRouter.post(['/generate-image', '/api/generate-image'], async (req: Request, 
 // Mount the router on both '/api' and '/' for compatibility across Vercel Serverless and Express
 app.use('/api', apiRouter);
 app.use('/', apiRouter);
+
+// Express fallback handler for unmatched /api routes to prevent serving Vite index.html as API response
+app.use('/api/*', (_req: Request, res: Response) => {
+  res.status(404).json({ error: 'API route not found.' });
+});
+
+// Global Express JSON error handler to prevent returning HTML error pages
+app.use((err: any, _req: Request, res: Response, _next: any) => {
+  console.error('API Error:', err);
+  res.status(err?.status || 500).json({ error: err?.message || 'Internal Server Error' });
+});
 
 // Setup Vite Dev or Static Production Serving for Standalone Node environments
 async function startServer() {

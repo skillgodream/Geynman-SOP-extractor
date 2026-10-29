@@ -9,6 +9,7 @@ import {
   Image as ImageIcon
 } from 'lucide-react';
 import { FeynmanDeck } from '../types/deck';
+import { safeFetchJson } from '../utils/apiClient';
 
 interface ScanScreenProps {
   onBack: () => void;
@@ -124,7 +125,7 @@ const compressImage = (dataUrl: string): Promise<string> => {
       const base64Data = scannedImage.split(',')[1] || scannedImage;
       const mimeMatch = scannedImage.match(/^data:(image\/[a-zA-Z]+);base64,/);
 
-      const res = await fetch('/api/deck/generate', {
+      const resData = await safeFetchJson<{ deck?: FeynmanDeck } & FeynmanDeck>('/api/deck/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -136,23 +137,6 @@ const compressImage = (dataUrl: string): Promise<string> => {
         }),
       });
 
-      if (!res.ok) {
-        let errorDetail = '';
-        try {
-          const errJson = await res.json();
-          errorDetail = errJson.error || '';
-        } catch {
-          const text = await res.text().catch(() => '');
-          if (res.status === 404) {
-            errorDetail = 'Backend API route returned 404. If deploying on Vercel, please trigger a redeploy so Vercel provisions the new serverless function in /api/index.ts.';
-          } else {
-            errorDetail = `Server error (${res.status}): ${text.slice(0, 100)}`;
-          }
-        }
-        throw new Error(errorDetail || 'Could not analyze scanned document image.');
-      }
-
-      const resData = await res.json();
       const newDeck: FeynmanDeck = resData.deck || resData;
       onDeckGenerated(newDeck);
     } catch (err: any) {

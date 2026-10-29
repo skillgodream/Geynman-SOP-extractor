@@ -99,6 +99,7 @@ export const CardOutlineCard: React.FC<CardOutlineCardProps> = ({
         <div className="space-y-3">
           {/* Item 0: Overview & Central Analogy */}
           <div
+            key="overview-card"
             onClick={() => onJumpToCard('hero-card')}
             className="p-4 sm:p-5 rounded-2xl bg-neutral-900/60 hover:bg-neutral-900 border border-white/[0.08] hover:border-white/20 transition-all flex items-center justify-between gap-4 cursor-pointer group"
           >
@@ -124,7 +125,7 @@ export const CardOutlineCard: React.FC<CardOutlineCardProps> = ({
           {/* Cards 1 to N */}
           {deck.cards.map((card, idx) => (
             <div
-              key={card.id}
+              key={card.id || `card-${idx}`}
               onClick={() => onJumpToCard(card.id)}
               className="p-4 sm:p-5 rounded-2xl bg-neutral-900/60 hover:bg-neutral-900 border border-white/[0.08] hover:border-white/20 transition-all flex items-center justify-between gap-4 cursor-pointer group"
             >

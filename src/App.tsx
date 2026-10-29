@@ -21,6 +21,7 @@ import { LearnerPortalScreen } from './components/LearnerPortalScreen';
 import { LoginScreen } from './components/LoginScreen';
 import { UserAccount, PRESET_USERS, getActiveUser, setActiveUser } from './utils/userAuth';
 import { loadUserDecks, saveUserDecks, addUserDeck, deleteUserDeck } from './utils/persistentStorage';
+import { sanitizeDeck } from './utils/sanitizeDeck';
 
 type AppScreen = 'home' | 'explore' | 'scan' | 'upload' | 'demo' | 'deck' | 'learner_portal';
 
@@ -41,7 +42,7 @@ export default function App() {
 
   // Load account-specific persistent decks from storage across refreshes
   const [allDecks, setAllDecks] = useState<FeynmanDeck[]>(() =>
-    loadUserDecks(currentUser.id, SAMPLE_DECKS)
+    loadUserDecks(currentUser.id, SAMPLE_DECKS).map(sanitizeDeck)
   );
   const [currentDeck, setCurrentDeck] = useState<FeynmanDeck>(() => {
     if (typeof window !== 'undefined') {
@@ -49,10 +50,10 @@ export default function App() {
       const shareId = params.get('shareId') || params.get('share');
       if (shareId) {
         const found = SAMPLE_DECKS.find((d) => d.id === shareId);
-        if (found) return found;
+        if (found) return sanitizeDeck(found);
       }
     }
-    return allDecks[0] || SAMPLE_DECKS[0];
+    return sanitizeDeck(allDecks[0] || SAMPLE_DECKS[0]);
   });
 
   const [activeView, setActiveView] = useState<AppViewMode>('outline');
@@ -74,7 +75,7 @@ export default function App() {
   const handleLoginSuccess = (user: UserAccount) => {
     setActiveUser(user);
     setCurrentUser(user);
-    const userDecks = loadUserDecks(user.id, SAMPLE_DECKS);
+    const userDecks = loadUserDecks(user.id, SAMPLE_DECKS).map(sanitizeDeck);
     setAllDecks(userDecks);
     if (userDecks.length > 0) setCurrentDeck(userDecks[0]);
     if (typeof window !== 'undefined') {
@@ -104,7 +105,7 @@ export default function App() {
       if (shareId) {
         const matched = allDecks.find((d) => d.id === shareId) || SAMPLE_DECKS.find((d) => d.id === shareId) || allDecks[0] || SAMPLE_DECKS[0];
         if (matched) {
-          setCurrentDeck(matched);
+          setCurrentDeck(sanitizeDeck(matched));
           setCurrentScreen('learner_portal');
         }
       }
@@ -132,18 +133,20 @@ export default function App() {
 
   // When AI generates a new deck from upload/scan -> Save persistently under active account
   const handleDeckGenerated = (newDeck: FeynmanDeck) => {
-    const updatedDecks = addUserDeck(currentUser.id, newDeck, allDecks);
+    const cleanDeck = sanitizeDeck(newDeck);
+    const updatedDecks = addUserDeck(currentUser.id, cleanDeck, allDecks);
     setAllDecks(updatedDecks);
-    setCurrentDeck(newDeck);
-    setActiveTutorCard(newDeck.cards[0] || null);
+    setCurrentDeck(cleanDeck);
+    setActiveTutorCard(cleanDeck.cards[0] || null);
     setActiveView('outline');
     setCurrentScreen('deck');
   };
 
   // Select a Demo or Ingested Deck -> First page is Card Outline
   const handleSelectDeck = (deck: FeynmanDeck, initialView: AppViewMode = 'outline') => {
-    setCurrentDeck(deck);
-    setActiveTutorCard(deck.cards[0] || null);
+    const cleanDeck = sanitizeDeck(deck);
+    setCurrentDeck(cleanDeck);
+    setActiveTutorCard(cleanDeck.cards[0] || null);
     setActiveView(initialView);
     setCurrentScreen('deck');
   };

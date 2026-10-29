@@ -23,8 +23,66 @@ export const ProcessStepsCard: React.FC<ProcessStepsCardProps> = ({
   const [title, setTitle] = useState(card.title);
   const [subtitle, setSubtitle] = useState(card.subtitle || '');
   const [explanation, setExplanation] = useState(card.feynmanExplanation);
-  const [steps, setSteps] = useState<ProcessStep[]>(card.steps || []);
+  const normalizeSteps = (rawSteps: any[]): ProcessStep[] => {
+    if (!Array.isArray(rawSteps)) return [];
+    return rawSteps.map((st: any, idx: number) => {
+      const stepNum = st.stepNumber || idx + 1;
+      const getStr = (val: any): string | null => {
+        if (!val) return null;
+        if (Array.isArray(val)) {
+          const joined = val.map((v) => String(v).trim()).filter(Boolean).join('. ');
+          return joined.length > 0 ? joined : null;
+        }
+        const s = String(val).trim();
+        if (s.toLowerCase() === 'undefined' || s.toLowerCase() === 'null' || !s) return null;
+        return s;
+      };
+
+      const title =
+        getStr(st.title) ||
+        getStr(st.stepTitle) ||
+        getStr(st.phaseTag) ||
+        getStr(st.name) ||
+        `Step ${stepNum}`;
+
+      const action =
+        getStr(st.action) ||
+        getStr(st.coreAction) ||
+        getStr(st.description) ||
+        getStr(st.instruction) ||
+        `Execute step ${stepNum} protocol according to specifications.`;
+
+      const whyItMatters =
+        getStr(st.whyItMatters) ||
+        getStr(st.feynmanIntuition) ||
+        getStr(st.rationale) ||
+        getStr(st.why) ||
+        getStr(st.dataMathBox) ||
+        `Guarantees operational accuracy and prevents process drift.`;
+
+      const criticalWatchout =
+        getStr(st.criticalWatchout) ||
+        getStr(st.watchout) ||
+        getStr(st.warning) ||
+        undefined;
+
+      return {
+        stepNumber: stepNum,
+        title,
+        action,
+        whyItMatters,
+        ...(criticalWatchout ? { criticalWatchout } : {}),
+      };
+    });
+  };
+
+  const [steps, setSteps] = useState<ProcessStep[]>(() => normalizeSteps(card.steps || []));
   const [activeStepIndex, setActiveStepIndex] = useState<number>(0);
+
+  // Sync steps if card prop changes
+  React.useEffect(() => {
+    setSteps(normalizeSteps(card.steps || []));
+  }, [card.steps]);
 
   const handleSave = () => {
     setIsEditing(false);
@@ -134,11 +192,17 @@ export const ProcessStepsCard: React.FC<ProcessStepsCardProps> = ({
           {/* Left Column */}
           <div className="lg:col-span-7 space-y-4">
             <div className="text-xs font-bold uppercase tracking-wider text-sky-400">
-              {activeStep.title}
+              {activeStep.title && activeStep.title !== 'undefined'
+                ? activeStep.title
+                : `Step ${activeStep.stepNumber || activeStepIndex + 1} Action`}
             </div>
 
             <div className="font-bold text-sky-200 text-base sm:text-xl leading-snug flex items-center justify-between gap-3">
-              <span>{activeStep.action}</span>
+              <span>
+                {activeStep.action && activeStep.action !== 'undefined'
+                  ? activeStep.action
+                  : 'Execute step protocol according to specifications.'}
+              </span>
               <ArrowRight className="w-5 h-5 text-sky-400 shrink-0" />
             </div>
 
@@ -149,11 +213,13 @@ export const ProcessStepsCard: React.FC<ProcessStepsCardProps> = ({
                   <span>Operational Rationale</span>
                 </div>
                 <p className="text-xs sm:text-sm text-neutral-200 leading-relaxed pl-3 border-l-2 border-sky-400/50 font-normal">
-                  {activeStep.whyItMatters}
+                  {activeStep.whyItMatters && activeStep.whyItMatters !== 'undefined'
+                    ? activeStep.whyItMatters
+                    : 'Guarantees operational accuracy and prevents process drift.'}
                 </p>
               </div>
 
-              {activeStep.criticalWatchout && (
+              {activeStep.criticalWatchout && activeStep.criticalWatchout !== 'undefined' && (
                 <div className="space-y-1">
                   <div className="text-[11px] font-bold text-rose-400 uppercase tracking-wider flex items-center gap-1.5">
                     <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />

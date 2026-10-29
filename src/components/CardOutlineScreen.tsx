@@ -114,7 +114,10 @@ export const CardOutlineScreen: React.FC<CardOutlineScreenProps> = ({
         {/* List of Instructional Cards */}
         <div className="divide-y divide-white/[0.07]">
           {/* Card 0: Overview & Central Analogy */}
-          <div className="py-4 sm:py-5 hover:bg-neutral-900/30 -mx-2 px-2 rounded-xl transition-colors">
+          <div
+            key="overview-card"
+            className="py-4 sm:py-5 hover:bg-neutral-900/30 -mx-2 px-2 rounded-xl transition-colors"
+          >
             <div
               role="button"
               tabIndex={0}
@@ -146,7 +149,7 @@ export const CardOutlineScreen: React.FC<CardOutlineScreenProps> = ({
           {/* Cards 1 to N */}
           {deck.cards.map((card, idx) => (
             <div
-              key={card.id}
+              key={card.id || `card-${idx}`}
               className="py-4 sm:py-5 hover:bg-neutral-900/30 -mx-2 px-2 rounded-xl transition-colors"
             >
               <div

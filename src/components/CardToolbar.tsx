@@ -10,6 +10,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { DeckCard } from '../types/deck';
+import { safeFetchJson } from '../utils/apiClient';
 
 interface CardToolbarProps {
   card: DeckCard;
@@ -37,7 +38,7 @@ export const CardToolbar: React.FC<CardToolbarProps> = ({
     setIsRefining(true);
     setActiveAction(instructionType);
     try {
-      const res = await fetch('/api/deck/refine-card', {
+      const data = await safeFetchJson<{ success: boolean; updatedCard: DeckCard }>('/api/deck/refine-card', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -46,7 +47,6 @@ export const CardToolbar: React.FC<CardToolbarProps> = ({
           instructionType,
         }),
       });
-      const data = await res.json();
       if (data.success && data.updatedCard) {
         onUpdateCard(data.updatedCard);
       }

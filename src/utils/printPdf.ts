@@ -42,7 +42,18 @@ export function printDeckToPdf(deck: FeynmanDeck) {
               ? `<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #f3f4f6;">
                   <div style="font-size: 11px; font-weight: 700; color: #dc2626; text-transform: uppercase; margin-bottom: 6px;">Critical Red Lines:</div>
                   <ul style="margin: 0; padding-left: 18px; font-size: 12px; color: #374151;">
-                    ${c.criticalRules.map((r) => `<li style="margin-bottom: 4px;"><strong>[${r.type.toUpperCase()}]</strong> ${r.rule} <span style="color: #6b7280;">(Failure Risk: ${r.consequenceOfFailure})</span></li>`).join('')}
+                    ${c.criticalRules
+                      .map(
+                        (r) =>
+                          `<li style="margin-bottom: 4px;"><strong>[${(r.type || 'MUST_DO').toUpperCase()}]</strong> ${
+                            r.rule && r.rule !== 'undefined' ? r.rule : 'Adhere to operational standard'
+                          } <span style="color: #6b7280;">(Failure Risk: ${
+                            r.consequenceOfFailure && r.consequenceOfFailure !== 'undefined'
+                              ? r.consequenceOfFailure
+                              : 'Operational non-compliance'
+                          })</span></li>`
+                      )
+                      .join('')}
                   </ul>
                 </div>`
               : ''
@@ -53,7 +64,23 @@ export function printDeckToPdf(deck: FeynmanDeck) {
               ? `<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #f3f4f6;">
                   <div style="font-size: 11px; font-weight: 700; color: #2563eb; text-transform: uppercase; margin-bottom: 6px;">Execution Steps:</div>
                   <ol style="margin: 0; padding-left: 18px; font-size: 12px; color: #374151;">
-                    ${c.steps.map((s) => `<li style="margin-bottom: 6px;"><strong>${s.title}</strong>: ${s.action} <br/><span style="font-size: 11px; color: #4b5563;"><em>Why: ${s.whyItMatters}</em></span></li>`).join('')}
+                    ${c.steps
+                      .map((s, sIdx) => {
+                        const sTitle =
+                          s.title && s.title !== 'undefined'
+                            ? s.title
+                            : `Step ${s.stepNumber || sIdx + 1}`;
+                        const sAction =
+                          s.action && s.action !== 'undefined'
+                            ? s.action
+                            : 'Execute step protocol';
+                        const sWhy =
+                          s.whyItMatters && s.whyItMatters !== 'undefined'
+                            ? s.whyItMatters
+                            : 'Ensures operational compliance';
+                        return `<li style="margin-bottom: 6px;"><strong>${sTitle}</strong>: ${sAction} <br/><span style="font-size: 11px; color: #4b5563;"><em>Why: ${sWhy}</em></span></li>`;
+                      })
+                      .join('')}
                   </ol>
                 </div>`
               : ''
@@ -64,7 +91,20 @@ export function printDeckToPdf(deck: FeynmanDeck) {
               ? `<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #f3f4f6;">
                   <div style="font-size: 11px; font-weight: 700; color: #7c3aed; text-transform: uppercase; margin-bottom: 6px;">Troubleshooting & Fixes:</div>
                   <ul style="margin: 0; padding-left: 18px; font-size: 12px; color: #374151;">
-                    ${c.pitfalls.map((p) => `<li style="margin-bottom: 6px;"><strong>Issue:</strong> ${p.symptomOrMistake} <br/><span style="font-size: 11px; color: #059669;"><strong>Action:</strong> ${p.immediateFix}</span></li>`).join('')}
+                    ${c.pitfalls
+                      .map(
+                        (p) =>
+                          `<li style="margin-bottom: 6px;"><strong>Issue:</strong> ${
+                            p.symptomOrMistake && p.symptomOrMistake !== 'undefined'
+                              ? p.symptomOrMistake
+                              : 'Operational anomaly'
+                          } <br/><span style="font-size: 11px; color: #059669;"><strong>Action:</strong> ${
+                            p.immediateFix && p.immediateFix !== 'undefined'
+                              ? p.immediateFix
+                              : 'Execute recovery protocol'
+                          }</span></li>`
+                      )
+                      .join('')}
                   </ul>
                 </div>`
               : ''
