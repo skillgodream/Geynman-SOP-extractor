@@ -41,14 +41,14 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({
 }) => {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(initialSlideIndex);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isMobileMaximized, setIsMobileMaximized] = useState(false);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
 
   const totalSlides = deck.cards.length + 1; // Slide 0 is Overview/Hero, Slides 1..N are Deck Cards
 
-  // Keyboard navigation
+  // Keyboard navigation & Fullscreen Change Listener
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignore keydown events coming from interactive text inputs, textareas, or editable elements
       const target = e.target as HTMLElement | null;
       if (
         target &&
@@ -68,71 +68,151 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({
         setCurrentSlideIndex((prev) => Math.max(0, prev - 1));
       } else if (e.key === 'Escape') {
         if (document.fullscreenElement) {
-          document.exitFullscreen();
+          document.exitFullscreen().catch(() => {});
         } else {
+          setIsMobileMaximized(false);
+          setIsFullscreen(false);
           onExit();
         }
       }
     };
 
+    const handleFullscreenChange = () => {
+      const doc = document as any;
+      const isFull = !!(
+        doc.fullscreenElement ||
+        doc.webkitFullscreenElement ||
+        doc.mozFullScreenElement ||
+        doc.msFullscreenElement
+      );
+      setIsFullscreen(isFull);
+      if (!isFull) setIsMobileMaximized(false);
+    };
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+    };
   }, [totalSlides, onExit]);
 
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().then(() => setIsFullscreen(true));
-    } else {
-      document.exitFullscreen().then(() => setIsFullscreen(false));
+  /**
+   * Mobile-Compatible Fullscreen & Immersive Stretch Handler
+   * Works on iOS Safari, Android Webview, iFrames, and Desktops!
+   */
+  const toggleFullscreen = async () => {
+    try {
+      const docEl = document.documentElement as any;
+      const doc = document as any;
+
+      const isFull = !!(
+        doc.fullscreenElement ||
+        doc.webkitFullscreenElement ||
+        doc.mozFullScreenElement ||
+        doc.msFullscreenElement
+      );
+
+      if (!isFull && !isMobileMaximized) {
+        // Try Native Fullscreen API
+        if (docEl.requestFullscreen) {
+          await docEl.requestFullscreen();
+          setIsFullscreen(true);
+        } else if (docEl.webkitRequestFullscreen) {
+          await docEl.webkitRequestFullscreen();
+          setIsFullscreen(true);
+        } else if (docEl.mozRequestFullScreen) {
+          await docEl.mozRequestFullScreen();
+          setIsFullscreen(true);
+        } else if (docEl.msRequestFullscreen) {
+          await docEl.msRequestFullscreen();
+          setIsFullscreen(true);
+        } else {
+          // Mobile Safari / iOS Fallback: CSS Cinema Viewport Stretch
+          setIsMobileMaximized(true);
+          setIsFullscreen(true);
+        }
+      } else {
+        if (doc.exitFullscreen) {
+          await doc.exitFullscreen().catch(() => {});
+        } else if (doc.webkitExitFullscreen) {
+          await doc.webkitExitFullscreen().catch(() => {});
+        } else if (doc.mozCancelFullScreen) {
+          await doc.mozCancelFullScreen().catch(() => {});
+        } else if (doc.msExitFullscreen) {
+          await doc.msExitFullscreen().catch(() => {});
+        }
+        setIsFullscreen(false);
+        setIsMobileMaximized(false);
+      }
+    } catch (err) {
+      // Mobile Safari / iframe fallback on API rejection
+      setIsMobileMaximized((prev) => !prev);
+      setIsFullscreen((prev) => !prev);
     }
   };
 
   const currentCard = currentSlideIndex >= 1 ? deck.cards[currentSlideIndex - 1] : null;
+  const isStretched = isFullscreen || isMobileMaximized;
 
   return (
     <div className="fixed inset-0 z-50 bg-black text-white flex flex-col select-none overflow-hidden font-sans">
       {/* Top Keynote Control Bar */}
-      <div className="relative h-14 px-4 sm:px-6 flex items-center justify-between border-b border-white/[0.08] bg-black/85 backdrop-blur-2xl">
+      <div className="relative h-14 px-3 sm:px-6 flex items-center justify-between border-b border-white/[0.08] bg-black/85 backdrop-blur-2xl shrink-0">
         {/* Subtle Slide Progress Bar at very top */}
         <div
-          className="absolute top-0 left-0 h-[2px] bg-gradient-to-r from-white/70 to-white transition-all duration-300"
+          className="absolute top-0 left-0 h-[2px] bg-gradient-to-r from-cyan-400 to-white transition-all duration-300"
           style={{ width: `${((currentSlideIndex + 1) / totalSlides) * 100}%` }}
         />
 
-        <div className="flex items-center gap-2.5 truncate">
-          <span className="font-semibold text-xs sm:text-sm tracking-tight text-white truncate max-w-[150px] sm:max-w-xs">
+        <div className="flex items-center gap-2 truncate">
+          <span className="font-semibold text-xs sm:text-sm tracking-tight text-white truncate max-w-[130px] sm:max-w-xs">
             {deck.title}
           </span>
           <span className="text-neutral-600">·</span>
-          <span className="text-[11px] sm:text-xs text-neutral-400 font-mono font-medium tracking-wider">
+          <span className="text-[11px] sm:text-xs text-neutral-400 font-mono font-medium tracking-wider shrink-0">
             {String(currentSlideIndex + 1).padStart(2, '0')} / {String(totalSlides).padStart(2, '0')}
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <button
             type="button"
             onClick={() => setIsPrintModalOpen(true)}
-            className="min-h-[38px] px-3.5 py-1.5 flex items-center gap-1.5 text-xs font-semibold text-neutral-300 hover:text-white rounded-full bg-neutral-900/60 hover:bg-neutral-800 border border-white/10 transition-colors cursor-pointer no-print z-10"
+            className="min-h-[36px] px-3 sm:px-3.5 py-1.5 flex items-center gap-1.5 text-xs font-semibold text-neutral-300 hover:text-white rounded-full bg-neutral-900/80 hover:bg-neutral-800 border border-white/10 transition-colors cursor-pointer no-print"
             title="Export Slide Deck to PDF"
             aria-label="Print to PDF"
           >
             <Printer className="w-3.5 h-3.5 text-blue-400" />
             <span className="hidden sm:inline">Print to PDF</span>
           </button>
+
+          {/* Fullscreen / Stretch Icon Button */}
           <button
             type="button"
             onClick={toggleFullscreen}
-            className="min-h-[38px] min-w-[38px] flex items-center justify-center text-neutral-400 hover:text-white rounded-full bg-neutral-900/60 hover:bg-neutral-800 border border-white/10 transition-colors cursor-pointer no-print"
-            title="Toggle fullscreen"
-            aria-label="Fullscreen"
+            className={`min-h-[36px] min-w-[36px] flex items-center justify-center text-neutral-300 hover:text-white rounded-full border transition-all cursor-pointer no-print active:scale-95 ${
+              isStretched
+                ? 'bg-cyan-500 text-black border-cyan-400 font-bold shadow-[0_0_15px_rgba(6,182,212,0.4)]'
+                : 'bg-neutral-900/80 hover:bg-neutral-800 border-white/10'
+            }`}
+            title={isStretched ? 'Exit fullscreen / stretch' : 'Stretch to fullscreen'}
+            aria-label="Stretch to Fullscreen"
           >
-            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+            {isStretched ? (
+              <Minimize2 className="w-4 h-4 text-black stroke-[2.5]" />
+            ) : (
+              <Maximize2 className="w-4 h-4 text-cyan-400 stroke-[2]" />
+            )}
           </button>
+
           <button
             type="button"
             onClick={onExit}
-            className="min-h-[38px] flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 border border-white/10 rounded-full transition-colors cursor-pointer no-print"
+            className="min-h-[36px] flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 border border-white/10 rounded-full transition-colors cursor-pointer no-print"
           >
             <X className="w-4 h-4" />
             <span className="hidden sm:inline">Exit Slides</span>
@@ -140,11 +220,19 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({
         </div>
       </div>
 
-      {/* Main Slide Stage — Cinema Pro Canvas (Header-safe scroll alignment) */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-10 flex flex-col items-center">
-        <div className="w-full max-w-5xl my-auto transition-all duration-300 presentation-slide py-2 sm:py-4">
+      {/* Main Slide Stage — Adaptive Mobile Cinema Viewport */}
+      <div
+        className={`flex-1 overflow-y-auto flex flex-col items-center justify-center transition-all ${
+          isStretched ? 'p-1 sm:p-2' : 'p-3 sm:p-6 md:p-8'
+        }`}
+      >
+        <div
+          className={`w-full my-auto transition-all duration-300 presentation-slide ${
+            isStretched ? 'max-w-full p-0 sm:p-1' : 'max-w-5xl py-2 sm:py-4'
+          }`}
+        >
           {currentSlideIndex === 0 ? (
-            /* Slide 0: Cover / Overview Slide in Apple Keynote Style */
+            /* Slide 0: Cover / Overview Slide */
             <div className="relative rounded-[2rem] border border-white/[0.12] bg-gradient-to-b from-blue-500/[0.08] via-neutral-950 to-neutral-950 p-6 sm:p-10 md:p-12 shadow-[0_30px_90px_rgba(0,0,0,0.95)] overflow-hidden">
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                 <div className="lg:col-span-7 space-y-4">
@@ -192,8 +280,8 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({
               </div>
             </div>
           ) : currentCard ? (
-            /* Individual Card Slide — Zero editor toolbar in presentation view */
-            <div className="slide-content">
+            /* Individual Card Slide */
+            <div className="slide-content w-full">
               {currentCard.cardType === 'concept_analogy' && (
                 <ConceptAnalogyCard
                   card={currentCard}
@@ -253,8 +341,8 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({
         </div>
       </div>
 
-      {/* Bottom control bar */}
-      <div className="h-16 px-4 sm:px-6 flex items-center justify-between border-t border-white/[0.08] bg-black/85 backdrop-blur-2xl pb-safe">
+      {/* Bottom Control Bar */}
+      <div className="h-16 px-4 sm:px-6 flex items-center justify-between border-t border-white/[0.08] bg-black/85 backdrop-blur-2xl pb-safe shrink-0">
         <button
           type="button"
           onClick={() => setCurrentSlideIndex((prev) => Math.max(0, prev - 1))}
@@ -266,9 +354,9 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({
           <span className="hidden sm:inline">Previous</span>
         </button>
 
-        {/* Slide Dots & Key Hint */}
+        {/* Slide Dots */}
         <div className="flex flex-col items-center gap-1">
-          <div className="flex items-center gap-1.5 overflow-x-auto max-w-[200px] sm:max-w-md px-2 scrollbar-none">
+          <div className="flex items-center gap-1.5 overflow-x-auto max-w-[180px] sm:max-w-md px-2 scrollbar-none">
             {Array.from({ length: totalSlides }).map((_, idx) => (
               <button
                 key={idx}
@@ -276,7 +364,7 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({
                 onClick={() => setCurrentSlideIndex(idx)}
                 className={`h-1.5 rounded-full transition-all cursor-pointer ${
                   currentSlideIndex === idx
-                    ? 'w-7 bg-white shadow-sm'
+                    ? 'w-7 bg-cyan-400 shadow-sm'
                     : 'w-1.5 bg-neutral-800 hover:bg-neutral-600'
                 }`}
                 title={`Jump to slide ${idx + 1}`}
@@ -301,12 +389,19 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({
         </button>
       </div>
 
-      {/* Interactive Print & Save PDF Export Modal */}
-      <PrintPdfModal
-        isOpen={isPrintModalOpen}
-        onClose={() => setIsPrintModalOpen(false)}
-        deck={deck}
-      />
+      {/* Print PDF Modal */}
+      {isPrintModalOpen && (
+        <PrintPdfModal
+          isOpen={isPrintModalOpen}
+          onClose={() => setIsPrintModalOpen(false)}
+          onPrint={() => {
+            setIsPrintModalOpen(false);
+            printDeckToPdf(deck);
+          }}
+          deckTitle={deck.title}
+          cardCount={deck.cards.length}
+        />
+      )}
     </div>
   );
 };

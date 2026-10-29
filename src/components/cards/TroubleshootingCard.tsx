@@ -39,12 +39,31 @@ export const TroubleshootingCard: React.FC<TroubleshootingCardProps> = ({
   const [pitfalls, setPitfalls] = useState<Pitfall[]>(card.pitfalls || []);
 
   // Checklist state for "RESUME ONLY WHEN"
-  const defaultResumeChecklist = [
-    { id: '1', label: 'Approved price is confirmed.', checked: false },
-    { id: '2', label: 'POS test is successful.', checked: false },
-    { id: '3', label: 'Correct label is displayed.', checked: false },
-  ];
-  const [resumeChecklist, setResumeChecklist] = useState(defaultResumeChecklist);
+  const getDynamicResumeChecklist = (pitfallItems: Pitfall[]) => {
+    if (pitfallItems.length > 0) {
+      return pitfallItems.map((p, idx) => ({
+        id: String(idx + 1),
+        label: p.immediateFix || p.rootCause || `Resolution verified for step ${idx + 1}`,
+        checked: false,
+      }));
+    }
+    return [
+      { id: '1', label: 'Root cause identified and corrected.', checked: false },
+      { id: '2', label: 'Operating parameters restored to standard spec.', checked: false },
+      { id: '3', label: 'Verification test passed and logged in ledger.', checked: false },
+    ];
+  };
+
+  const [resumeChecklist, setResumeChecklist] = useState(() => getDynamicResumeChecklist(pitfalls));
+
+  // Sync internal state when card prop changes
+  React.useEffect(() => {
+    setTitle(card.title);
+    setSubtitle(card.subtitle || '');
+    setExplanation(card.feynmanExplanation);
+    setPitfalls(card.pitfalls || []);
+    setResumeChecklist(getDynamicResumeChecklist(card.pitfalls || []));
+  }, [card]);
 
   const toggleResumeChecklist = (id: string) => {
     setResumeChecklist(prev =>
@@ -102,7 +121,10 @@ export const TroubleshootingCard: React.FC<TroubleshootingCardProps> = ({
 
   const levelNum = card.levelNumber ?? 3;
   const stopWorkMsg =
-    card.stopWorkTrigger || 'if POS price differs from the approved instruction.';
+    card.stopWorkTrigger ||
+    (pitfalls[0]?.symptomOrMistake
+      ? `If ${pitfalls[0].symptomOrMistake.toLowerCase()} occurs or parameter exceeds spec.`
+      : 'If operating parameters breach allowable limits.');
 
   return (
     <div className="relative rounded-[2rem] border border-white/[0.12] bg-[#0b0f17] shadow-[0_25px_80px_rgba(0,0,0,0.9)] p-6 sm:p-10 transition-all overflow-hidden text-white font-sans">

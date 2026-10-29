@@ -63,21 +63,31 @@ export const CriticalRulesCard: React.FC<CriticalRulesCardProps> = ({
       card.title.toLowerCase().includes('gate'));
 
   // Checklist state for Golden Rules "Before you finish"
-  const defaultChecklist = rules.map((r, idx) => ({
-    id: String(idx + 1),
-    label: r.verificationCheck || r.rule.slice(0, 45),
-    checked: false,
-  }));
+  const getDynamicChecklist = (ruleItems: CriticalRule[]) => {
+    if (ruleItems.length > 0) {
+      return ruleItems.map((r, idx) => ({
+        id: String(idx + 1),
+        label: r.verificationCheck || r.rule,
+        checked: false,
+      }));
+    }
+    return [
+      { id: '1', label: 'Authorized directive verified', checked: false },
+      { id: '2', label: 'Item/SKU parameter verified', checked: false },
+      { id: '3', label: 'System status tested', checked: false },
+    ];
+  };
 
-  const [checklist, setChecklist] = useState(
-    defaultChecklist.length > 0
-      ? defaultChecklist
-      : [
-          { id: '1', label: 'Approved directive verified', checked: false },
-          { id: '2', label: 'Item/SKU parameter verified', checked: false },
-          { id: '3', label: 'System status tested', checked: false },
-        ]
-  );
+  const [checklist, setChecklist] = useState(() => getDynamicChecklist(rules));
+
+  // Sync internal state when card prop changes
+  React.useEffect(() => {
+    setTitle(card.title);
+    setSubtitle(card.subtitle || '');
+    setExplanation(card.feynmanExplanation);
+    setRules(card.criticalRules || []);
+    setChecklist(getDynamicChecklist(card.criticalRules || []));
+  }, [card]);
 
   const toggleChecklist = (id: string) => {
     setChecklist(prev =>
@@ -220,16 +230,21 @@ export const CriticalRulesCard: React.FC<CriticalRulesCardProps> = ({
 
   const levelNum = card.levelNumber ?? (isGoldenRulesCard ? 4 : 0);
 
-  // Extract Never Do & Must Do items for Setup Card
+  // Extract Never Do & Must Do items dynamically from card data
   const neverDoRule = rules.find(r => r.type === 'never_do') || {
-    type: 'never_do',
-    rule: 'Do not act on casual requests or guess a markdown.',
-    consequenceOfFailure: 'Prevents unauthorized discounts, margin loss and audit discrepancies.',
-    verificationCheck: 'Casual request rejected'
+    type: 'never_do' as const,
+    rule: card.stopWorkTrigger || rules[0]?.rule || 'Do not proceed without proper authorization or verification.',
+    consequenceOfFailure: rules[0]?.consequenceOfFailure || card.feynmanExplanation || 'Ensures process integrity and compliance.',
+    verificationCheck: rules[0]?.verificationCheck || 'Verification complete'
   };
 
   const mustDoRules = rules.filter(r => r.type !== 'never_do');
-  const mainConsequence = rules[0]?.consequenceOfFailure || 'Prevents unauthorized discounts, margin loss and audit discrepancies.';
+  const mainConsequence = rules[0]?.consequenceOfFailure || card.feynmanExplanation || 'Guarantees operational baseline tolerance and safety compliance.';
+  const keyRuleText =
+    rules.find(r => r.type === 'must_do')?.rule ||
+    rules[0]?.rule ||
+    card.subtitle ||
+    'Mandatory authorization required before execution.';
 
   // --- VARIANT 1: LEVEL 0 AUTHORIZATION & VERIFICATION / SETUP SCREEN ---
   if (isSetupCard) {
@@ -298,7 +313,7 @@ export const CriticalRulesCard: React.FC<CriticalRulesCardProps> = ({
               KEY RULE
             </div>
             <div className="text-sm sm:text-lg font-extrabold text-white leading-snug">
-              No approved instruction. No price change.
+              {keyRuleText}
             </div>
           </div>
         </div>
@@ -386,7 +401,7 @@ export const CriticalRulesCard: React.FC<CriticalRulesCardProps> = ({
         <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-cyan-400 mb-3">
           <span>LEVEL {levelNum}</span>
           <span>•</span>
-          <span>PRICE MARKDOWN</span>
+          <span>{card.badgeText || card.subtitle?.toUpperCase() || 'NON-NEGOTIABLE CONTROLS'}</span>
         </div>
 
         {isEditing ? (
