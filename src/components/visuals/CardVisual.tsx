@@ -44,8 +44,21 @@ export const CardVisual: React.FC<CardVisualProps> = ({
     image?.layout === 'hero' ? 'hero' : 'split'
   );
 
-  // AI Text-to-Image State
-  const [aiPrompt, setAiPrompt] = useState(titleContext || '');
+  // AI Text-to-Image State with stored preferred prompt persistence
+  const [aiPrompt, setAiPrompt] = useState(
+    image?.imagePrompt || titleContext || 'Operational SOP procedure visual'
+  );
+
+  React.useEffect(() => {
+    setUrlInput(image?.url || '');
+    setCaptionInput(image?.caption || '');
+    if (image?.imagePrompt) {
+      setAiPrompt(image.imagePrompt);
+    } else if (titleContext) {
+      setAiPrompt(titleContext);
+    }
+  }, [image, titleContext]);
+
   const [apiKeyInput, setApiKeyInput] = useState(() => {
     try {
       return localStorage.getItem('user_image_api_key') || '';
@@ -120,6 +133,7 @@ export const CardVisual: React.FC<CardVisualProps> = ({
   const handleSave = () => {
     onUpdateImage({
       url: urlInput.trim() || undefined,
+      imagePrompt: aiPrompt.trim() || undefined,
       caption: captionInput.trim() || undefined,
       diagramType: selectedDiagram,
       layout: selectedLayout,
@@ -140,63 +154,16 @@ export const CardVisual: React.FC<CardVisualProps> = ({
     }
   };
 
-  // Comprehensive contextual topic matching for cards without an explicit URL
+  // Dynamic contextual AI image resolution for cards without a hardcoded URL
   const resolveFallbackPhoto = (): string => {
-    const query = `${aiPrompt} ${titleContext} ${activeDiagram} ${defaultDiagram}`.toLowerCase();
+    const query = `${aiPrompt || ''} ${titleContext || ''}`
+      .replace(/[^a-zA-Z0-9\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
 
-    if (query.includes('price') || query.includes('shelf') || query.includes('tag') || query.includes('retail') || query.includes('discount') || query.includes('markdown') || query.includes('v-mart')) {
-      return 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80';
-    }
-    if (query.includes('pos') || query.includes('register') || query.includes('checkout') || query.includes('cashier')) {
-      return 'https://images.unsplash.com/photo-1556742049-0a670f4a4591?auto=format&fit=crop&w=1200&q=80';
-    }
-    if (query.includes('cold') || query.includes('refrigerat') || query.includes('temperature') || query.includes('probe')) {
-      return 'https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?auto=format&fit=crop&w=1200&q=80';
-    }
-    if (query.includes('protein') || query.includes('vaccine') || query.includes('vial') || query.includes('pharma')) {
-      return 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=1200&q=80';
-    }
-    if (query.includes('cooler') || query.includes('insulated') || query.includes('pack') || query.includes('dry ice')) {
-      return 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?auto=format&fit=crop&w=1200&q=80';
-    }
-    if (query.includes('quarantine') || query.includes('red line') || query.includes('isolate') || query.includes('lockout')) {
-      return 'https://images.unsplash.com/photo-1583912267550-d44d9c9a29d6?auto=format&fit=crop&w=1200&q=80';
-    }
-    if (query.includes('incident') || query.includes('triage') || query.includes('sev-1') || query.includes('outage')) {
-      return 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80';
-    }
-    if (query.includes('war room') || query.includes('bridge') || query.includes('communication') || query.includes('commander')) {
-      return 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80';
-    }
-    if (query.includes('server') || query.includes('cluster') || query.includes('datacenter') || query.includes('cloud')) {
-      return 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80';
-    }
-    if (query.includes('cleanroom') || query.includes('airlock') || query.includes('sticky mat') || query.includes('gown')) {
-      return 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=80';
-    }
-    if (query.includes('glove') || query.includes('sterile') || query.includes('sanitize') || query.includes('disinfect')) {
-      return 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=1200&q=80';
-    }
-    if (query.includes('bunny suit') || query.includes('coverall') || query.includes('bench') || query.includes('boot')) {
-      return 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80';
-    }
-    if (query.includes('pressure') || query.includes('manometer') || query.includes('pascal') || query.includes('airflow')) {
-      return 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80';
-    }
-    if (query.includes('warehouse') || query.includes('pick') || query.includes('pack') || query.includes('scanner') || query.includes('barcode')) {
-      return 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80';
-    }
-    if (query.includes('forklift') || query.includes('pallet') || query.includes('dock') || query.includes('cargo')) {
-      return 'https://images.unsplash.com/photo-1553413077-190dd305871c?auto=format&fit=crop&w=1200&q=80';
-    }
-    if (query.includes('checklist') || query.includes('sign-off') || query.includes('audit') || query.includes('ledger')) {
-      return 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80';
-    }
-    if (query.includes('dilemma') || query.includes('quiz') || query.includes('decision') || query.includes('alarm')) {
-      return 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1200&q=80';
-    }
-
-    return 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80';
+    const cleanPrompt = encodeURIComponent(`High resolution 4k photorealistic operational workplace visual, ${query.slice(0, 130)}, professional lighting, technical setting`);
+    const seed = Math.floor(Math.random() * 900000) + 100000;
+    return `https://image.pollinations.ai/prompt/${cleanPrompt}?width=1024&height=576&seed=${seed}&nologo=true&enhance=true&model=flux`;
   };
 
   // Prioritize custom user image URL, then contextual photo resolution

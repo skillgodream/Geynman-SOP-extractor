@@ -413,6 +413,22 @@ export function sanitizeCard(rawCard: any, cardIndex: number): DeckCard {
     delete card.quiz;
   }
 
+  // Sanitize image & stored imagePrompt for consistent re-generation
+  const rawImagePrompt =
+    cleanText((card as any).imagePrompt) ||
+    cleanText((card as any).image?.imagePrompt) ||
+    cleanText((card as any).visualPrompt) ||
+    undefined;
+
+  if (rawImagePrompt) {
+    card.imagePrompt = rawImagePrompt;
+    if (card.image) {
+      card.image.imagePrompt = rawImagePrompt;
+    } else {
+      card.image = { imagePrompt: rawImagePrompt };
+    }
+  }
+
   // 6. Sanitize analogy if present
   if ((card as any).analogy) {
     const a = (card as any).analogy;

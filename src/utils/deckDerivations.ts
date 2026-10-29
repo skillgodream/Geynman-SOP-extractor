@@ -98,21 +98,16 @@ export function resolveContextualPhoto(
   contextQuery?: string
 ): string {
   if (specificImage?.url) return specificImage.url;
+  if (deck.heroImage?.url && !contextQuery) return deck.heroImage.url;
 
-  const combinedSearch = `${contextQuery || ''} ${deck.title || ''} ${deck.summary || ''} ${deck.targetAudience || ''}`.toLowerCase();
+  const rawSearch = `${contextQuery || ''} ${deck.title || ''} ${deck.summary || ''}`
+    .replace(/[^a-zA-Z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 
-  for (const item of CURATED_OPERATIONAL_VISUALS) {
-    if (item.keywords.some((kw) => combinedSearch.includes(kw))) {
-      return item.url;
-    }
-  }
-
-  // Fallback to deck hero image if present
-  if (deck.heroImage?.url) return deck.heroImage.url;
-
-  // Dynamic high-yield AI visual synthesis URL
-  const promptClean = encodeURIComponent(`${contextQuery || deck.title || 'operational standard operating procedure'}`);
-  return `https://image.pollinations.ai/prompt/${promptClean}?width=1024&height=576&nologo=true`;
+  const promptClean = encodeURIComponent(`High resolution 4k photorealistic operational workplace visual, ${rawSearch.slice(0, 130)}, professional lighting, technical workplace setting`);
+  const seed = Math.floor(Math.random() * 900000) + 100000;
+  return `https://image.pollinations.ai/prompt/${promptClean}?width=1024&height=576&seed=${seed}&nologo=true&enhance=true&model=flux`;
 }
 
 export function deriveVideoScenes(deck: FeynmanDeck): VideoScene[] {

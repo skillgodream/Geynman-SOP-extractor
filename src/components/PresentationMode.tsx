@@ -394,12 +394,7 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({
         <PrintPdfModal
           isOpen={isPrintModalOpen}
           onClose={() => setIsPrintModalOpen(false)}
-          onPrint={() => {
-            setIsPrintModalOpen(false);
-            printDeckToPdf(deck);
-          }}
-          deckTitle={deck.title}
-          cardCount={deck.cards.length}
+          deck={deck}
         />
       )}
     </div>

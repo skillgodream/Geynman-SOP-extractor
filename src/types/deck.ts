@@ -44,6 +44,7 @@ export interface ReferenceItem {
 
 export interface CardImage {
   url?: string;
+  imagePrompt?: string;
   caption?: string;
   alt?: string;
   diagramType?: 'cold_chain' | 'protein_origami' | 'cleanroom' | 'incident_triage' | 'warehouse' | 'chemical_neutralization' | 'flowchart' | 'price_markdown' | 'custom';
@@ -69,6 +70,7 @@ export interface DeckCard {
   stopWorkTrigger?: string;
   responsibleRole?: string;
   image?: CardImage;
+  imagePrompt?: string;
   analogy?: {
     metaphor: string;
     takeaway: string;

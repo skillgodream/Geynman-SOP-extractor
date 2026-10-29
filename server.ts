@@ -619,105 +619,53 @@ function createFallbackFeynmanDeck(
 
 function assignContextualDeckImages(deck: any) {
   if (!deck) return;
-  const deckTitle = (deck.title || '').toLowerCase();
-  const deckSummary = (deck.summary || '').toLowerCase();
-  const deckContext = `${deckTitle} ${deckSummary} ${deck.targetAudience || ''}`;
+  const deckTitle = (deck.title || '').trim();
+  const deckSummary = (deck.summary || '').trim();
 
-  const CURATED_OPERATIONAL_VISUALS = [
-    {
-      keywords: ['fridge', 'refrigerat', 'temperature', 'cold chain', '2°c', '8°c', 'thermal', 'sensor', 'datalogger', 'probe'],
-      url: 'https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?auto=format&fit=crop&w=1200&q=80',
-    },
-    {
-      keywords: ['cooler', 'insulated', 'cold pack', 'ice pack', 'transfer container', 'dry ice', 'secondary containment'],
-      url: 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?auto=format&fit=crop&w=1200&q=80',
-    },
-    {
-      keywords: ['vaccine', 'biologic', 'vial', 'pharma', 'medication', 'protein', 'denatur', 'molecular'],
-      url: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=1200&q=80',
-    },
-    {
-      keywords: ['quarantine', 'biohazard', 'isolation', 'isolate', 'do not dispense', 'tag', 'red line', 'lockout'],
-      url: 'https://images.unsplash.com/photo-1583912267550-d44d9c9a29d6?auto=format&fit=crop&w=1200&q=80',
-    },
-    {
-      keywords: ['sev-1', 'incident', 'outage', 'triage', 'monitoring', 'grafana', 'datadog', 'dashboard', 'latency'],
-      url: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80',
-    },
-    {
-      keywords: ['war room', 'incident commander', 'communication', 'slack', 'bridge', 'collaborat', 'lead'],
-      url: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80',
-    },
-    {
-      keywords: ['server', 'cluster', 'datacenter', 'canary', 'rollback', 'kubernetes', 'database', 'infrastructure'],
-      url: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80',
-    },
-    {
-      keywords: ['metrics', 'telemetry', 'analytics', 'chart', 'uptime', 'sla', 'post-mortem'],
-      url: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80',
-    },
-    {
-      keywords: ['cleanroom', 'airlock', 'sticky mat', 'ante-room', 'decontamination', 'gown', 'iso class', 'interlock'],
-      url: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=80',
-    },
-    {
-      keywords: ['sterile', 'nitrile gloves', 'glove', 'sanitize', 'isopropyl', 'disinfect'],
-      url: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=1200&q=80',
-    },
-    {
-      keywords: ['bunny suit', 'coverall', 'hood', 'crossover bench', 'boot covers', 'particles', 'hepa'],
-      url: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80',
-    },
-    {
-      keywords: ['differential pressure', 'manometer', 'pascal', 'airflow', 'pressure gauge', 'ventilation'],
-      url: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80',
-    },
-    {
-      keywords: ['pick', 'pack', 'warehouse', 'barcode', 'rf scanner', 'order fulfillment', 'inventory', 'bin', 'packer', 'dark store'],
-      url: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80',
-    },
-    {
-      keywords: ['forklift', 'pallet', 'racking', 'loading dock', 'freight', 'cargo', 'high-bay'],
-      url: 'https://images.unsplash.com/photo-1553413077-190dd305871c?auto=format&fit=crop&w=1200&q=80',
-    },
-    {
-      keywords: ['sign-off', 'checklist', 'verification', 'audit', 'compliance', 'ledger', 'signature', 'quality'],
-      url: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80',
-    },
-    {
-      keywords: ['pitfall', 'troubleshoot', 'anomaly', 'symptom', 'fault', 'error', 'root cause', 'diagnostic'],
-      url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80',
-    },
-    {
-      keywords: ['dilemma', 'decision', 'scenario', 'quiz', 'emergency', 'alarm', '2 am', 'critical'],
-      url: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1200&q=80',
-    },
-  ];
+  function buildContextualImagePrompt(cardTitle: string, cardSubtitle: string, cardExplanation: string, actionText?: string): string {
+    const rawContext = `${deckTitle} - ${cardTitle} ${cardSubtitle} ${actionText || ''} ${cardExplanation}`
+      .replace(/[^a-zA-Z0-9\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
 
-  function matchPhoto(context: string, fallbackPrompt: string): string {
-    const lower = context.toLowerCase();
-    for (const item of CURATED_OPERATIONAL_VISUALS) {
-      if (item.keywords.some((kw) => lower.includes(kw))) {
-        return item.url;
-      }
-    }
-    const safePrompt = encodeURIComponent(fallbackPrompt.slice(0, 100));
-    return `https://image.pollinations.ai/prompt/${safePrompt}?width=1024&height=576&nologo=true`;
+    return `Photorealistic 4k operational workplace visual, ${rawContext.slice(0, 130)}, clear technical workplace lighting, high detail`;
   }
 
-  // Ensure hero image has URL
+  function generateUrlFromPrompt(promptText: string, index: number): string {
+    const cleanPrompt = encodeURIComponent(promptText);
+    const seed = Math.floor(Math.random() * 900000) + 100000 + index;
+    return `https://image.pollinations.ai/prompt/${cleanPrompt}?width=1024&height=576&seed=${seed}&nologo=true&enhance=true&model=flux`;
+  }
+
+  // Ensure hero image has URL and stored prompt
   if (!deck.heroImage) deck.heroImage = {};
+  if (!deck.heroImage.imagePrompt) {
+    deck.heroImage.imagePrompt = buildContextualImagePrompt('Hero Operational Overview', deckTitle, deckSummary);
+  }
   if (!deck.heroImage.url) {
-    deck.heroImage.url = matchPhoto(deckContext, `${deck.title} operational overview`);
+    deck.heroImage.url = generateUrlFromPrompt(deck.heroImage.imagePrompt, 0);
   }
 
-  // Assign images to cards
+  // Assign images and stored preferred image prompts to every card chunk
   if (Array.isArray(deck.cards)) {
     deck.cards.forEach((card: any, idx: number) => {
       if (!card.image) card.image = {};
+      
+      const firstAction = card.steps?.[0]?.action || card.criticalRules?.[0]?.rule || card.pitfalls?.[0]?.symptomOrMistake || '';
+      
+      // Parse SOP context and store preferred image prompt on both card and card.image
+      const preferredPrompt = card.imagePrompt || card.image.imagePrompt || buildContextualImagePrompt(
+        card.title || `Step ${idx + 1}`,
+        card.subtitle || '',
+        card.feynmanExplanation || '',
+        firstAction
+      );
+
+      card.imagePrompt = preferredPrompt;
+      card.image.imagePrompt = preferredPrompt;
+
       if (!card.image.url) {
-        const cardContext = `${card.title || ''} ${card.subtitle || ''} ${card.badgeText || ''} ${card.feynmanExplanation || ''} ${deckContext}`;
-        card.image.url = matchPhoto(cardContext, `${deck.title} ${card.title || 'Step ' + (idx + 1)}`);
+        card.image.url = generateUrlFromPrompt(preferredPrompt, idx + 1);
       }
     });
   }
@@ -1127,11 +1075,11 @@ Instructions:
   }
 });
 
-// Helper to sanitize and auto-expand raw prompts to prevent AI image refusal
+// Helper to sanitize and auto-expand raw prompts for dynamic AI image generation
 function sanitizeAndEnhancePrompt(raw: string): { promptText: string; unsplashFallback: string } {
   let cleaned = (raw || '').trim();
 
-  // Fix typos common in retail and SOP prompts
+  // Fix typos common in operational SOP prompts
   cleaned = cleaned.replace(/\bshef\b/gi, 'shelf');
   cleaned = cleaned.replace(/\bta\b/gi, 'tag');
   cleaned = cleaned.replace(/\bprise\b/gi, 'price');
@@ -1141,24 +1089,12 @@ function sanitizeAndEnhancePrompt(raw: string): { promptText: string; unsplashFa
   cleaned = cleaned.replace(/\bbarcod\b/gi, 'barcode');
   cleaned = cleaned.replace(/\bsccan\b/gi, 'scan');
 
-  const lower = cleaned.toLowerCase();
+  const cleanContext = cleaned.replace(/[^a-zA-Z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  const fallbackPrompt = encodeURIComponent(`High resolution photorealistic operational workplace visual, ${cleanContext.slice(0, 120)}, professional lighting`);
+  const fallback = `https://image.pollinations.ai/prompt/${fallbackPrompt}?width=1024&height=576&nologo=true&enhance=true&model=flux`;
 
-  // Select a guaranteed high-res Unsplash photo fallback based on domain keywords
-  let fallback = 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80';
-  if (lower.includes('price') || lower.includes('shelf') || lower.includes('tag') || lower.includes('retail') || lower.includes('discount') || lower.includes('v-mart') || lower.includes('store')) {
-    fallback = 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80';
-  } else if (lower.includes('pos') || lower.includes('register') || lower.includes('scan') || lower.includes('checkout')) {
-    fallback = 'https://images.unsplash.com/photo-1556742049-0a670f4a4591?auto=format&fit=crop&w=1200&q=80';
-  } else if (lower.includes('cold') || lower.includes('fridge') || lower.includes('refrigerat') || lower.includes('temp')) {
-    fallback = 'https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?auto=format&fit=crop&w=1200&q=80';
-  } else if (lower.includes('cleanroom') || lower.includes('sterile') || lower.includes('gown')) {
-    fallback = 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=80';
-  } else if (lower.includes('checklist') || lower.includes('audit') || lower.includes('sign-off')) {
-    fallback = 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80';
-  }
-
-  if (cleaned.length < 25) {
-    cleaned = `Clean retail store merchandise shelf display with printed price tags and markdown signage, professional lighting: ${cleaned}`;
+  if (cleaned.length < 20) {
+    cleaned = `High-resolution photorealistic operational workplace visual, clear instructional lighting: ${cleaned}`;
   }
 
   return { promptText: cleaned, unsplashFallback: fallback };

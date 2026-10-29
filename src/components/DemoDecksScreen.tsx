@@ -84,8 +84,8 @@ export const DemoDecksScreen: React.FC<DemoDecksScreenProps> = ({
           </p>
         </div>
 
-        {/* Decks Card Grid */}
-        <div className="space-y-6">
+        {/* Decks Card Grid - Lightweight & Airy Layout */}
+        <div className="space-y-4">
           {decks.map((deck) => {
             const cardCount = deck.cards.length;
             const tagLabel = deck.tags?.[0]
@@ -104,97 +104,95 @@ export const DemoDecksScreen: React.FC<DemoDecksScreenProps> = ({
               <div
                 key={deck.id}
                 onClick={() => onSelectDeck(deck, 'outline')}
-                className="group rounded-3xl border border-white/15 bg-[#0b0f17] hover:border-white/40 transition-all duration-300 shadow-[0_15px_40px_rgba(0,0,0,0.8)] overflow-hidden cursor-pointer flex flex-col sm:flex-row hover:shadow-[0_20px_60px_rgba(255,255,255,0.08)]"
+                className="group rounded-2xl border border-white/10 bg-[#0a0d14] hover:border-white/30 transition-all duration-300 shadow-xl overflow-hidden cursor-pointer flex flex-col sm:flex-row hover:shadow-2xl"
               >
                 {/* Left Visual Banner Image */}
-                <div className="sm:w-64 h-44 sm:h-auto relative overflow-hidden shrink-0 border-b sm:border-b-0 sm:border-r border-white/10">
+                <div className="sm:w-52 h-36 sm:h-auto relative overflow-hidden shrink-0 border-b sm:border-b-0 sm:border-r border-white/10 bg-neutral-900">
                   <img
                     src={photoUrl}
                     alt={deck.title}
                     referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out grayscale-[20%] group-hover:grayscale-0"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                     loading="lazy"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0b0f17] via-[#0b0f17]/40 to-transparent sm:bg-gradient-to-r sm:from-transparent sm:via-transparent sm:to-[#0b0f17]" />
-
-                  {/* Top Category Badge */}
-                  <div className="absolute top-3 left-3 z-10">
-                    <span className="text-[10px] font-mono font-bold tracking-wider text-white bg-black/90 backdrop-blur-md border border-white/30 px-2.5 py-1 rounded-full uppercase shadow-md inline-block">
-                      {tagLabel}
-                    </span>
-                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0d14] via-transparent to-transparent sm:bg-gradient-to-r sm:from-transparent sm:to-[#0a0d14]/80" />
                 </div>
 
                 {/* Right Details & Launcher Section */}
-                <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between gap-4">
-                  {/* Top Bar: Title & Action Buttons */}
-                  <div className="space-y-2">
-                    <div className="flex items-start justify-between gap-3">
-                      <h2 className="text-base sm:text-xl font-bold text-white group-hover:text-neutral-100 transition-colors leading-snug">
-                        {deck.title}
-                      </h2>
+                <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between gap-3.5">
+                  {/* Top Header Row: Category Badge & Quick Actions */}
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[10px] font-mono font-bold tracking-wider text-cyan-400 bg-cyan-950/60 border border-cyan-500/30 px-2.5 py-0.5 rounded-full uppercase shadow-sm">
+                      {tagLabel}
+                    </span>
 
-                      <div className="flex items-center gap-2 shrink-0">
-                        {/* Send / Share Button */}
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {/* Send / Share Button */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveShareDeck(deck);
+                        }}
+                        className="min-h-[30px] px-3 py-1 rounded-full bg-white/10 hover:bg-white hover:text-black text-white border border-white/15 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 shadow-sm"
+                        title="Send SOP Module to Learner"
+                      >
+                        <Send className="w-3 h-3 text-white" />
+                        <span>Send</span>
+                      </button>
+
+                      {/* Delete Button */}
+                      {onDeleteDeck && (
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setActiveShareDeck(deck);
+                            setDeckToDelete(deck);
                           }}
-                          className="min-h-[34px] px-3.5 py-1 rounded-full bg-white/10 hover:bg-white hover:text-black text-white border border-white/20 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 shadow-md"
-                          title="Send SOP Module to Learner"
+                          className="min-h-[30px] p-1.5 rounded-lg bg-neutral-900/80 hover:bg-rose-500/20 text-neutral-400 hover:text-rose-400 border border-white/10 transition-colors cursor-pointer"
+                          title="Delete Deck"
+                          aria-label="Delete Deck"
                         >
-                          <Send className="w-3.5 h-3.5 text-white group-hover/btn:text-black" />
-                          <span>Send</span>
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
+                      )}
 
-                        {/* Delete Button (Triggers Confirmation Modal) */}
-                        {onDeleteDeck && (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setDeckToDelete(deck);
-                            }}
-                            className="min-h-[34px] p-2 rounded-xl bg-neutral-900 hover:bg-rose-500/20 text-neutral-400 hover:text-rose-400 border border-white/10 hover:border-rose-500/30 transition-colors cursor-pointer"
-                            title="Delete Deck"
-                            aria-label="Delete Deck"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-
-                        <div className="p-2 rounded-full bg-neutral-900 group-hover:bg-white group-hover:text-black border border-white/10 transition-all">
-                          <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:text-black" />
-                        </div>
+                      <div className="p-1 rounded-full bg-neutral-900 group-hover:bg-white group-hover:text-black border border-white/10 transition-all">
+                        <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:text-black" />
                       </div>
                     </div>
-
-                    {/* Summary Paragraph */}
-                    <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed line-clamp-2 font-normal">
-                      {deck.summary}
-                    </p>
                   </div>
 
-                  {/* Metadata Chips (Cards, Est. Time, Target Role) */}
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-400">
-                    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/10 font-mono text-[11px] text-neutral-200">
-                      <Layers className="w-3.5 h-3.5 text-neutral-300" />
-                      <span>{cardCount} Cards</span>
-                    </span>
+                  {/* Full Width Un-cramped Title & Metadata Section */}
+                  <div className="space-y-1.5">
+                    <h2 className="text-base sm:text-lg md:text-xl font-extrabold text-white group-hover:text-cyan-300 transition-colors leading-snug tracking-tight w-full">
+                      {deck.title}
+                    </h2>
 
-                    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/10 font-mono text-[11px] text-neutral-200">
-                      <Clock className="w-3.5 h-3.5 text-neutral-300" />
-                      <span>{deck.estimatedMinutes || 8} mins</span>
-                    </span>
-
-                    {deck.targetAudience && (
-                      <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/10 text-[11px] text-neutral-200 truncate max-w-[220px]">
-                        <UserCheck className="w-3.5 h-3.5 text-neutral-300 shrink-0" />
-                        <span className="truncate">{deck.targetAudience}</span>
+                    {/* Clean Dot-Separated Inline Metadata Row */}
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-400 font-medium pt-0.5">
+                      <span className="flex items-center gap-1 text-neutral-300">
+                        <Layers className="w-3.5 h-3.5 text-neutral-400" />
+                        <span>{cardCount} Cards</span>
                       </span>
-                    )}
+
+                      <span>•</span>
+
+                      <span className="flex items-center gap-1 text-neutral-300">
+                        <Clock className="w-3.5 h-3.5 text-neutral-400" />
+                        <span>{deck.estimatedMinutes || 8} mins</span>
+                      </span>
+
+                      {deck.targetAudience && (
+                        <>
+                          <span>•</span>
+                          <span className="flex items-center gap-1 text-neutral-300 truncate max-w-[240px]">
+                            <UserCheck className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                            <span className="truncate">{deck.targetAudience}</span>
+                          </span>
+                        </>
+                      )}
+                    </div>
                   </div>
 
                   {/* Mode Launcher Grid */}
