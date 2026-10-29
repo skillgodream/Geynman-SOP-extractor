@@ -62,7 +62,7 @@ export const DemoDecksScreen: React.FC<DemoDecksScreenProps> = ({
             <span className="text-xs font-extrabold tracking-widest text-white uppercase font-mono">
               MASTER SOP LIBRARY
             </span>
-            <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[10px] font-mono font-bold">
+            <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-white border border-white/20 text-[10px] font-mono font-bold">
               {decks.length} Decks
             </span>
           </div>
@@ -76,7 +76,7 @@ export const DemoDecksScreen: React.FC<DemoDecksScreenProps> = ({
         {/* Header Title Section */}
         <div className="mb-6 sm:mb-8 space-y-1.5">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-tight flex items-center gap-2.5">
-            <Layers className="w-7 h-7 text-cyan-400" />
+            <Layers className="w-7 h-7 text-white" />
             <span>Interactive Training Decks</span>
           </h1>
           <p className="text-xs sm:text-sm text-neutral-400 font-normal">
@@ -104,7 +104,7 @@ export const DemoDecksScreen: React.FC<DemoDecksScreenProps> = ({
               <div
                 key={deck.id}
                 onClick={() => onSelectDeck(deck, 'outline')}
-                className="group rounded-3xl border border-white/10 bg-[#0d121d] hover:border-cyan-500/40 transition-all duration-300 shadow-[0_15px_40px_rgba(0,0,0,0.8)] overflow-hidden cursor-pointer flex flex-col sm:flex-row hover:shadow-[0_20px_60px_rgba(6,182,212,0.15)]"
+                className="group rounded-3xl border border-white/15 bg-[#0b0f17] hover:border-white/40 transition-all duration-300 shadow-[0_15px_40px_rgba(0,0,0,0.8)] overflow-hidden cursor-pointer flex flex-col sm:flex-row hover:shadow-[0_20px_60px_rgba(255,255,255,0.08)]"
               >
                 {/* Left Visual Banner Image */}
                 <div className="sm:w-64 h-44 sm:h-auto relative overflow-hidden shrink-0 border-b sm:border-b-0 sm:border-r border-white/10">
@@ -112,14 +112,14 @@ export const DemoDecksScreen: React.FC<DemoDecksScreenProps> = ({
                     src={photoUrl}
                     alt={deck.title}
                     referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out grayscale-[20%] group-hover:grayscale-0"
                     loading="lazy"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0d121d] via-[#0d121d]/40 to-transparent sm:bg-gradient-to-r sm:from-transparent sm:via-transparent sm:to-[#0d121d]" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0b0f17] via-[#0b0f17]/40 to-transparent sm:bg-gradient-to-r sm:from-transparent sm:via-transparent sm:to-[#0b0f17]" />
 
                   {/* Top Category Badge */}
                   <div className="absolute top-3 left-3 z-10">
-                    <span className="text-[10px] font-mono font-bold tracking-wider text-cyan-300 bg-black/80 backdrop-blur-md border border-cyan-500/40 px-2.5 py-1 rounded-full uppercase shadow-md inline-block">
+                    <span className="text-[10px] font-mono font-bold tracking-wider text-white bg-black/90 backdrop-blur-md border border-white/30 px-2.5 py-1 rounded-full uppercase shadow-md inline-block">
                       {tagLabel}
                     </span>
                   </div>
@@ -130,7 +130,7 @@ export const DemoDecksScreen: React.FC<DemoDecksScreenProps> = ({
                   {/* Top Bar: Title & Action Buttons */}
                   <div className="space-y-2">
                     <div className="flex items-start justify-between gap-3">
-                      <h2 className="text-base sm:text-xl font-bold text-white group-hover:text-cyan-300 transition-colors leading-snug">
+                      <h2 className="text-base sm:text-xl font-bold text-white group-hover:text-neutral-100 transition-colors leading-snug">
                         {deck.title}
                       </h2>
 
@@ -142,10 +142,10 @@ export const DemoDecksScreen: React.FC<DemoDecksScreenProps> = ({
                             e.stopPropagation();
                             setActiveShareDeck(deck);
                           }}
-                          className="min-h-[34px] px-3.5 py-1 rounded-full bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 border border-blue-500/30 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 shadow-md"
+                          className="min-h-[34px] px-3.5 py-1 rounded-full bg-white/10 hover:bg-white hover:text-black text-white border border-white/20 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 shadow-md"
                           title="Send SOP Module to Learner"
                         >
-                          <Send className="w-3.5 h-3.5 text-blue-400" />
+                          <Send className="w-3.5 h-3.5 text-white group-hover/btn:text-black" />
                           <span>Send</span>
                         </button>
 
@@ -165,7 +165,7 @@ export const DemoDecksScreen: React.FC<DemoDecksScreenProps> = ({
                           </button>
                         )}
 
-                        <div className="p-2 rounded-full bg-neutral-900 group-hover:bg-cyan-500 group-hover:text-black border border-white/10 transition-all">
+                        <div className="p-2 rounded-full bg-neutral-900 group-hover:bg-white group-hover:text-black border border-white/10 transition-all">
                           <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:text-black" />
                         </div>
                       </div>
@@ -179,19 +179,19 @@ export const DemoDecksScreen: React.FC<DemoDecksScreenProps> = ({
 
                   {/* Metadata Chips (Cards, Est. Time, Target Role) */}
                   <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-400">
-                    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/10 font-mono text-[11px]">
-                      <Layers className="w-3.5 h-3.5 text-cyan-400" />
+                    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/10 font-mono text-[11px] text-neutral-200">
+                      <Layers className="w-3.5 h-3.5 text-neutral-300" />
                       <span>{cardCount} Cards</span>
                     </span>
 
-                    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/10 font-mono text-[11px]">
-                      <Clock className="w-3.5 h-3.5 text-amber-400" />
+                    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/10 font-mono text-[11px] text-neutral-200">
+                      <Clock className="w-3.5 h-3.5 text-neutral-300" />
                       <span>{deck.estimatedMinutes || 8} mins</span>
                     </span>
 
                     {deck.targetAudience && (
-                      <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/10 text-[11px] truncate max-w-[220px]">
-                        <UserCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/10 text-[11px] text-neutral-200 truncate max-w-[220px]">
+                        <UserCheck className="w-3.5 h-3.5 text-neutral-300 shrink-0" />
                         <span className="truncate">{deck.targetAudience}</span>
                       </span>
                     )}
@@ -202,6 +202,7 @@ export const DemoDecksScreen: React.FC<DemoDecksScreenProps> = ({
                     <ModePills
                       allowedModes={['outline', 'show_me', 'guide_me', 'test_me']}
                       gridCols={2}
+                      variant="monochrome"
                       onSelectMode={(mode) => onSelectDeck(deck, mode)}
                     />
                   </div>
