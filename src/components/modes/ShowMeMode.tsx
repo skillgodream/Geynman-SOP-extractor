@@ -162,15 +162,6 @@ export const ShowMeMode: React.FC<ShowMeModeProps> = ({ deck, onExit }) => {
           {/* Vignette gradients */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
 
-          {/* Live Narration Subtitle Overlay (When playing) */}
-          {isPlaying && (
-            <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6 pointer-events-none flex justify-center">
-              <div className="inline-block px-4 py-2 rounded-xl bg-black/85 backdrop-blur-xl border border-white/15 text-xs sm:text-sm text-neutral-100 shadow-2xl max-w-2xl text-center animate-fadeIn">
-                <span className="font-medium leading-relaxed">{currentScene.narrationScript}</span>
-              </div>
-            </div>
-          )}
-
           {/* Center Play / Pause Floating Button */}
           <button
             type="button"

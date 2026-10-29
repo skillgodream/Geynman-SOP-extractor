@@ -12,15 +12,15 @@ import {
   Square,
   Thermometer,
   Snowflake,
-  Flame,
   Clock,
-  Timer,
   Database,
-  RefreshCw,
   UserCheck,
-  QrCode,
   Sparkles,
-  ShieldAlert
+  MessageSquare,
+  FileSearch,
+  Printer,
+  Info,
+  X
 } from 'lucide-react';
 import { DeckCard, CriticalRule } from '../../types/deck';
 import { CardToolbar } from '../CardToolbar';
@@ -46,23 +46,32 @@ export const CriticalRulesCard: React.FC<CriticalRulesCardProps> = ({
   const [explanation, setExplanation] = useState(card.feynmanExplanation);
   const [rules, setRules] = useState<CriticalRule[]>(card.criticalRules || []);
 
-  // Is this a Golden Rules / Non-negotiable Controls card?
+  // Determine Card Layout Variant
   const isGoldenRulesCard =
     card.title.toLowerCase().includes('golden rules') ||
     card.title.toLowerCase().includes('controls') ||
     card.title.toLowerCase().includes('non-negotiable') ||
     card.levelNumber === 4;
 
-  // Dynamically generate default checklist items from verification checks of each rule
-  const initialChecklist = rules.map((r, idx) => ({
+  const isSetupCard =
+    !isGoldenRulesCard &&
+    (card.levelNumber === 0 ||
+      card.title.toLowerCase().includes('setup') ||
+      card.title.toLowerCase().includes('prerequisite') ||
+      card.title.toLowerCase().includes('before you') ||
+      card.title.toLowerCase().includes('authorization') ||
+      card.title.toLowerCase().includes('gate'));
+
+  // Checklist state for Golden Rules "Before you finish"
+  const defaultChecklist = rules.map((r, idx) => ({
     id: String(idx + 1),
     label: r.verificationCheck || r.rule.slice(0, 45),
     checked: false,
   }));
 
   const [checklist, setChecklist] = useState(
-    initialChecklist.length > 0
-      ? initialChecklist
+    defaultChecklist.length > 0
+      ? defaultChecklist
       : [
           { id: '1', label: 'Approved directive verified', checked: false },
           { id: '2', label: 'Item/SKU parameter verified', checked: false },
@@ -93,10 +102,7 @@ export const CriticalRulesCard: React.FC<CriticalRulesCardProps> = ({
     setRules(updated);
   };
 
-  /**
-   * Adaptive Rule Text & Title Parser
-   * Extracts clean uppercase titles regardless of the SOP domain!
-   */
+  // Rule Text Parser
   const parseRuleText = (ruleText: string, index: number) => {
     let titleStr = '';
     let bodyStr = ruleText;
@@ -108,53 +114,59 @@ export const CriticalRulesCard: React.FC<CriticalRulesCardProps> = ({
     } else {
       const lower = ruleText.toLowerCase();
 
-      // Retail / Pricing Domain
-      if (lower.includes('authoriz') || lower.includes('approved') || lower.includes('directive')) {
+      if (lower.includes('confirm official') || lower.includes('instruction') || lower.includes('channel')) {
+        titleStr = 'Confirm official instruction';
+      } else if (lower.includes('verify the directive') || lower.includes('check document') || lower.includes('sign-off')) {
+        titleStr = 'Verify the directive';
+      } else if (lower.includes('confirm before printing') || lower.includes('print') || lower.includes('shelf tags')) {
+        titleStr = 'Confirm before printing';
+      } else if (lower.includes('authoriz') || lower.includes('approved')) {
         titleStr = 'AUTHORIZATION';
-      } else if (lower.includes('sku') || lower.includes('barcode') || lower.includes('relabel')) {
+      } else if (lower.includes('sku') || lower.includes('barcode')) {
         titleStr = 'SKU MATCH';
-      } else if (lower.includes('pos') || lower.includes('checkout') || lower.includes('register')) {
+      } else if (lower.includes('pos') || lower.includes('checkout')) {
         titleStr = 'POS FIRST';
-      } else if (lower.includes('exception') || lower.includes('escalat') || lower.includes('differ')) {
+      } else if (lower.includes('exception') || lower.includes('escalat')) {
         titleStr = 'EXCEPTIONS';
-      }
-      // Cold Chain / Pharma Domain
-      else if (lower.includes('temp') || lower.includes('2°c') || lower.includes('8°c') || lower.includes('cold')) {
-        titleStr = 'TEMPERATURE BOUNDARY';
-      } else if (lower.includes('quarantine') || lower.includes('isolate') || lower.includes('discard')) {
-        titleStr = 'QUARANTINE ISOLATION';
-      } else if (lower.includes('log') || lower.includes('minute') || lower.includes('ticket')) {
-        titleStr = 'INCIDENT LOGGING';
-      }
-      // Cleanroom / Sterility Domain
-      else if (lower.includes('sterile') || lower.includes('glove') || lower.includes('gown')) {
-        titleStr = 'STERILE PROTOCOL';
-      } else if (lower.includes('cleanroom') || lower.includes('touch') || lower.includes('ipa')) {
-        titleStr = 'SANIZATION';
-      }
-      // Generic Fallback Header Extractor
-      else {
+      } else {
         const cleanRule = ruleText.replace(/^(MUST|NEVER|ALWAYS)\s+(do\s+)?/i, '');
         const words = cleanRule.split(' ').filter(w => w.length > 2);
-        titleStr = words.slice(0, 2).join(' ').toUpperCase();
+        titleStr = words.slice(0, 3).join(' ');
       }
     }
 
-    titleStr = titleStr.replace(/^(MUST|NEVER)\s+/i, '').toUpperCase();
-    if (!titleStr) titleStr = `RULE ${index + 1}`;
+    titleStr = titleStr.replace(/^(MUST|NEVER)\s+/i, '');
+    if (!titleStr) titleStr = `Step ${index + 1}`;
 
     return { title: titleStr, body: bodyStr };
   };
 
   /**
-   * Multi-Domain Semantic Adaptive Icon Engine
-   * Dynamically adapts the icon to the uploaded SOP's domain context!
+   * Adaptive Icon Resolver for Level 0 Setup Steps
+   */
+  const renderSetupStepIcon = (text: string, index: number) => {
+    const lower = text.toLowerCase();
+
+    if (lower.includes('channel') || lower.includes('verbal') || lower.includes('communication') || lower.includes('instruction') || index === 0) {
+      return <MessageSquare className="w-6 h-6 text-white stroke-[1.5]" />;
+    }
+    if (lower.includes('document') || lower.includes('directive') || lower.includes('sign-off') || lower.includes('verify') || index === 1) {
+      return <FileSearch className="w-6 h-6 text-white stroke-[1.5]" />;
+    }
+    if (lower.includes('print') || lower.includes('tag') || lower.includes('label') || index === 2) {
+      return <Printer className="w-6 h-6 text-white stroke-[1.5]" />;
+    }
+
+    return <ShieldCheck className="w-6 h-6 text-white stroke-[1.5]" />;
+  };
+
+  /**
+   * Multi-Domain Semantic Adaptive Icon Engine for Level 4 Golden Rules
    */
   const renderAdaptiveIcon = (ruleText: string, index: number) => {
     const lower = (ruleText + ' ' + deckTitle).toLowerCase();
 
-    // 1. Temperature & Cold Chain Domain
-    if (lower.includes('temp') || lower.includes('cold') || lower.includes('fridge') || lower.includes('2°c') || lower.includes('8°c') || lower.includes('freeze')) {
+    if (lower.includes('temp') || lower.includes('cold') || lower.includes('fridge') || lower.includes('2°c') || lower.includes('8°c')) {
       return (
         <div className="relative">
           <Thermometer className="w-10 h-10 sm:w-12 sm:h-12 text-cyan-400 stroke-[1.5]" />
@@ -164,9 +176,7 @@ export const CriticalRulesCard: React.FC<CriticalRulesCardProps> = ({
         </div>
       );
     }
-
-    // 2. Authorization, Approvals & Directives
-    if (lower.includes('authoriz') || lower.includes('approved') || lower.includes('directive') || lower.includes('permit') || lower.includes('sign-off')) {
+    if (lower.includes('authoriz') || lower.includes('approved') || lower.includes('directive') || lower.includes('sign-off')) {
       return (
         <div className="relative">
           <FileCheck className="w-10 h-10 sm:w-12 sm:h-12 text-cyan-400 stroke-[1.5]" />
@@ -176,54 +186,28 @@ export const CriticalRulesCard: React.FC<CriticalRulesCardProps> = ({
         </div>
       );
     }
-
-    // 3. Barcode, SKU, Labels & Scanning
-    if (lower.includes('sku') || lower.includes('barcode') || lower.includes('relabel') || lower.includes('scan') || lower.includes('tag')) {
+    if (lower.includes('sku') || lower.includes('barcode') || lower.includes('relabel') || lower.includes('scan')) {
       return (
         <div className="relative">
           <ScanBarcode className="w-10 h-10 sm:w-12 sm:h-12 text-cyan-400 stroke-[1.5]" />
         </div>
       );
     }
-
-    // 4. POS, Cashier, Pricing & Checkout
-    if (lower.includes('pos') || lower.includes('checkout') || lower.includes('register') || lower.includes('cash') || lower.includes('price')) {
+    if (lower.includes('pos') || lower.includes('checkout') || lower.includes('register') || lower.includes('price')) {
       return (
         <div className="relative">
           <Store className="w-10 h-10 sm:w-12 sm:h-12 text-cyan-400 stroke-[1.5]" />
         </div>
       );
     }
-
-    // 5. Cleanroom, Sterility, Hygiene & IPA
-    if (lower.includes('sterile') || lower.includes('glove') || lower.includes('cleanroom') || lower.includes('sanitize') || lower.includes('mask')) {
+    if (lower.includes('sterile') || lower.includes('glove') || lower.includes('cleanroom') || lower.includes('sanitize')) {
       return (
         <div className="relative">
           <Sparkles className="w-10 h-10 sm:w-12 sm:h-12 text-cyan-400 stroke-[1.5]" />
         </div>
       );
     }
-
-    // 6. Database, Servers, Networks & IT Sync
-    if (lower.includes('database') || lower.includes('server') || lower.includes('network') || lower.includes('sync') || lower.includes('system')) {
-      return (
-        <div className="relative">
-          <Database className="w-10 h-10 sm:w-12 sm:h-12 text-cyan-400 stroke-[1.5]" />
-        </div>
-      );
-    }
-
-    // 7. Time, Speed & Timers
-    if (lower.includes('minute') || lower.includes('hour') || lower.includes('time') || lower.includes('clock') || lower.includes('delay')) {
-      return (
-        <div className="relative">
-          <Clock className="w-10 h-10 sm:w-12 sm:h-12 text-cyan-400 stroke-[1.5]" />
-        </div>
-      );
-    }
-
-    // 8. Exceptions, Hazards, Escalations & Alerts
-    if (lower.includes('exception') || lower.includes('escalat') || lower.includes('differ') || lower.includes('hazard') || lower.includes('warn') || lower.includes('never')) {
+    if (lower.includes('exception') || lower.includes('escalat') || lower.includes('differ') || lower.includes('never')) {
       return (
         <div className="relative">
           <AlertTriangle className="w-10 h-10 sm:w-12 sm:h-12 text-cyan-400 stroke-[1.5]" />
@@ -231,27 +215,170 @@ export const CriticalRulesCard: React.FC<CriticalRulesCardProps> = ({
       );
     }
 
-    // 9. Supervisor & User Verification
-    if (lower.includes('supervisor') || lower.includes('manager') || lower.includes('operator') || lower.includes('role')) {
-      return (
-        <div className="relative">
-          <UserCheck className="w-10 h-10 sm:w-12 sm:h-12 text-cyan-400 stroke-[1.5]" />
-        </div>
-      );
-    }
-
-    // Default Fallback
     return <ShieldCheck className="w-10 h-10 sm:w-12 sm:h-12 text-cyan-400 stroke-[1.5]" />;
   };
 
   const levelNum = card.levelNumber ?? (isGoldenRulesCard ? 4 : 0);
-  const categoryText = card.subtitle
-    ? card.subtitle.toUpperCase()
-    : isGoldenRulesCard
-    ? 'GOLDEN RULES & CONTROLS'
-    : 'PREREQUISITES';
 
-  // --- RENDER GOLDEN RULES / CONTROLS CARD ---
+  // Extract Never Do & Must Do items for Setup Card
+  const neverDoRule = rules.find(r => r.type === 'never_do') || {
+    type: 'never_do',
+    rule: 'Do not act on casual requests or guess a markdown.',
+    consequenceOfFailure: 'Prevents unauthorized discounts, margin loss and audit discrepancies.',
+    verificationCheck: 'Casual request rejected'
+  };
+
+  const mustDoRules = rules.filter(r => r.type !== 'never_do');
+  const mainConsequence = rules[0]?.consequenceOfFailure || 'Prevents unauthorized discounts, margin loss and audit discrepancies.';
+
+  // --- VARIANT 1: LEVEL 0 AUTHORIZATION & VERIFICATION / SETUP SCREEN ---
+  if (isSetupCard) {
+    return (
+      <div className="relative rounded-[2rem] border border-white/[0.12] bg-[#0b0f17] shadow-[0_25px_80px_rgba(0,0,0,0.9)] p-6 sm:p-10 transition-all overflow-hidden text-white font-sans">
+        {/* Top Header Badge */}
+        <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-cyan-400 mb-3">
+          <span>LEVEL {levelNum}</span>
+          <span>•</span>
+          <span>SETUP</span>
+        </div>
+
+        {isEditing ? (
+          <div className="space-y-3 mb-6">
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full text-xl font-bold bg-neutral-900 border border-white/10 rounded-xl p-2.5 text-white"
+            />
+            <input
+              type="text"
+              value={subtitle}
+              onChange={(e) => setSubtitle(e.target.value)}
+              className="w-full text-xs bg-neutral-900 border border-white/10 rounded-xl p-2 text-neutral-400"
+            />
+            <textarea
+              value={explanation}
+              onChange={(e) => setExplanation(e.target.value)}
+              rows={2}
+              className="w-full text-sm bg-neutral-900 border border-white/10 rounded-xl p-2 text-neutral-200"
+            />
+            <button
+              type="button"
+              onClick={handleSave}
+              className="px-4 py-2 text-xs font-semibold bg-cyan-400 text-black rounded-full shadow-sm hover:bg-cyan-300 cursor-pointer"
+            >
+              Save Card Changes
+            </button>
+          </div>
+        ) : (
+          <div className="mb-6">
+            <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white mb-1 leading-tight">
+              {card.title}
+            </h2>
+            <div className="text-xs sm:text-sm font-semibold text-neutral-400 mb-2 capitalize">
+              {card.subtitle || 'Authorization & verification'}
+            </div>
+            <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed font-normal">
+              {card.feynmanExplanation}
+            </p>
+          </div>
+        )}
+
+        {/* Hero Cyan KEY RULE Box */}
+        <div className="rounded-2xl border border-cyan-500/40 bg-cyan-950/30 p-4 sm:p-5 flex items-center gap-4 sm:gap-5 mb-5">
+          <div className="shrink-0 relative">
+            <FileCheck className="w-9 h-9 sm:w-11 sm:h-11 text-cyan-400 stroke-[1.5]" />
+            <div className="absolute -bottom-1 -right-1 bg-cyan-500 rounded-full p-0.5 text-black">
+              <CheckCircle2 className="w-3.5 h-3.5 text-black fill-cyan-400" />
+            </div>
+          </div>
+          <div className="border-r border-cyan-500/30 h-10 shrink-0" />
+          <div className="space-y-0.5">
+            <div className="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wider">
+              KEY RULE
+            </div>
+            <div className="text-sm sm:text-lg font-extrabold text-white leading-snug">
+              No approved instruction. No price change.
+            </div>
+          </div>
+        </div>
+
+        {/* Numbered Verification Steps */}
+        <div className="space-y-3 mb-5">
+          {mustDoRules.map((r, idx) => {
+            const { title: stepTitle, body: stepBody } = parseRuleText(r.rule, idx);
+            return (
+              <div
+                key={idx}
+                className="rounded-2xl border border-white/10 bg-neutral-900/60 p-4 sm:p-5 flex items-center gap-4 sm:gap-6 hover:border-cyan-500/30 transition-all group"
+              >
+                <div className="shrink-0 flex items-center gap-3 sm:gap-4 border-r border-white/10 pr-4 sm:pr-6">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-neutral-800 text-neutral-300 font-bold text-xs sm:text-sm flex items-center justify-center shrink-0">
+                    {idx + 1}
+                  </div>
+                  {renderSetupStepIcon(r.rule, idx)}
+                </div>
+
+                <div className="flex-1 space-y-0.5">
+                  <div className="text-sm sm:text-base font-bold text-white leading-snug">
+                    {stepTitle}
+                  </div>
+                  <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed font-normal">
+                    {stepBody}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Red NEVER DO Banner */}
+        <div className="rounded-2xl border border-rose-500/30 bg-rose-950/40 p-4 sm:p-5 flex items-center gap-4 sm:gap-5 mb-4">
+          <div className="shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-rose-500 text-black flex items-center justify-center font-extrabold">
+            <X className="w-5 h-5 sm:w-6 sm:h-6 stroke-[3]" />
+          </div>
+          <div className="border-r border-rose-500/30 h-10 shrink-0" />
+          <div className="space-y-0.5">
+            <div className="text-xs font-bold text-rose-400 uppercase tracking-wider">
+              NEVER DO
+            </div>
+            <div className="text-xs sm:text-sm font-bold text-white leading-snug">
+              {neverDoRule.rule.replace(/^(NEVER\s+DO|NEVER):\s*/i, '')}
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom "Why it matters:" Rationale Box */}
+        <div className="rounded-2xl border border-white/10 bg-neutral-900/60 p-4 sm:p-5 flex items-start gap-4 mb-6">
+          <div className="shrink-0 p-1 rounded-full border border-neutral-400 text-neutral-300 mt-0.5">
+            <Info className="w-4 h-4 sm:w-5 sm:h-5" />
+          </div>
+          <div className="border-r border-white/10 h-8 shrink-0" />
+          <div className="space-y-0.5">
+            <div className="text-xs sm:text-sm font-bold text-white">
+              Why it matters:
+            </div>
+            <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed font-normal">
+              {mainConsequence}
+            </p>
+          </div>
+        </div>
+
+        {/* Toolbar */}
+        <CardToolbar
+          card={card}
+          deckTitle={deckTitle}
+          onUpdateCard={onUpdateCard}
+          onDeleteCard={onDeleteCard}
+          onOpenTutor={onOpenTutor}
+          isEditing={isEditing}
+          onToggleEdit={() => setIsEditing(!isEditing)}
+        />
+      </div>
+    );
+  }
+
+  // --- VARIANT 2: LEVEL 4 GOLDEN RULES / CONTROLS SCREEN ---
   if (isGoldenRulesCard) {
     return (
       <div className="relative rounded-[2rem] border border-white/[0.12] bg-[#0b0f17] shadow-[0_25px_80px_rgba(0,0,0,0.9)] p-6 sm:p-10 transition-all overflow-hidden text-white font-sans">
@@ -259,7 +386,7 @@ export const CriticalRulesCard: React.FC<CriticalRulesCardProps> = ({
         <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-cyan-400 mb-3">
           <span>LEVEL {levelNum}</span>
           <span>•</span>
-          <span>{categoryText}</span>
+          <span>PRICE MARKDOWN</span>
         </div>
 
         {isEditing ? (
@@ -410,151 +537,32 @@ export const CriticalRulesCard: React.FC<CriticalRulesCardProps> = ({
     );
   }
 
-  // --- RENDER STANDARD PREREQUISITES / CRITICAL RULES CARD ---
+  // --- VARIANT 3: STANDARD FALLBACK ---
   return (
     <div className="relative rounded-[2rem] border border-white/[0.12] bg-gradient-to-b from-rose-500/[0.08] via-neutral-950 to-neutral-950 shadow-[0_25px_80px_rgba(0,0,0,0.9)] p-6 sm:p-10 transition-all overflow-hidden text-white font-sans">
-      {/* Header Badge */}
       <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-rose-400 mb-3">
         <span>LEVEL {levelNum}</span>
         <span>•</span>
-        <span>{categoryText}</span>
+        <span>CRITICAL RULES</span>
       </div>
 
-      {isEditing ? (
-        <div className="space-y-3 mb-6">
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full text-xl font-bold bg-neutral-900 border border-white/10 rounded-xl p-2.5 text-white"
-          />
-          <input
-            type="text"
-            value={subtitle}
-            onChange={(e) => setSubtitle(e.target.value)}
-            className="w-full text-xs bg-neutral-900 border border-white/10 rounded-xl p-2 text-neutral-400"
-          />
-          <textarea
-            value={explanation}
-            onChange={(e) => setExplanation(e.target.value)}
-            rows={2}
-            className="w-full text-sm bg-neutral-900 border border-white/10 rounded-xl p-2 text-neutral-200"
-          />
-          <button
-            type="button"
-            onClick={handleSave}
-            className="px-4 py-2 text-xs font-semibold bg-white text-black rounded-full shadow-sm hover:bg-neutral-200 cursor-pointer"
-          >
-            Save Card Changes
-          </button>
-        </div>
-      ) : (
-        <div className="mb-6 sm:mb-8">
-          <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white mb-1.5 leading-tight">
-            {card.title}
-          </h2>
-          {card.subtitle && (
-            <p className="text-xs sm:text-sm text-neutral-400 mb-2 font-medium">
-              {card.subtitle}
-            </p>
-          )}
-          <p className="text-sm sm:text-base text-neutral-300 leading-relaxed font-normal max-w-3xl">
-            {card.feynmanExplanation}
-          </p>
-        </div>
-      )}
+      <div className="mb-6 sm:mb-8">
+        <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white mb-1.5 leading-tight">
+          {card.title}
+        </h2>
+        <p className="text-sm sm:text-base text-neutral-300 leading-relaxed font-normal max-w-3xl">
+          {card.feynmanExplanation}
+        </p>
+      </div>
 
-      {/* Rules List for Prerequisites */}
       <div className="divide-y divide-white/[0.08] mb-6">
-        {rules.map((rule, idx) => {
-          const isNever = rule.type === 'never_do';
-          const isMust = rule.type === 'must_do';
-
-          return (
-            <div key={idx} className="py-4 sm:py-5 first:pt-0 last:pb-0">
-              {isEditing ? (
-                <div className="space-y-2 text-xs">
-                  <div className="flex gap-2">
-                    <select
-                      value={rule.type}
-                      onChange={(e) => handleRuleChange(idx, 'type', e.target.value as any)}
-                      className="bg-neutral-900 border border-white/10 p-1.5 rounded-lg text-white font-semibold"
-                    >
-                      <option value="never_do">NEVER DO</option>
-                      <option value="must_do">MUST DO</option>
-                      <option value="warning">WARNING</option>
-                    </select>
-                    <input
-                      type="text"
-                      value={rule.rule}
-                      onChange={(e) => handleRuleChange(idx, 'rule', e.target.value)}
-                      className="flex-1 bg-neutral-900 border border-white/10 p-1.5 rounded-lg text-white font-medium"
-                    />
-                  </div>
-                  <input
-                    type="text"
-                    value={rule.consequenceOfFailure}
-                    placeholder="Consequence of Failure"
-                    onChange={(e) => handleRuleChange(idx, 'consequenceOfFailure', e.target.value)}
-                    className="w-full bg-neutral-900 border border-white/10 p-1.5 rounded-lg text-red-400"
-                  />
-                  <input
-                    type="text"
-                    value={rule.verificationCheck}
-                    placeholder="Verification Check"
-                    onChange={(e) => handleRuleChange(idx, 'verificationCheck', e.target.value)}
-                    className="w-full bg-neutral-900 border border-white/10 p-1.5 rounded-lg text-neutral-400"
-                  />
-                </div>
-              ) : (
-                <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-3 sm:gap-6">
-                  {/* Left: Rule Type Tag */}
-                  <div className="shrink-0 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
-                    {isNever ? (
-                      <span className="text-rose-400 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-500/10 border border-rose-500/20">
-                        <XCircle className="w-3.5 h-3.5 text-rose-400" />
-                        <span>NEVER DO</span>
-                      </span>
-                    ) : isMust ? (
-                      <span className="text-emerald-400 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>MUST DO</span>
-                      </span>
-                    ) : (
-                      <span className="text-amber-400 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20">
-                        <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
-                        <span>CRITICAL</span>
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Middle: The Rule Text & Details */}
-                  <div className="flex-1 space-y-1.5">
-                    <div className="text-sm sm:text-base font-bold text-white leading-snug">
-                      {rule.rule}
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs pt-1">
-                      <div className="text-rose-300 leading-relaxed font-normal bg-rose-500/5 p-2 rounded-xl border border-rose-500/10">
-                        <strong className="font-semibold text-rose-200">Failure Risk:</strong> {rule.consequenceOfFailure}
-                      </div>
-                      <div className="text-neutral-300 leading-relaxed flex items-baseline gap-1.5 font-normal bg-white/[0.03] p-2 rounded-xl border border-white/[0.08]">
-                        <CheckSquare className="w-3.5 h-3.5 text-neutral-400 shrink-0 translate-y-0.5" />
-                        <span>
-                          <strong className="text-white font-semibold">Verification Check:</strong>{' '}
-                          {rule.verificationCheck}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
+        {rules.map((rule, idx) => (
+          <div key={idx} className="py-4 text-xs sm:text-sm text-neutral-200">
+            {rule.rule}
+          </div>
+        ))}
       </div>
 
-      {/* Toolbar */}
       <CardToolbar
         card={card}
         deckTitle={deckTitle}

@@ -24,8 +24,8 @@ export const SAMPLE_DECKS: FeynmanDeck[] = [
     cards: [
       {
         id: 'vmart-card-0',
-        title: 'Level 0: Setup Gate & Prerequisites',
-        subtitle: 'Authorization and Verification',
+        title: 'Before You Change a Price',
+        subtitle: 'Authorization & verification',
         cardType: 'critical_rules',
         levelNumber: 0,
         feynmanExplanation: 'Never change a price based on a verbal request or casual instruction. You must have an approved markdown directive through official company channels.',
@@ -33,15 +33,27 @@ export const SAMPLE_DECKS: FeynmanDeck[] = [
         criticalRules: [
           {
             type: 'must_do',
-            rule: 'MUST receive approved communication through designated company channels.',
-            consequenceOfFailure: 'Unauthorized price changes, margin loss, and severe inventory audit discrepancies.',
-            verificationCheck: 'Verify corporate directive document ID and official sign-off before printing tags.'
+            rule: 'Confirm official instruction: Use a designated company channel; never rely on a verbal request.',
+            consequenceOfFailure: 'Prevents unauthorized discounts, margin loss and audit discrepancies.',
+            verificationCheck: 'Official company channel confirmed'
+          },
+          {
+            type: 'must_do',
+            rule: 'Verify the directive: Check document ID, authorized sign-off, SKU list, revised price and effective date.',
+            consequenceOfFailure: 'Prevents unauthorized discounts, margin loss and audit discrepancies.',
+            verificationCheck: 'Directive document ID verified'
+          },
+          {
+            type: 'must_do',
+            rule: 'Confirm before printing: Do not print or replace shelf tags until the approved price is verified.',
+            consequenceOfFailure: 'Prevents unauthorized discounts, margin loss and audit discrepancies.',
+            verificationCheck: 'Approved price verified'
           },
           {
             type: 'never_do',
-            rule: 'NEVER execute price changes based on verbal or unverified phone requests.',
-            consequenceOfFailure: 'Risk of unauthorized discounts and store manager audit write-ups.',
-            verificationCheck: 'Check corporate directive inbox and authorized pricing schedule.'
+            rule: 'NEVER DO: Do not act on casual requests or guess a markdown.',
+            consequenceOfFailure: 'Prevents unauthorized discounts, margin loss and audit discrepancies.',
+            verificationCheck: 'Casual request rejected'
           }
         ]
       },
