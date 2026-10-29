@@ -48,6 +48,18 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore keydown events coming from interactive text inputs, textareas, or editable elements
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
       if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
         e.preventDefault();
         setCurrentSlideIndex((prev) => Math.min(totalSlides - 1, prev + 1));
@@ -134,18 +146,6 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({
           {currentSlideIndex === 0 ? (
             /* Slide 0: Cover / Overview Slide in Apple Keynote Style */
             <div className="relative rounded-[2rem] border border-white/[0.12] bg-gradient-to-b from-blue-500/[0.08] via-neutral-950 to-neutral-950 p-6 sm:p-10 md:p-12 shadow-[0_30px_90px_rgba(0,0,0,0.95)] overflow-hidden">
-              {/* Top Cover Header */}
-              <div className="flex items-center justify-between border-b border-white/[0.08] pb-4 mb-6">
-                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs font-semibold">
-                  <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
-                  <span>{deck.originalDocType ? deck.originalDocType.toUpperCase() : 'OPERATIONAL MASTERCLASS'}</span>
-                </div>
-
-                <span className="text-[10px] font-mono tracking-widest text-neutral-400 font-bold uppercase">
-                  MASTER TRAINING DECK
-                </span>
-              </div>
-
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                 <div className="lg:col-span-7 space-y-4">
                   <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white leading-tight">

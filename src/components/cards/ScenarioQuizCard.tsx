@@ -81,17 +81,6 @@ export const ScenarioQuizCard: React.FC<ScenarioQuizCardProps> = ({
 
   return (
     <div className="relative rounded-[2rem] border border-white/[0.12] bg-gradient-to-b from-emerald-500/[0.08] via-neutral-950 to-neutral-950 shadow-[0_25px_80px_rgba(0,0,0,0.9)] p-6 sm:p-10 transition-all overflow-hidden">
-      {/* Top Training Card Header */}
-      <div className="flex items-center justify-between border-b border-white/[0.08] pb-4 mb-6">
-        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-semibold">
-          <HelpCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-          <span>{card.badgeText || 'Active Recall Dilemma'}</span>
-        </div>
-
-        <span className="text-[10px] font-mono tracking-widest text-neutral-400 font-bold uppercase">
-          TRAINING CARD
-        </span>
-      </div>
 
       {isEditing ? (
         <div className="space-y-3 mb-6">

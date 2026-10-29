@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Layers, HelpCircle, AlertTriangle, ArrowRight } from 'lucide-react';
+import { Layers, HelpCircle, AlertTriangle, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { DeckCard, ProcessStep, CardImage } from '../../types/deck';
 import { CardToolbar } from '../CardToolbar';
 import { CardVisual } from '../visuals/CardVisual';
@@ -23,6 +23,7 @@ export const ProcessStepsCard: React.FC<ProcessStepsCardProps> = ({
   const [title, setTitle] = useState(card.title);
   const [subtitle, setSubtitle] = useState(card.subtitle || '');
   const [explanation, setExplanation] = useState(card.feynmanExplanation);
+
   const normalizeSteps = (rawSteps: any[]): ProcessStep[] => {
     if (!Array.isArray(rawSteps)) return [];
     return rawSteps.map((st: any, idx: number) => {
@@ -104,25 +105,13 @@ export const ProcessStepsCard: React.FC<ProcessStepsCardProps> = ({
 
   const activeStep = steps[activeStepIndex] || steps[0];
 
-  return (
-    <div className="relative rounded-[2rem] border border-white/[0.12] bg-gradient-to-b from-sky-500/[0.08] via-neutral-950 to-neutral-950 shadow-[0_25px_80px_rgba(0,0,0,0.9)] p-6 sm:p-10 transition-all overflow-hidden">
-      {/* Top Training Card Header */}
-      <div className="flex items-center justify-between border-b border-white/[0.08] pb-4 mb-6">
-        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-300 text-xs font-semibold">
-          <Layers className="w-3.5 h-3.5 text-sky-400 shrink-0" />
-          <span>{card.badgeText || 'Chunked Workflow Steps'}</span>
-        </div>
+  // Clean badge text logic to avoid double pill repetition (e.g. "Level 2 · Execution" + "LEVEL 2 · EXECUTION")
+  const levelLabel = card.levelNumber !== undefined ? `LEVEL ${card.levelNumber} · EXECUTION` : null;
+  const isBadgeDuplicate = card.badgeText && levelLabel && card.badgeText.toUpperCase().includes(`LEVEL ${card.levelNumber}`);
+  const headerBadge = isBadgeDuplicate ? levelLabel : (card.badgeText || levelLabel || 'WORKFLOW STEPS');
 
-        {card.levelNumber !== undefined ? (
-          <span className="text-[10px] font-mono tracking-widest text-sky-400 font-bold uppercase px-2.5 py-0.5 rounded-full bg-sky-500/10 border border-sky-500/20">
-            LEVEL {card.levelNumber} · EXECUTION
-          </span>
-        ) : (
-          <span className="text-[10px] font-mono tracking-widest text-neutral-400 font-bold uppercase">
-            TRAINING CARD
-          </span>
-        )}
-      </div>
+  return (
+    <div className="relative rounded-[2rem] border border-white/[0.12] bg-gradient-to-b from-sky-500/[0.08] via-neutral-950 to-neutral-950 shadow-[0_25px_80px_rgba(0,0,0,0.9)] p-5 sm:p-8 transition-all overflow-hidden">
 
       {isEditing ? (
         <div className="space-y-3 mb-6">
@@ -153,92 +142,101 @@ export const ProcessStepsCard: React.FC<ProcessStepsCardProps> = ({
           </button>
         </div>
       ) : (
-        <div className="mb-6">
-          <h2 className="text-xl sm:text-3xl font-extrabold tracking-tight text-white mb-1.5 leading-tight">
+        /* Streamlined Context Bar — Compact headline to give maximum viewport to the active step */
+        <div className="mb-5 border-b border-white/[0.06] pb-4">
+          <h2 className="text-lg sm:text-xl font-bold text-neutral-200 tracking-tight mb-1">
             {card.title}
           </h2>
-          {card.subtitle && (
-            <p className="text-xs sm:text-sm text-neutral-400 mb-2">
-              {card.subtitle}
-            </p>
-          )}
-          <p className="text-sm sm:text-base text-neutral-300 leading-relaxed max-w-3xl font-normal">
+          <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed max-w-3xl font-normal">
             {card.feynmanExplanation}
           </p>
         </div>
       )}
 
-      {/* Step Selector Pills in iOS Segmented Style */}
-      <div className="flex items-center gap-1.5 p-1 bg-black/60 border border-white/10 rounded-2xl mb-6 w-full backdrop-blur-md">
-        {steps.map((st, idx) => (
-          <button
-            key={idx}
-            type="button"
-            onClick={() => setActiveStepIndex(idx)}
-            className={`min-h-[38px] flex-1 py-1.5 px-2 text-xs sm:text-sm font-bold tracking-wide rounded-xl transition-all flex items-center justify-center cursor-pointer ${
-              activeStepIndex === idx
-                ? 'bg-white text-black shadow-md'
-                : 'text-neutral-400 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <span>P{st.stepNumber || idx + 1}</span>
-          </button>
-        ))}
+      {/* Step Selector Pills Bar with Active Step Title Label */}
+      <div className="space-y-2 mb-6">
+        <div className="flex items-center gap-1.5 p-1 bg-black/60 border border-white/10 rounded-2xl w-full backdrop-blur-md overflow-x-auto scrollbar-none">
+          {steps.map((st, idx) => {
+            const isCurrent = activeStepIndex === idx;
+            return (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setActiveStepIndex(idx)}
+                title={`Step ${st.stepNumber || idx + 1}: ${st.title}`}
+                className={`min-h-[38px] flex-1 py-1.5 px-2 text-xs sm:text-sm font-bold tracking-wide rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer shrink-0 sm:shrink ${
+                  isCurrent
+                    ? 'bg-sky-400 text-black shadow-lg shadow-sky-500/20 scale-[1.02]'
+                    : 'text-neutral-400 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                <span>P{st.stepNumber || idx + 1}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* 2-Column Split: Active Step Detail + Step Visual Diagram */}
+      {/* 2-Column Split: Active Step Detail Stage + Step Visual Diagram */}
       {activeStep && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center mb-6">
-          {/* Left Column */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start mb-6">
+          {/* Left Column: HERO Step Action Directive Stage */}
           <div className="lg:col-span-7 space-y-4">
-            <div className="text-xs font-bold uppercase tracking-wider text-sky-400">
-              {activeStep.title && activeStep.title !== 'undefined'
-                ? activeStep.title
-                : `Step ${activeStep.stepNumber || activeStepIndex + 1} Action`}
-            </div>
+            {/* HERO STEP ACTION BOX */}
+            <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-sky-500/10 via-neutral-900 to-neutral-950 border border-sky-500/30 shadow-xl space-y-3 relative overflow-hidden group">
+              <div className="flex items-center justify-between gap-2">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/20 border border-sky-400/30 text-sky-300 text-xs font-mono font-bold tracking-wider uppercase">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                  <span>
+                    STEP {activeStep.stepNumber || activeStepIndex + 1} · {activeStep.title && activeStep.title !== 'undefined' ? activeStep.title : 'ACTION'}
+                  </span>
+                </div>
+              </div>
 
-            <div className="font-bold text-sky-200 text-base sm:text-xl leading-snug flex items-center justify-between gap-3">
-              <span>
+              {/* Core Hero Instruction Directive */}
+              <div className="text-xl sm:text-2xl font-extrabold text-white leading-snug tracking-tight text-balance">
                 {activeStep.action && activeStep.action !== 'undefined'
                   ? activeStep.action
                   : 'Execute step protocol according to specifications.'}
-              </span>
-              <ArrowRight className="w-5 h-5 text-sky-400 shrink-0" />
+              </div>
             </div>
 
-            <div className="pt-3 border-t border-white/[0.08] space-y-3">
-              <div className="space-y-1">
+            {/* Supporting Context: Rationale & Watchout as Side-by-Side Micro Callout Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Operational Rationale Card */}
+              <div className="p-4 rounded-xl bg-sky-950/20 border border-sky-500/20 space-y-1.5">
                 <div className="text-[11px] font-bold text-sky-300 uppercase tracking-wider flex items-center gap-1.5">
-                  <HelpCircle className="w-3.5 h-3.5 text-sky-400" />
+                  <HelpCircle className="w-3.5 h-3.5 text-sky-400 shrink-0" />
                   <span>Operational Rationale</span>
                 </div>
-                <p className="text-xs sm:text-sm text-neutral-200 leading-relaxed pl-3 border-l-2 border-sky-400/50 font-normal">
+                <p className="text-xs text-sky-100 leading-relaxed font-normal">
                   {activeStep.whyItMatters && activeStep.whyItMatters !== 'undefined'
                     ? activeStep.whyItMatters
                     : 'Guarantees operational accuracy and prevents process drift.'}
                 </p>
               </div>
 
+              {/* Watchout Card */}
               {activeStep.criticalWatchout && activeStep.criticalWatchout !== 'undefined' && (
-                <div className="space-y-1">
+                <div className="p-4 rounded-xl bg-rose-950/20 border border-rose-500/20 space-y-1.5">
                   <div className="text-[11px] font-bold text-rose-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
+                    <AlertTriangle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
                     <span>Watchout</span>
                   </div>
-                  <p className="text-xs sm:text-sm text-rose-300 leading-relaxed pl-3 border-l-2 border-rose-500/50 font-normal">
+                  <p className="text-xs text-rose-200 leading-relaxed font-normal">
                     {activeStep.criticalWatchout}
                   </p>
                 </div>
               )}
             </div>
 
-            {/* Pagination Controls */}
-            <div className="flex items-center justify-between pt-4 border-t border-white/[0.08] text-xs">
+            {/* Pagination Step Controls */}
+            <div className="flex items-center justify-between pt-3 border-t border-white/[0.08] text-xs">
               <button
                 type="button"
                 onClick={() => setActiveStepIndex((prev) => Math.max(0, prev - 1))}
                 disabled={activeStepIndex === 0}
-                className="min-h-[40px] px-3 py-1.5 text-neutral-400 hover:text-white disabled:opacity-30 font-medium transition-colors cursor-pointer"
+                className="min-h-[38px] px-3 py-1.5 text-neutral-400 hover:text-white disabled:opacity-30 font-medium transition-colors cursor-pointer flex items-center gap-1"
               >
                 ← Previous Step
               </button>
@@ -246,14 +244,15 @@ export const ProcessStepsCard: React.FC<ProcessStepsCardProps> = ({
                 type="button"
                 onClick={() => setActiveStepIndex((prev) => Math.min(steps.length - 1, prev + 1))}
                 disabled={activeStepIndex === steps.length - 1}
-                className="min-h-[40px] px-3 py-1.5 text-white font-medium hover:underline disabled:opacity-30 disabled:no-underline transition-colors cursor-pointer"
+                className="min-h-[38px] px-4 py-1.5 text-black font-semibold bg-white hover:bg-neutral-200 disabled:opacity-30 rounded-full transition-colors cursor-pointer flex items-center gap-1 shadow-sm"
               >
-                Next Step →
+                <span>Next Step</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
 
-          {/* Right Column: Visual Diagram */}
+          {/* Right Column: Visual Schematic Diagram */}
           <div className="lg:col-span-5 w-full">
             <CardVisual
               image={card.image}
@@ -277,4 +276,5 @@ export const ProcessStepsCard: React.FC<ProcessStepsCardProps> = ({
     </div>
   );
 };
+
 

@@ -2,7 +2,7 @@ import { FeynmanDeck } from '../types/deck';
 import { sanitizeDeck } from './sanitizeDeck';
 
 export function getUserDecksKey(userId: string): string {
-  return `koya_decks_user_${userId}`;
+  return `koya_decks_v10_user_${userId}`;
 }
 
 export function loadUserDecks(userId: string, defaultDecks: FeynmanDeck[]): FeynmanDeck[] {

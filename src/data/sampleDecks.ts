@@ -133,71 +133,68 @@ export const SAMPLE_DECKS: FeynmanDeck[] = [
       },
       {
         id: 'vmart-card-3',
-        title: 'Level 3: Exception Matrix',
-        subtitle: 'Troubleshooting & Escalation',
+        title: 'When a Price Change Fails',
+        subtitle: 'Stop. Verify. Escalate.',
         cardType: 'pitfalls_troubleshooting',
         levelNumber: 3,
-        feynmanExplanation: 'If you see these issues, follow the specific fix protocol immediately. Mapped directly from Step 9 of the V-Mart SOP with 100% data grounding.',
-        badgeText: '6 Failure Vectors',
+        feynmanExplanation: 'Stop. Verify. Escalate.',
+        stopWorkTrigger: 'if POS price differs from the approved instruction.',
+        badgeText: 'Troubleshooting',
         pitfalls: [
           {
-            symptomOrMistake: 'Missing SKUs on POS System',
-            rootCause: 'Item barcode is not populated or mapped in the active POS master file.',
-            immediateFix: 'Hold merchandise, verify SKU in master file, do not sell at manual unapproved price, contact IT Lead.'
+            symptomOrMistake: 'SKU missing from approved list',
+            rootCause: 'Do not change the price.',
+            immediateFix: 'Verify the SKU and contact the supervisor.'
           },
           {
-            symptomOrMistake: 'Old POS Prices Active (Scan shows ₹1,000 instead of ₹700)',
-            rootCause: 'POS database sync delayed or update sequence skipped in Step 4.',
-            immediateFix: 'Flag POS discrepancy, apply authorized promotional override code for customer, update POS database immediately.'
+            symptomOrMistake: 'POS still shows old price',
+            rootCause: 'Pause the markdown.',
+            immediateFix: 'Check system update status and escalate to the supervisor.'
           },
           {
-            symptomOrMistake: 'Wrong Shelf Labels / Misplaced Signage',
-            rootCause: 'Incorrect tag attached to shelf edge during Step 5 label replacement.',
-            immediateFix: 'Remove misleading shelf talker immediately, honor displayed price if customer witnessed per company policy, print correct label.'
+            symptomOrMistake: 'Shelf label and POS mismatch',
+            rootCause: 'Remove misleading signage where appropriate and follow store policy.',
+            immediateFix: 'Do not promise a discount.'
           },
           {
-            symptomOrMistake: 'Expired Promotions Still Displayed on Floor',
-            rootCause: 'Old promotional signage left on floor after promotion validity window ended.',
-            immediateFix: 'Pull expired promotional signage from floor immediately, charge active system price, politely explain promotion validity window.'
-          },
-          {
-            symptomOrMistake: 'Damaged Merchandise Discount Requests',
-            rootCause: 'Physical damage or torn packaging on retail floor stock.',
-            immediateFix: 'Route item to floor manager for damaged goods clearance inspection, apply authorized markdown percentage, transfer to clearance rack.'
-          },
-          {
-            symptomOrMistake: 'Unauthorized Discount Requests by Customers',
-            rootCause: 'Customer requests additional verbal or unapproved price drops at checkout.',
-            immediateFix: 'Strictly refuse verbal or unapproved price drops, explain corporate pricing policy, escalate to Store Manager if customer insists.'
+            symptomOrMistake: 'Expired offer',
+            rootCause: 'Remove promotional signage.',
+            immediateFix: 'Confirm the promotion has ended in POS.'
           }
         ]
       },
       {
         id: 'vmart-card-4',
-        title: 'Level 4: Golden Rules',
-        subtitle: 'Non-Negotiable Standards',
+        title: 'Price Markdown: Golden Rules',
+        subtitle: 'PRICE MARKDOWN',
         cardType: 'critical_rules',
         levelNumber: 4,
-        feynmanExplanation: 'These are the core principles of V-Mart pricing integrity.',
+        feynmanExplanation: 'Controls every associate must follow.',
         badgeText: 'Non-Negotiable',
         criticalRules: [
           {
-            type: 'never_do',
-            rule: 'NEVER execute unapproved price drops or verbal discount requests.',
-            consequenceOfFailure: 'Financial loss, margin erosion, and immediate compliance audit failure.',
-            verificationCheck: 'Cross-reference every POS markdown against corporate directive document.'
+            type: 'must_do',
+            rule: 'AUTHORIZATION: Only apply markdowns listed in an approved instruction.',
+            consequenceOfFailure: 'Financial loss, margin erosion, and audit failure.',
+            verificationCheck: 'Approved price verified'
           },
           {
             type: 'must_do',
-            rule: 'MUST conduct 10-item audit scan before opening store on markdown days.',
-            consequenceOfFailure: 'Customer price disputes at checkout and shelf-register mismatch.',
-            verificationCheck: 'Signed 10-item audit scan sheet on file in manager office.'
+            rule: 'SKU MATCH: Check barcode, size, colour and variant before relabelling.',
+            consequenceOfFailure: 'Mislabeled inventory and cashier price mismatch.',
+            verificationCheck: 'Shelf label matches SKU'
           },
           {
             type: 'must_do',
-            rule: 'MUST reconcile EOD markdown logs against total promotional sales.',
-            consequenceOfFailure: 'Unexplained inventory shrinkage and accounting variances.',
-            verificationCheck: 'Store Manager sign-off on daily POS markdown report.'
+            rule: 'POS FIRST: Confirm the revised price at checkout; a new shelf label is not enough.',
+            consequenceOfFailure: 'Customer disputes and billing discrepancy.',
+            verificationCheck: 'POS price tested'
+          },
+          {
+            type: 'warning',
+            rule: 'EXCEPTIONS: If shelf and POS prices differ, pause and escalate to the supervisor.',
+            consequenceOfFailure: 'Unrecorded override and inventory loss.',
+            verificationCheck: 'Escalation logged'
           }
         ]
       },

@@ -1127,6 +1127,43 @@ Instructions:
   }
 });
 
+// Helper to sanitize and auto-expand raw prompts to prevent AI image refusal
+function sanitizeAndEnhancePrompt(raw: string): { promptText: string; unsplashFallback: string } {
+  let cleaned = (raw || '').trim();
+
+  // Fix typos common in retail and SOP prompts
+  cleaned = cleaned.replace(/\bshef\b/gi, 'shelf');
+  cleaned = cleaned.replace(/\bta\b/gi, 'tag');
+  cleaned = cleaned.replace(/\bprise\b/gi, 'price');
+  cleaned = cleaned.replace(/\bmarkd\b/gi, 'markdown');
+  cleaned = cleaned.replace(/\bpos\b/gi, 'point of sale terminal');
+  cleaned = cleaned.replace(/\bsignage\b/gi, 'promotional signage');
+  cleaned = cleaned.replace(/\bbarcod\b/gi, 'barcode');
+  cleaned = cleaned.replace(/\bsccan\b/gi, 'scan');
+
+  const lower = cleaned.toLowerCase();
+
+  // Select a guaranteed high-res Unsplash photo fallback based on domain keywords
+  let fallback = 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80';
+  if (lower.includes('price') || lower.includes('shelf') || lower.includes('tag') || lower.includes('retail') || lower.includes('discount') || lower.includes('v-mart') || lower.includes('store')) {
+    fallback = 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80';
+  } else if (lower.includes('pos') || lower.includes('register') || lower.includes('scan') || lower.includes('checkout')) {
+    fallback = 'https://images.unsplash.com/photo-1556742049-0a670f4a4591?auto=format&fit=crop&w=1200&q=80';
+  } else if (lower.includes('cold') || lower.includes('fridge') || lower.includes('refrigerat') || lower.includes('temp')) {
+    fallback = 'https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?auto=format&fit=crop&w=1200&q=80';
+  } else if (lower.includes('cleanroom') || lower.includes('sterile') || lower.includes('gown')) {
+    fallback = 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=80';
+  } else if (lower.includes('checklist') || lower.includes('audit') || lower.includes('sign-off')) {
+    fallback = 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80';
+  }
+
+  if (cleaned.length < 25) {
+    cleaned = `Clean retail store merchandise shelf display with printed price tags and markdown signage, professional lighting: ${cleaned}`;
+  }
+
+  return { promptText: cleaned, unsplashFallback: fallback };
+}
+
 // API endpoint: AI Text-to-Image Generation (Gemini / Imagen 3 / OpenAI DALL-E / Pollinations AI)
 apiRouter.post(['/generate-image', '/api/generate-image'], async (req: Request, res: Response) => {
   try {
@@ -1136,6 +1173,8 @@ apiRouter.post(['/generate-image', '/api/generate-image'], async (req: Request, 
     if (!prompt) {
       return res.status(400).json({ error: 'Prompt text is required for AI image generation.' });
     }
+
+    const { promptText, unsplashFallback } = sanitizeAndEnhancePrompt(prompt);
 
     // Tier 1: User-supplied OpenAI API key (DALL-E 3)
     if (providedKey.startsWith('sk-')) {
@@ -1148,7 +1187,7 @@ apiRouter.post(['/generate-image', '/api/generate-image'], async (req: Request, 
           },
           body: JSON.stringify({
             model: 'dall-e-3',
-            prompt: `High-resolution photorealistic operational workplace diagram: ${prompt}. Clean lighting, professional, clear instructional context.`,
+            prompt: `High-resolution photorealistic operational workplace visual: ${promptText}. Clean lighting, professional, clear instructional context.`,
             n: 1,
             size: '1024x1024',
           }),
@@ -1156,9 +1195,13 @@ apiRouter.post(['/generate-image', '/api/generate-image'], async (req: Request, 
 
         const data = await openaiRes.json();
         if (data?.data?.[0]?.url) {
-          return res.json({ success: true, imageUrl: data.data[0].url, provider: 'OpenAI DALL-E 3' });
-        } else if (data?.error?.message) {
-          console.warn('OpenAI DALL-E error:', data.error.message);
+          return res.json({
+            success: true,
+            imageUrl: data.data[0].url,
+            fallbackUrl: unsplashFallback,
+            provider: 'OpenAI DALL-E 3',
+            sanitizedPrompt: promptText,
+          });
         }
       } catch (err: any) {
         console.warn('OpenAI request failed:', err.message);
@@ -1172,7 +1215,7 @@ apiRouter.post(['/generate-image', '/api/generate-image'], async (req: Request, 
         const genClient = new GoogleGenAI({ apiKey: effectiveGeminiKey });
         const response = await genClient.models.generateImages({
           model: 'imagen-3.0-generate-002',
-          prompt: `High-resolution photorealistic 4K operational workplace diagram image: ${prompt}. Clean lighting, professional, clear instructional context.`,
+          prompt: `High-resolution photorealistic 4K operational workplace image: ${promptText}. Clean lighting, professional, clear instructional context.`,
           config: {
             numberOfImages: 1,
             outputMimeType: 'image/jpeg',
@@ -1184,24 +1227,30 @@ apiRouter.post(['/generate-image', '/api/generate-image'], async (req: Request, 
         if (firstImage?.image?.imageBytes) {
           const base64Bytes = firstImage.image.imageBytes;
           const imageUrl = `data:image/jpeg;base64,${base64Bytes}`;
-          return res.json({ success: true, imageUrl, provider: 'Google Imagen 3' });
+          return res.json({
+            success: true,
+            imageUrl,
+            fallbackUrl: unsplashFallback,
+            provider: 'Google Imagen 3',
+            sanitizedPrompt: promptText,
+          });
         }
       } catch (imagenErr: any) {
         console.warn('Imagen 3 API note (quota or enterprise restriction):', imagenErr?.message);
       }
     }
 
-    // Tier 3: Zero-Cost Free Dynamic AI Synthesis (Pollinations AI - verified, instant, no key required)
-    const cleanPrompt = encodeURIComponent(
-      `cinematic photorealistic 8k operational workplace: ${prompt.trim()}`
-    );
-    const fallbackUrl = `https://image.pollinations.ai/prompt/${cleanPrompt}?width=1024&height=576&seed=${Date.now()}&nologo=true`;
+    // Tier 3: Zero-Cost Pollinations AI (Enhanced with Flux/Turbo parameters)
+    const encoded = encodeURIComponent(promptText);
+    const seed = Math.floor(Math.random() * 900000) + 100000;
+    const pollinationsUrl = `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=576&seed=${seed}&nologo=true&enhance=true&model=flux`;
 
     return res.json({
       success: true,
-      imageUrl: fallbackUrl,
-      provider: 'Pollinations AI (Free Tier)',
-      note: 'Generated using high-resolution free AI synthesis. To use DALL-E 3 or Imagen 3, provide an external API key in the image modal.',
+      imageUrl: pollinationsUrl,
+      fallbackUrl: unsplashFallback,
+      provider: 'Pollinations AI (Flux Model)',
+      sanitizedPrompt: promptText,
     });
   } catch (error: any) {
     console.error('Error generating AI image:', error);

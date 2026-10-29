@@ -11,6 +11,8 @@ interface QuickReferenceCardProps {
   onOpenTutor: (card: DeckCard) => void;
 }
 
+import { CriticalRulesCard } from './CriticalRulesCard';
+
 export const QuickReferenceCard: React.FC<QuickReferenceCardProps> = ({
   card,
   deckTitle,
@@ -18,6 +20,19 @@ export const QuickReferenceCard: React.FC<QuickReferenceCardProps> = ({
   onDeleteCard,
   onOpenTutor,
 }) => {
+  // If this card is titled Golden Rules, render using CriticalRulesCard
+  if (card.title && card.title.toLowerCase().includes('golden rules')) {
+    return (
+      <CriticalRulesCard
+        card={card}
+        deckTitle={deckTitle}
+        onUpdateCard={onUpdateCard}
+        onDeleteCard={onDeleteCard}
+        onOpenTutor={onOpenTutor}
+      />
+    );
+  }
+
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(card.title);
   const [subtitle, setSubtitle] = useState(card.subtitle || '');
@@ -43,23 +58,6 @@ export const QuickReferenceCard: React.FC<QuickReferenceCardProps> = ({
 
   return (
     <div className="relative rounded-[2rem] border border-white/[0.12] bg-gradient-to-b from-cyan-500/[0.08] via-neutral-950 to-neutral-950 shadow-[0_25px_80px_rgba(0,0,0,0.9)] p-6 sm:p-10 transition-all overflow-hidden">
-      {/* Top Training Card Header */}
-      <div className="flex items-center justify-between border-b border-white/[0.08] pb-4 mb-6">
-        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-semibold">
-          <Bookmark className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-          <span>{card.badgeText || 'Quick Reference Guide'}</span>
-        </div>
-
-        {card.levelNumber !== undefined ? (
-          <span className="text-[10px] font-mono tracking-widest text-cyan-400 font-bold uppercase px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20">
-            LEVEL {card.levelNumber} · METRICS
-          </span>
-        ) : (
-          <span className="text-[10px] font-mono tracking-widest text-neutral-400 font-bold uppercase">
-            TRAINING CARD
-          </span>
-        )}
-      </div>
 
       {isEditing ? (
         <div className="space-y-3 mb-6">

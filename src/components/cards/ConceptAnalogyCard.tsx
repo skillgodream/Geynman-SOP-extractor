@@ -56,23 +56,6 @@ export const ConceptAnalogyCard: React.FC<ConceptAnalogyCardProps> = ({
 
   return (
     <div className="relative rounded-[2rem] border border-white/[0.12] bg-gradient-to-b from-amber-500/[0.06] via-neutral-950 to-neutral-950 shadow-[0_25px_80px_rgba(0,0,0,0.9)] p-6 sm:p-10 transition-all overflow-hidden">
-      {/* Top Training Card Header */}
-      <div className="flex items-center justify-between border-b border-white/[0.08] pb-4 mb-6">
-        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-semibold">
-          <Lightbulb className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-          <span>{card.badgeText || 'Intuition & Mental Model'}</span>
-        </div>
-
-        {card.levelNumber !== undefined ? (
-          <span className="text-[10px] font-mono tracking-widest text-blue-400 font-bold uppercase px-2.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20">
-            LEVEL {card.levelNumber} · PROCESS MAP
-          </span>
-        ) : (
-          <span className="text-[10px] font-mono tracking-widest text-neutral-400 font-bold uppercase">
-            TRAINING CARD
-          </span>
-        )}
-      </div>
 
       {isEditing ? (
         <div className="space-y-3 mb-6">

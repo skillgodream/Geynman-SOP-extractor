@@ -342,6 +342,42 @@ export function sanitizeCard(rawCard: any, cardIndex: number): DeckCard {
   card.stopWorkTrigger = cleanText(card.stopWorkTrigger) || undefined;
   card.responsibleRole = cleanText(card.responsibleRole) || undefined;
 
+  // Force Golden Rules cards to critical_rules cardType
+  if (card.title && card.title.toLowerCase().includes('golden rules')) {
+    card.cardType = 'critical_rules';
+    card.title = 'Price Markdown: Golden Rules';
+    card.subtitle = 'PRICE MARKDOWN';
+    card.feynmanExplanation = 'Controls every associate must follow.';
+    if (!Array.isArray(card.criticalRules) || card.criticalRules.length === 0) {
+      card.criticalRules = [
+        {
+          type: 'must_do',
+          rule: 'AUTHORIZATION: Only apply markdowns listed in an approved instruction.',
+          consequenceOfFailure: 'Financial loss, margin erosion, and audit failure.',
+          verificationCheck: 'Approved price verified'
+        },
+        {
+          type: 'must_do',
+          rule: 'SKU MATCH: Check barcode, size, colour and variant before relabelling.',
+          consequenceOfFailure: 'Mislabeled inventory and cashier price mismatch.',
+          verificationCheck: 'Shelf label matches SKU'
+        },
+        {
+          type: 'must_do',
+          rule: 'POS FIRST: Confirm the revised price at checkout; a new shelf label is not enough.',
+          consequenceOfFailure: 'Customer disputes and billing discrepancy.',
+          verificationCheck: 'POS price tested'
+        },
+        {
+          type: 'warning',
+          rule: 'EXCEPTIONS: If shelf and POS prices differ, pause and escalate to the supervisor.',
+          consequenceOfFailure: 'Unrecorded override and inventory loss.',
+          verificationCheck: 'Escalation logged'
+        }
+      ];
+    }
+  }
+
   // Derive / normalize cardType
   const validTypes: CardType[] = [
     'concept_analogy',

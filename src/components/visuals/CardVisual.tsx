@@ -60,14 +60,22 @@ export const CardVisual: React.FC<CardVisualProps> = ({
 
   const activeDiagram = image?.diagramType || defaultDiagram;
 
-  const handleGenerateAiImage = async () => {
-    const promptText = aiPrompt.trim() || titleContext || 'Operational SOP procedure visual';
+  const handleGenerateAiImage = async (customPrompt?: string) => {
+    const promptToUse = customPrompt || aiPrompt;
+    const promptText = promptToUse.trim() || titleContext || 'Operational SOP procedure visual';
     setIsGeneratingAi(true);
     setAiError(null);
     setProviderTag(null);
 
     try {
-      const data = await safeFetchJson<{ success: boolean; imageUrl?: string; provider?: string; error?: string }>('/api/generate-image', {
+      const data = await safeFetchJson<{
+        success: boolean;
+        imageUrl?: string;
+        fallbackUrl?: string;
+        provider?: string;
+        sanitizedPrompt?: string;
+        error?: string;
+      }>('/api/generate-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -79,20 +87,34 @@ export const CardVisual: React.FC<CardVisualProps> = ({
       if (data.success && data.imageUrl) {
         setUrlInput(data.imageUrl);
         if (data.provider) setProviderTag(data.provider);
+        if (data.sanitizedPrompt && data.sanitizedPrompt !== promptText) {
+          setAiPrompt(data.sanitizedPrompt);
+        }
         if (apiKeyInput.trim()) {
           try {
             localStorage.setItem('user_image_api_key', apiKeyInput.trim());
           } catch {}
         }
-        if (!captionInput) setCaptionInput(`AI Generated: ${promptText}`);
+        if (!captionInput) setCaptionInput(`AI Visual: ${promptText}`);
       } else {
-        setAiError(data.error || 'Could not generate AI image.');
+        const fallback = data.fallbackUrl || resolveFallbackPhoto();
+        setUrlInput(fallback);
+        setProviderTag('High-Res Stock Photo (Fallback)');
+        setAiError(data.error || 'AI image generator refused or timed out. Loaded relevant high-res stock photo.');
       }
     } catch (err: any) {
-      setAiError(err?.message || 'Failed to connect to AI image generator.');
+      const fallback = resolveFallbackPhoto();
+      setUrlInput(fallback);
+      setProviderTag('High-Res Stock Photo (Fallback)');
+      setAiError(err?.message || 'Loaded high-res stock photo fallback.');
     } finally {
       setIsGeneratingAi(false);
     }
+  };
+
+  const handleApplyPresetPrompt = (presetText: string) => {
+    setAiPrompt(presetText);
+    handleGenerateAiImage(presetText);
   };
 
   const handleSave = () => {
@@ -112,6 +134,7 @@ export const CardVisual: React.FC<CardVisualProps> = ({
       reader.onload = () => {
         setUrlInput(reader.result as string);
         setSelectedDiagram('custom');
+        setProviderTag('User Uploaded File');
       };
       reader.readAsDataURL(file);
     }
@@ -119,8 +142,14 @@ export const CardVisual: React.FC<CardVisualProps> = ({
 
   // Comprehensive contextual topic matching for cards without an explicit URL
   const resolveFallbackPhoto = (): string => {
-    const query = `${titleContext} ${activeDiagram} ${defaultDiagram}`.toLowerCase();
+    const query = `${aiPrompt} ${titleContext} ${activeDiagram} ${defaultDiagram}`.toLowerCase();
 
+    if (query.includes('price') || query.includes('shelf') || query.includes('tag') || query.includes('retail') || query.includes('discount') || query.includes('markdown') || query.includes('v-mart')) {
+      return 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80';
+    }
+    if (query.includes('pos') || query.includes('register') || query.includes('checkout') || query.includes('cashier')) {
+      return 'https://images.unsplash.com/photo-1556742049-0a670f4a4591?auto=format&fit=crop&w=1200&q=80';
+    }
     if (query.includes('cold') || query.includes('refrigerat') || query.includes('temperature') || query.includes('probe')) {
       return 'https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?auto=format&fit=crop&w=1200&q=80';
     }
@@ -188,8 +217,6 @@ export const CardVisual: React.FC<CardVisualProps> = ({
         </div>
       )}
 
-
-
       {/* Caption strip (if present) */}
       {!cleanVideoMode && image?.caption && (
         <div className="px-4 py-2 bg-slate-900/90 border-t border-slate-800 text-[11px] text-slate-400 text-center">
@@ -197,286 +224,301 @@ export const CardVisual: React.FC<CardVisualProps> = ({
         </div>
       )}
 
-      {/* Change Image Button overlay */}
+      {/* Change / Generate Image Button overlay */}
       {!cleanVideoMode && (
         <div className="absolute top-3 right-3 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             type="button"
             onClick={() => setIsModalOpen(true)}
-            className="min-h-[36px] flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900/90 text-white border border-slate-700 hover:border-amber-400 text-xs font-semibold shadow-md active:scale-95 transition-all"
+            className="min-h-[36px] flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/90 text-white border border-slate-700 hover:border-sky-400 text-xs font-medium shadow-md active:scale-95 transition-all cursor-pointer"
           >
-            <Edit3 className="w-3.5 h-3.5 text-amber-400" />
-            <span>Change Picture / Diagram</span>
+            <Sparkles className="w-3.5 h-3.5 text-sky-400" />
+            <span>Replace / Generate Image</span>
           </button>
         </div>
       )}
 
-      {/* Image / Diagram Configuration Modal */}
+      {/* Simplified Prompt -> Generate -> Preview -> Approve Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn text-slate-900 dark:text-white">
-          <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <ImageIcon className="w-5 h-5 text-amber-500" />
-                <h3 className="text-base font-bold">Slide Visual & Picture Settings</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fadeIn text-white">
+          <div className="relative w-full max-w-xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 overflow-hidden flex flex-col max-h-[90vh]">
+            
+            {/* Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-400">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white">Generate Slide Image with AI</h3>
+                  <p className="text-xs text-slate-400">Enter your prompt, preview the picture, and approve to replace.</p>
+                </div>
               </div>
               <button
+                type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="space-y-4 text-xs">
-              {/* Option A: ✨ AI Text-to-Image Generation (Imagen 3 / DALL-E / Pollinations) */}
-              <div className="p-3.5 rounded-2xl bg-blue-950/40 border border-blue-500/30 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 font-bold text-blue-400 text-xs">
-                    <Sparkles className="w-4 h-4 text-blue-400" />
-                    <span>AI Image Synthesis for SOP Context</span>
-                  </div>
-                  <span className="text-[10px] font-mono bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full">
-                    {providerTag || 'Free Tier AI'}
-                  </span>
-                </div>
-
-                <p className="text-[11px] text-neutral-400">
-                  Generates an instructional visual strictly mapped to this SOP card's operational action.
-                </p>
-
-                <div className="flex items-center gap-2">
+            <div className="space-y-4 py-4 overflow-y-auto pr-1">
+              {/* Step 1: Prompt Input Box */}
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                  1. Image Prompt
+                </label>
+                <div className="flex gap-2">
                   <input
                     type="text"
                     value={aiPrompt}
                     onChange={(e) => setAiPrompt(e.target.value)}
-                    placeholder="e.g. Operator checking calibrated temperature sensor"
-                    className="flex-1 p-2.5 bg-neutral-900 border border-white/10 rounded-xl text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-blue-500"
+                    onKeyDown={(e) => {
+                      e.stopPropagation();
+                      if (e.key === 'Enter' && !isGeneratingAi) {
+                        e.preventDefault();
+                        handleGenerateAiImage();
+                      }
+                    }}
+                    placeholder="e.g. Retail store promotional shelf with discount price tags"
+                    className="flex-1 px-3.5 py-2.5 bg-slate-950 border border-slate-700 focus:border-sky-500 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none transition-colors"
                   />
                   <button
                     type="button"
-                    onClick={handleGenerateAiImage}
+                    onClick={() => handleGenerateAiImage()}
                     disabled={isGeneratingAi}
-                    className="min-h-[38px] px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs shrink-0 flex items-center gap-1.5 transition-colors disabled:opacity-50 cursor-pointer shadow-md"
+                    className="px-4 py-2.5 bg-sky-600 hover:bg-sky-500 text-white font-medium text-xs rounded-xl flex items-center gap-2 shrink-0 transition-all cursor-pointer disabled:opacity-50 shadow-lg shadow-sky-600/20"
                   >
                     {isGeneratingAi ? (
                       <>
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <Loader2 className="w-4 h-4 animate-spin" />
                         <span>Generating...</span>
                       </>
                     ) : (
                       <>
-                        <Sparkles className="w-3.5 h-3.5" />
-                        <span>Generate Image</span>
+                        <Sparkles className="w-4 h-4" />
+                        <span>Generate</span>
                       </>
                     )}
                   </button>
                 </div>
 
-                {/* API Key Toggle for external models (OpenAI DALL-E or custom Gemini key) */}
-                <div className="pt-1">
+                {/* Quick Preset Prompts for 1-Click Generation */}
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mr-1">Quick Ideas:</span>
                   <button
                     type="button"
-                    onClick={() => setShowApiKeyField(!showApiKeyField)}
-                    className="text-[11px] text-blue-400/80 hover:text-blue-300 underline cursor-pointer"
+                    onClick={() => handleApplyPresetPrompt('Retail shelf with markdown discount price tag')}
+                    className="text-[11px] px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors cursor-pointer"
                   >
-                    {showApiKeyField ? 'Hide External API Key Settings' : 'Use External API Key (OpenAI DALL-E or Custom Gemini)?'}
+                    🏷️ Retail Price Tag
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => handleApplyPresetPrompt('POS register terminal cash counter checkout')}
+                    className="text-[11px] px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors cursor-pointer"
+                  >
+                    💻 POS Register
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleApplyPresetPrompt('Warehouse merchandise inventory barcode scanner')}
+                    className="text-[11px] px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors cursor-pointer"
+                  >
+                    📦 Warehouse
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleApplyPresetPrompt('Quality audit compliance checklist sign-off')}
+                    className="text-[11px] px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors cursor-pointer"
+                  >
+                    📋 Checklist
+                  </button>
+                </div>
 
-                  {showApiKeyField && (
-                    <div className="mt-2 p-2.5 rounded-xl bg-neutral-900/90 border border-white/10 space-y-1.5">
-                      <div className="flex items-center justify-between text-[11px] text-neutral-300">
-                        <span>External Key (sk-... for OpenAI DALL-E 3, or AIza... for Gemini):</span>
-                        {apiKeyInput && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setApiKeyInput('');
-                              try { localStorage.removeItem('user_image_api_key'); } catch {}
-                            }}
-                            className="text-rose-400 hover:text-rose-300 text-[10px]"
-                          >
-                            Clear
-                          </button>
-                        )}
-                      </div>
-                      <input
-                        type="password"
-                        value={apiKeyInput}
-                        onChange={(e) => setApiKeyInput(e.target.value)}
-                        placeholder="sk-... or AIzaSy..."
-                        className="w-full p-2 bg-neutral-950 border border-white/10 rounded-lg text-xs text-white placeholder-neutral-600 font-mono focus:outline-none focus:border-blue-400"
-                      />
-                      <p className="text-[10px] text-neutral-400">
-                        Leave blank to use the free-tier high-resolution AI synthesis generator (no sign-up or billing needed).
-                      </p>
+                {aiError && (
+                  <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs flex items-center justify-between gap-2">
+                    <span>{aiError}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const fallback = resolveFallbackPhoto();
+                        setUrlInput(fallback);
+                        setProviderTag('Guaranteed Stock Photo');
+                        setAiError(null);
+                      }}
+                      className="underline hover:text-white text-[11px] shrink-0 cursor-pointer"
+                    >
+                      Use Guaranteed Photo
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Step 2: Live Picture Preview Box */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                    2. Picture Preview
+                  </label>
+                  {urlInput && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-mono">
+                        {providerTag ? providerTag : 'Ready to Apply'}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const fallback = resolveFallbackPhoto();
+                          setUrlInput(fallback);
+                          setProviderTag('Guaranteed Stock Photo');
+                        }}
+                        className="text-[10px] text-sky-400 hover:underline cursor-pointer"
+                      >
+                        Switch to Stock Photo
+                      </button>
                     </div>
                   )}
                 </div>
 
-                {providerTag && (
-                  <p className="text-[11px] text-emerald-400 flex items-center gap-1">
-                    <Check className="w-3 h-3" />
-                    <span>Rendered using {providerTag}</span>
-                  </p>
-                )}
-
-                {aiError && <p className="text-[11px] text-rose-400">{aiError}</p>}
-              </div>
-
-              {/* Option B: Select High-Fidelity Domain Schematic */}
-              <div>
-                <label className="block font-semibold mb-2 text-slate-700 dark:text-slate-300 uppercase tracking-wider text-[11px]">
-                  2. Choose Domain Schematic (Zero Broken Links)
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedDiagram('cold_chain');
-                      setUrlInput('');
-                    }}
-                    className={`p-2.5 rounded-xl border text-left transition-all ${
-                      selectedDiagram === 'cold_chain' && !urlInput
-                        ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/30 font-semibold'
-                        : 'border-slate-200 dark:border-slate-700'
-                    }`}
-                  >
-                    <div className="text-amber-500 font-bold">Cold Chain Gauge</div>
-                    <div className="text-[10px] text-slate-400">2°C–8°C safe zone sensor</div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedDiagram('protein_origami');
-                      setUrlInput('');
-                    }}
-                    className={`p-2.5 rounded-xl border text-left transition-all ${
-                      selectedDiagram === 'protein_origami' && !urlInput
-                        ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/30 font-semibold'
-                        : 'border-slate-200 dark:border-slate-700'
-                    }`}
-                  >
-                    <div className="text-emerald-500 font-bold">Protein Origami</div>
-                    <div className="text-[10px] text-slate-400">Folded vs Denatured state</div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedDiagram('cleanroom');
-                      setUrlInput('');
-                    }}
-                    className={`p-2.5 rounded-xl border text-left transition-all ${
-                      selectedDiagram === 'cleanroom' && !urlInput
-                        ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/30 font-semibold'
-                        : 'border-slate-200 dark:border-slate-700'
-                    }`}
-                  >
-                    <div className="text-blue-500 font-bold">Cleanroom Airlock</div>
-                    <div className="text-[10px] text-slate-400">Demarcation bench schematic</div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedDiagram('incident_triage');
-                      setUrlInput('');
-                    }}
-                    className={`p-2.5 rounded-xl border text-left transition-all ${
-                      selectedDiagram === 'incident_triage' && !urlInput
-                        ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/30 font-semibold'
-                        : 'border-slate-200 dark:border-slate-700'
-                    }`}
-                  >
-                    <div className="text-orange-500 font-bold">Incident Command</div>
-                    <div className="text-[10px] text-slate-400">SRE IC & Ops topology</div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedDiagram('flowchart');
-                      setUrlInput('');
-                    }}
-                    className={`col-span-2 p-2.5 rounded-xl border text-left transition-all ${
-                      selectedDiagram === 'flowchart' && !urlInput
-                        ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/30 font-semibold'
-                        : 'border-slate-200 dark:border-slate-700'
-                    }`}
-                  >
-                    <div className="text-purple-500 font-bold">SOP Step Flowchart</div>
-                    <div className="text-[10px] text-slate-400">Connected trigger to verification</div>
-                  </button>
+                <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-slate-950 border border-slate-800 flex items-center justify-center group">
+                  {isGeneratingAi ? (
+                    <div className="flex flex-col items-center justify-center p-6 text-center space-y-3">
+                      <Loader2 className="w-8 h-8 text-sky-400 animate-spin" />
+                      <div>
+                        <p className="text-xs font-medium text-slate-200">Creating your image with AI...</p>
+                        <p className="text-[11px] text-slate-400 mt-0.5">Synthesizing high-quality promotional visual</p>
+                      </div>
+                    </div>
+                  ) : urlInput ? (
+                    <img
+                      src={urlInput}
+                      alt="Preview of generated image"
+                      className="w-full h-full object-cover"
+                      onError={() => {
+                        const fallback = resolveFallbackPhoto();
+                        setUrlInput(fallback);
+                        setProviderTag('Stock Photo (Fallback)');
+                        setAiError('Image provider returned refusal or failed to load. Automatically loaded high-definition stock photo.');
+                      }}
+                    />
+                  ) : activePhotoUrl ? (
+                    <img
+                      src={activePhotoUrl}
+                      alt="Current picture preview"
+                      className="w-full h-full object-cover opacity-80"
+                    />
+                  ) : (
+                    <div className="p-6 text-center text-slate-500 text-xs">
+                      No image generated yet. Enter a prompt above and click Generate.
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* Option B: Upload Custom Equipment Photo or Diagram */}
-              <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
-                <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300 uppercase tracking-wider text-[11px]">
-                  2. Or Upload Local SOP Photo / Screenshot
-                </label>
-                <label className="min-h-[44px] flex items-center justify-center gap-2 px-4 py-2 border border-dashed border-slate-300 dark:border-slate-700 hover:border-amber-400 rounded-xl cursor-pointer text-slate-600 dark:text-slate-300 font-medium">
-                  <Upload className="w-4 h-4 text-amber-500" />
-                  <span>Choose file from device (PNG, JPG, SVG)</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                  />
-                </label>
-              </div>
-
-              {/* Option C: Image URL */}
-              <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
-                <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300 uppercase tracking-wider text-[11px]">
-                  3. Or Paste Image URL
-                </label>
-                <div className="flex items-center gap-2">
-                  <Link className="w-4 h-4 text-slate-400 shrink-0" />
-                  <input
-                    type="url"
-                    value={urlInput}
-                    onChange={(e) => setUrlInput(e.target.value)}
-                    placeholder="https://example.com/cleanroom-diagram.png"
-                    className="flex-1 p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
-                  />
-                </div>
-              </div>
-
-              {/* Caption */}
-              <div>
-                <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300 text-[11px]">
-                  Visual Caption (Optional)
+              {/* Optional Caption Input */}
+              <div className="space-y-1">
+                <label className="block text-[11px] text-slate-400">
+                  Caption / Label (Optional)
                 </label>
                 <input
                   type="text"
                   value={captionInput}
                   onChange={(e) => setCaptionInput(e.target.value)}
-                  placeholder="e.g. Figure 1.1: Temperature probe placement"
-                  className="w-full p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
+                  onKeyDown={(e) => e.stopPropagation()}
+                  placeholder="e.g. Promotional merchandise shelf display"
+                  className="w-full px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-slate-600"
                 />
               </div>
+
+              {/* Advanced / Alternative Sources Accordion */}
+              <details className="pt-2 border-t border-slate-800 text-xs group/accordion">
+                <summary className="cursor-pointer text-slate-400 hover:text-slate-200 font-medium py-1 flex items-center justify-between select-none">
+                  <span>Other Options (Upload file, paste image link, or pick diagram)</span>
+                  <span className="text-[10px] text-slate-500 group-open/accordion:rotate-180 transition-transform">▼</span>
+                </summary>
+                
+                <div className="mt-3 space-y-3 pl-1">
+                  {/* File Upload */}
+                  <div>
+                    <label className="block text-[11px] font-medium text-slate-300 mb-1">Upload Local Image File</label>
+                    <label className="flex items-center justify-center gap-2 p-2.5 border border-dashed border-slate-700 hover:border-slate-500 rounded-xl cursor-pointer text-slate-400 text-xs">
+                      <Upload className="w-4 h-4 text-sky-400" />
+                      <span>Choose image file from computer</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+
+                  {/* Direct Image URL */}
+                  <div>
+                    <label className="block text-[11px] font-medium text-slate-300 mb-1">Direct Image URL</label>
+                    <div className="flex items-center gap-2">
+                      <Link className="w-4 h-4 text-slate-500 shrink-0" />
+                      <input
+                        type="url"
+                        value={urlInput}
+                        onChange={(e) => setUrlInput(e.target.value)}
+                        onKeyDown={(e) => e.stopPropagation()}
+                        placeholder="https://images.unsplash.com/photo-..."
+                        className="flex-1 p-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200"
+                      />
+                    </div>
+                  </div>
+
+                  {/* External API Key toggle */}
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => setShowApiKeyField(!showApiKeyField)}
+                      className="text-[11px] text-sky-400 hover:underline cursor-pointer"
+                    >
+                      {showApiKeyField ? 'Hide Custom OpenAI / Gemini Key' : 'Use Custom OpenAI DALL-E or Gemini Key?'}
+                    </button>
+                    {showApiKeyField && (
+                      <div className="mt-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5">
+                        <input
+                          type="password"
+                          value={apiKeyInput}
+                          onChange={(e) => setApiKeyInput(e.target.value)}
+                          placeholder="sk-... or AIzaSy..."
+                          className="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs font-mono text-slate-200"
+                        />
+                        <p className="text-[10px] text-slate-500">
+                          Leave blank to use the default free AI image generator.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </details>
             </div>
 
-            <div className="flex items-center justify-end gap-2 mt-5 pt-3 border-t border-slate-200 dark:border-slate-800">
+            {/* Footer Action Bar */}
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800 mt-auto">
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-800"
+                className="px-4 py-2 text-xs font-medium text-slate-400 hover:text-white transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleSave}
-                className="px-4 py-2 text-xs font-semibold bg-amber-400 text-slate-950 rounded-lg hover:bg-amber-300"
+                disabled={!urlInput && !image?.url}
+                className="px-5 py-2.5 text-xs font-semibold bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl transition-all cursor-pointer flex items-center gap-2 shadow-lg shadow-emerald-500/20 disabled:opacity-50"
               >
-                Apply Visual Changes
+                <Check className="w-4 h-4" />
+                <span>Approve & Replace Image</span>
               </button>
             </div>
+
           </div>
         </div>
       )}
