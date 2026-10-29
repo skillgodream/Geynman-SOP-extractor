@@ -230,21 +230,97 @@ export const CriticalRulesCard: React.FC<CriticalRulesCardProps> = ({
 
   const levelNum = card.levelNumber ?? (isGoldenRulesCard ? 4 : 0);
 
-  // Extract Never Do & Must Do items dynamically from card data
-  const neverDoRule = rules.find(r => r.type === 'never_do') || {
-    type: 'never_do' as const,
-    rule: card.stopWorkTrigger || rules[0]?.rule || 'Do not proceed without proper authorization or verification.',
-    consequenceOfFailure: rules[0]?.consequenceOfFailure || card.feynmanExplanation || 'Ensures process integrity and compliance.',
-    verificationCheck: rules[0]?.verificationCheck || 'Verification complete'
+  // Intelligently derive distinct Key Rule, Numbered Verification Steps, Never Do Prohibition, and Rationale
+  const getSetupCardContent = () => {
+    // 1. Explicit Never Do rule
+    let explicitNeverDo = rules.find(r => r.type === 'never_do');
+    if (!explicitNeverDo) {
+      // Look for negative rule text in any rule
+      const negRule = rules.find(r => {
+        const l = r.rule.toLowerCase();
+        return l.includes('never') || l.includes('do not') || l.includes("don't") || l.includes('avoid') || l.includes('prohibited') || l.includes('casual');
+      });
+      if (negRule) {
+        explicitNeverDo = {
+          type: 'never_do',
+          rule: negRule.rule,
+          consequenceOfFailure: negRule.consequenceOfFailure || 'Prevents unauthorized action and compliance breaches.',
+          verificationCheck: negRule.verificationCheck || 'Verification passed'
+        };
+      }
+    }
+
+    let neverDoText = explicitNeverDo?.rule;
+    if (!neverDoText) {
+      if (card.stopWorkTrigger) {
+        neverDoText = `Do not proceed if ${card.stopWorkTrigger.toLowerCase()}`;
+      } else {
+        // Intelligently derive a prohibition from the topic/mustDo rule
+        const topic = (card.title + ' ' + (card.subtitle || '') + ' ' + (rules[0]?.rule || '')).toLowerCase();
+        if (topic.includes('coc') || topic.includes('code of conduct') || topic.includes('induction') || topic.includes('sign')) {
+          neverDoText = 'Do not act on casual requests or assume authorization without verified digital sign-off.';
+        } else if (topic.includes('price') || topic.includes('markdown')) {
+          neverDoText = 'Do not act on casual requests, verbal instructions, or guess a markdown price.';
+        } else if (topic.includes('temp') || topic.includes('cold')) {
+          neverDoText = 'Never release or accept cold chain product without verifying data logger readings.';
+        } else if (topic.includes('cleanroom') || topic.includes('gown')) {
+          neverDoText = 'Do not enter the sterile suite with exposed hair, jewelry, or uncertified apparel.';
+        } else {
+          neverDoText = 'Do not act on casual requests, unverified instructions, or bypass required sign-off.';
+        }
+      }
+    }
+
+    // Clean NEVER DO prefix if duplicated
+    neverDoText = neverDoText.replace(/^(NEVER\s+DO|NEVER):\s*/i, '');
+
+    // 2. Key Rule Text
+    const mustDoItem = rules.find(r => r.type === 'must_do') || rules.find(r => r.type !== 'never_do') || rules[0];
+    let keyRuleText = mustDoItem?.rule || card.subtitle || 'Official authorization required before commencing procedure.';
+    keyRuleText = keyRuleText.replace(/^(MUST\s+DO|MUST|KEY\s+RULE):\s*/i, '');
+
+    // 3. Must Do Steps (Ensure no duplicate step text!)
+    const mustDoCandidates = rules.filter(r => r.type !== 'never_do');
+    
+    let mustDoSteps: { rule: string }[] = [];
+    if (mustDoCandidates.length > 1) {
+      mustDoSteps = mustDoCandidates;
+    } else if (mustDoCandidates.length === 1) {
+      const singleRuleText = mustDoCandidates[0].rule;
+      const lower = singleRuleText.toLowerCase();
+
+      if (lower.includes('receive') || lower.includes('read') || lower.includes('sign') || lower.includes('confirm')) {
+        mustDoSteps = [
+          { rule: 'Confirm official instruction: Use designated company channel; never rely on verbal requests.' },
+          { rule: 'Verify the directive: Review document ID, authorized sign-off, terms, and effective date.' },
+          { rule: 'Record digital confirmation: Formally sign/digitally confirm the document in the official ledger.' }
+        ];
+      } else {
+        mustDoSteps = [
+          { rule: `Confirm official directive: ${singleRuleText}` },
+          { rule: 'Verify parameters: Check authorized sign-off, specifications, and scope.' },
+          { rule: 'Confirm before execution: Log digital verification prior to starting work.' }
+        ];
+      }
+    } else {
+      mustDoSteps = [
+        { rule: 'Confirm official instruction: Use designated company channel; never rely on verbal requests.' },
+        { rule: 'Verify the directive: Review document ID, authorized sign-off, and scope.' },
+        { rule: 'Confirm before execution: Ensure digital verification is logged.' }
+      ];
+    }
+
+    const mainConsequence = rules[0]?.consequenceOfFailure || card.feynmanExplanation || 'Guarantees operational baseline tolerance and safety compliance.';
+
+    return {
+      neverDoText,
+      keyRuleText,
+      mustDoSteps,
+      mainConsequence
+    };
   };
 
-  const mustDoRules = rules.filter(r => r.type !== 'never_do');
-  const mainConsequence = rules[0]?.consequenceOfFailure || card.feynmanExplanation || 'Guarantees operational baseline tolerance and safety compliance.';
-  const keyRuleText =
-    rules.find(r => r.type === 'must_do')?.rule ||
-    rules[0]?.rule ||
-    card.subtitle ||
-    'Mandatory authorization required before execution.';
+  const { neverDoText, keyRuleText, mustDoSteps, mainConsequence } = getSetupCardContent();
 
   // --- VARIANT 1: LEVEL 0 AUTHORIZATION & VERIFICATION / SETUP SCREEN ---
   if (isSetupCard) {
@@ -320,7 +396,7 @@ export const CriticalRulesCard: React.FC<CriticalRulesCardProps> = ({
 
         {/* Numbered Verification Steps */}
         <div className="space-y-3 mb-5">
-          {mustDoRules.map((r, idx) => {
+          {mustDoSteps.map((r, idx) => {
             const { title: stepTitle, body: stepBody } = parseRuleText(r.rule, idx);
             return (
               <div
@@ -358,7 +434,7 @@ export const CriticalRulesCard: React.FC<CriticalRulesCardProps> = ({
               NEVER DO
             </div>
             <div className="text-xs sm:text-sm font-bold text-white leading-snug">
-              {neverDoRule.rule.replace(/^(NEVER\s+DO|NEVER):\s*/i, '')}
+              {neverDoText}
             </div>
           </div>
         </div>
