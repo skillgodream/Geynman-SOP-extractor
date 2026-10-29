@@ -9,7 +9,9 @@ import {
   Layers,
   Clock,
   UserCheck,
-  CheckCircle2
+  CheckCircle2,
+  AlertTriangle,
+  X
 } from 'lucide-react';
 import { FeynmanDeck, AppViewMode } from '../types/deck';
 import { ModePills } from './ModePills';
@@ -34,6 +36,7 @@ export const DemoDecksScreen: React.FC<DemoDecksScreenProps> = ({
 }) => {
   const [activeShareDeck, setActiveShareDeck] = useState<FeynmanDeck | null>(null);
   const [activeProgressDeck, setActiveProgressDeck] = useState<FeynmanDeck | null>(null);
+  const [deckToDelete, setDeckToDelete] = useState<FeynmanDeck | null>(null);
 
   // Compute total certified learners across all library decks
   const totalCertified = decks.reduce((acc, d) => {
@@ -146,13 +149,13 @@ export const DemoDecksScreen: React.FC<DemoDecksScreenProps> = ({
                           <span>Send</span>
                         </button>
 
-                        {/* Delete Button */}
+                        {/* Delete Button (Triggers Confirmation Modal) */}
                         {onDeleteDeck && (
                           <button
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              onDeleteDeck(deck.id);
+                              setDeckToDelete(deck);
                             }}
                             className="min-h-[34px] p-2 rounded-xl bg-neutral-900 hover:bg-rose-500/20 text-neutral-400 hover:text-rose-400 border border-white/10 hover:border-rose-500/30 transition-colors cursor-pointer"
                             title="Delete Deck"
@@ -194,7 +197,7 @@ export const DemoDecksScreen: React.FC<DemoDecksScreenProps> = ({
                     )}
                   </div>
 
-                  {/* Revamped Mode Launcher Grid */}
+                  {/* Mode Launcher Grid */}
                   <div className="pt-2 border-t border-white/10">
                     <ModePills
                       allowedModes={['outline', 'show_me', 'guide_me', 'test_me']}
@@ -223,6 +226,60 @@ export const DemoDecksScreen: React.FC<DemoDecksScreenProps> = ({
           </span>
         </button>
       </div>
+
+      {/* Delete Confirmation Modal Pop-up */}
+      {deckToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-fadeIn">
+          <div className="w-full max-w-md rounded-3xl border border-rose-500/30 bg-[#0d121d] p-6 sm:p-8 shadow-[0_25px_80px_rgba(244,63,94,0.2)] text-white space-y-6 relative overflow-hidden">
+            {/* Top Warning Icon Badge */}
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-500 shrink-0">
+                <AlertTriangle className="w-7 h-7" />
+              </div>
+              <div>
+                <h3 className="text-lg sm:text-xl font-bold text-white leading-tight">
+                  Delete Training Deck?
+                </h3>
+                <p className="text-xs text-rose-400 font-medium">
+                  This action cannot be undone.
+                </p>
+              </div>
+            </div>
+
+            {/* Deck Summary Box */}
+            <div className="p-4 rounded-2xl bg-neutral-900/80 border border-white/10 space-y-1">
+              <div className="text-xs font-mono text-neutral-400 uppercase tracking-wider">
+                DECK TITLE
+              </div>
+              <div className="text-sm font-bold text-white leading-snug">
+                {deckToDelete.title}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeckToDelete(null)}
+                className="min-h-[42px] px-5 py-2 rounded-full border border-white/10 bg-neutral-900 hover:bg-neutral-800 text-xs font-semibold text-neutral-300 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (onDeleteDeck) onDeleteDeck(deckToDelete.id);
+                  setDeckToDelete(null);
+                }}
+                className="min-h-[42px] px-6 py-2 rounded-full bg-rose-600 hover:bg-rose-500 text-xs font-bold text-white shadow-lg transition-all cursor-pointer active:scale-95 flex items-center gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Confirm Delete</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Share Module Modal */}
       {activeShareDeck && (

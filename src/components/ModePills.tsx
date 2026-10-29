@@ -34,7 +34,7 @@ export const ModePills: React.FC<ModePillsProps> = ({
   }[] = [
     {
       mode: 'outline',
-      label: 'Card Deck',
+      label: 'Training Deck',
       icon: <SquareStack className="w-3.5 h-3.5 text-cyan-400 shrink-0 stroke-[2]" />,
       defaultBg: 'bg-cyan-950/30 hover:bg-cyan-900/50 text-cyan-200 border-cyan-500/30 hover:border-cyan-400/60 shadow-[0_0_15px_rgba(6,182,212,0.1)]',
       activeBg: 'bg-cyan-500 text-black border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.4)] font-bold',
