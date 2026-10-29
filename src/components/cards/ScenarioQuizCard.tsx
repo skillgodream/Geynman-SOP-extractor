@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { HelpCircle, CheckCircle2, XCircle, Sparkles, RotateCcw } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { DeckCard, QuizData, CardImage } from '../../types/deck';
+import { cleanQuestionText } from '../../utils/sanitizeDeck';
 import { CardToolbar } from '../CardToolbar';
 import { CardVisual } from '../visuals/CardVisual';
 
@@ -139,7 +140,7 @@ export const ScenarioQuizCard: React.FC<ScenarioQuizCardProps> = ({
 
               {/* The Question */}
               <div className="font-bold text-white text-sm sm:text-base pt-1">
-                {quiz.question}
+                {cleanQuestionText(quiz.question)}
               </div>
 
               {/* Options List */}

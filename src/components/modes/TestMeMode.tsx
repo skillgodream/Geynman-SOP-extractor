@@ -13,6 +13,7 @@ import {
 import confetti from 'canvas-confetti';
 import { FeynmanDeck, AssessmentQuestion, AppViewMode } from '../../types/deck';
 import { deriveAssessmentQuestions } from '../../utils/deckDerivations';
+import { cleanQuestionText } from '../../utils/sanitizeDeck';
 import { saveLearnerProgress } from '../../utils/learnerProgress';
 import { ModePills } from '../ModePills';
 
@@ -179,7 +180,7 @@ export const TestMeMode: React.FC<TestMeModeProps> = ({ deck, onExit, onSwitchTo
                 </div>
 
                 <h2 className="text-base sm:text-xl font-bold text-white leading-snug">
-                  {currentQ.question}
+                  {cleanQuestionText(currentQ.question)}
                 </h2>
 
                 {/* Options List */}

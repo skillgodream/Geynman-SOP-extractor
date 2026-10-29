@@ -224,7 +224,7 @@ export const SAMPLE_DECKS: FeynmanDeck[] = [
         },
         quiz: {
           scenario: 'A customer brings an item to the checkout register. The shelf edge tag says ₹700 (30% markdown from ₹1,000), but when the cashier scans the barcode, the POS display reads ₹1,000. The customer insists on paying ₹700 and demands an additional 20% verbal discount for the inconvenience.',
-          question: 'According to V-Mart SOP Step 8 and Step 9 Vector 2, what is the exact compliant response?',
+          question: 'What is the exact compliant response?',
           options: [
             'Honor the displayed ₹700 shelf price per policy, log the POS discrepancy, and politely refuse the additional unapproved 20% verbal discount.',
             'Give the customer whatever price they ask for to avoid a manager escalation.',

@@ -254,6 +254,22 @@ export function sanitizeReferenceItem(ref: any): ReferenceItem {
   };
 }
 
+export function cleanQuestionText(q: any): string {
+  const str = cleanText(q);
+  if (!str) return 'What is the required standard operating response?';
+
+  // Strip meta backend references like "According to V-Mart SOP Step 8 and Step 9 Vector 2, "
+  let cleaned = str
+    .replace(/^According to\s+.*?(SOP|Step|Vector|Document|Rule|Protocol|Directive).*?(,\s*|\?\s*|\.\s*)/i, '')
+    .replace(/^According to\s+[^,]+,\s*/i, '')
+    .replace(/^Per\s+.*?(SOP|Step|Vector|Document).*?,\s*/i, '')
+    .trim();
+
+  if (!cleaned) cleaned = 'What is the required standard operating response?';
+
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+}
+
 /**
  * Sanitize Scenario Quiz Data
  */
@@ -282,10 +298,7 @@ export function sanitizeQuiz(q: any, cardTitle?: string): QuizData {
     cleanText(q.context) ||
     `Reviewing operational scenario for ${cardTitle || 'this procedure'}...`;
 
-  const question =
-    cleanText(q.question) ||
-    cleanText(q.prompt) ||
-    'What is the required standard operating response?';
+  const question = cleanQuestionText(q.question || q.prompt);
 
   const rawOptions = Array.isArray(q.options)
     ? q.options.map((o: any) => cleanText(o)).filter((o): o is string => o !== null)

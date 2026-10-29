@@ -1,4 +1,5 @@
 import { FeynmanDeck, VideoScene, GuideScenario, AssessmentQuestion, CardImage } from '../types/deck';
+import { cleanQuestionText } from './sanitizeDeck';
 
 /**
  * Resolves an accurate, domain-aligned photo URL based on the actual SOP contents.
@@ -240,7 +241,7 @@ export function deriveGuideScenarios(deck: FeynmanDeck): GuideScenario[] {
       title: quizCard.title || 'Operational Decision Check',
       context: deck.originalDocType ? deck.originalDocType.slice(0, 18).toUpperCase() : 'OPERATIONAL DILEMMA',
       situation: q.scenario,
-      question: q.question,
+      question: cleanQuestionText(q.question),
       options: q.options.map((opt, idx) => ({
         id: `opt-${idx}`,
         text: opt,
